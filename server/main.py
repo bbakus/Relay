@@ -858,11 +858,13 @@ class ShotRequests(Resource):
             shot_requests = session.query(ShotRequestModel).all()
             return [{
                 'id': request.id,
-                'title': request.title,
-                'description': request.description,
-                'status': request.status,
+                'request': request.request,
+                'notes': request.notes,
+                'quick_turn': request.quick_turn,
+                'start_time': request.start_time,
+                'end_time': request.end_time,
                 'deadline': request.deadline,
-                'event_id': request.event_id
+                'process_point': getattr(request, 'process_point', 'idle')
             } for request in shot_requests], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -884,15 +886,32 @@ class ShotRequests(Resource):
             )
             
             session.add(new_request)
+            session.flush()  # Get the ID before committing
+            
+            # If project_id is provided, associate with project
+            project_id = data.get('project_id')
+            if project_id:
+                project = session.query(ProjectModel).filter_by(id=project_id).first()
+                if project:
+                    new_request.projects.append(project)
+            
+            # If event_id is provided, associate with event
+            event_id = data.get('event_id')
+            if event_id:
+                event = session.query(EventModel).filter_by(id=event_id).first()
+                if event:
+                    new_request.events.append(event)
+            
             session.commit()
             
             return {
                 'id': new_request.id,
-                'title': new_request.title,
-                'description': new_request.description,
-                'status': new_request.status,
-                'deadline': new_request.deadline,
-                'event_id': new_request.event_id
+                'request': new_request.request,
+                'notes': new_request.notes,
+                'quick_turn': new_request.quick_turn,
+                'start_time': new_request.start_time,
+                'end_time': new_request.end_time,
+                'deadline': new_request.deadline
             }, 201
         except Exception as e:
             session.rollback()
@@ -910,11 +929,13 @@ class ShotRequestDetail(Resource):
             if shot_request:
                 return {
                     'id': shot_request.id,
-                    'title': shot_request.title,
-                    'description': shot_request.description,
-                    'status': shot_request.status,
+                    'request': shot_request.request,
+                    'notes': shot_request.notes,
+                    'quick_turn': shot_request.quick_turn,
+                    'start_time': shot_request.start_time,
+                    'end_time': shot_request.end_time,
                     'deadline': shot_request.deadline,
-                    'event_id': shot_request.event_id
+                    'process_point': getattr(shot_request, 'process_point', 'idle')
                 }, 200
             return {'error': 'Shot request not found'}, 404
         except Exception as e:
@@ -938,11 +959,13 @@ class ShotRequestDetail(Resource):
             session.commit()
             return {
                 'id': shot_request.id,
-                'title': shot_request.title,
-                'description': shot_request.description,
-                'status': shot_request.status,
+                'request': shot_request.request,
+                'notes': shot_request.notes,
+                'quick_turn': shot_request.quick_turn,
+                'start_time': shot_request.start_time,
+                'end_time': shot_request.end_time,
                 'deadline': shot_request.deadline,
-                'event_id': shot_request.event_id
+                'process_point': getattr(shot_request, 'process_point', 'idle')
             }, 200
         except Exception as e:
             session.rollback()

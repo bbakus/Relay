@@ -111,6 +111,7 @@ class ShotRequest(Base, SerializerMixin):
     start_time = Column(String)
     end_time = Column(String)
     deadline = Column(String)
+    process_point = Column(String, default='idle')
 
     # Relationships
     events = relationship('Events', secondary=event_request_association_table, back_populates='shot_requests')
