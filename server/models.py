@@ -164,8 +164,12 @@ class Image(Base, SerializerMixin):
 
     id = Column(Integer, primary_key=True)
     filename = Column(String, nullable=False)
-    client_select = Column(Boolean)
-
+    file_path = Column(String)  # Full path to the image file
+    thumbnail_path = Column(String)  # Path to thumbnail for gallery view
+    client_select = Column(Boolean, default=False)
+    favorite = Column(Boolean, default=False)  # User favorite flag
+    upload_date = Column(String)  # When the image was uploaded
+    file_size = Column(Integer)  # File size in bytes
 
     event_id = Column(Integer, ForeignKey('events.id', ondelete='CASCADE'))
     requests_id = Column(Integer, ForeignKey('shot_requests.id', ondelete='CASCADE'))

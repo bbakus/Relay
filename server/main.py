@@ -1,8 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
+import uuid
+from PIL import Image
+import datetime
 from models import (
     User,
     Personnel as PersonnelModel,
@@ -27,6 +32,33 @@ from email import encoders
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 api = Api(app)
+
+# Upload configuration
+UPLOAD_FOLDER = 'uploads'
+THUMBNAIL_FOLDER = 'uploads/thumbnails'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
+
+# Create upload directories if they don't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(THUMBNAIL_FOLDER, exist_ok=True)
+
+# Allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def create_thumbnail(image_path, thumbnail_path, size=(300, 300)):
+    """Create a thumbnail for the uploaded image"""
+    try:
+        with Image.open(image_path) as img:
+            img.thumbnail(size, Image.Resampling.LANCZOS)
+            img.save(thumbnail_path, optimize=True, quality=85)
+            return True
+    except Exception as e:
+        print(f"Error creating thumbnail: {e}")
+        return False
 
 DATABASE_URL = 'postgresql://brandonbakus:password123@localhost:5432/relay_db'
 engine = create_engine(DATABASE_URL)
@@ -1000,8 +1032,13 @@ class ImagesResource(Resource):
             images = session.query(ImageModel).all()
             return [{
                 'id': image.id,
+                'filename': image.filename,
                 'file_path': image.file_path,
-                'caption': image.caption,
+                'thumbnail_path': image.thumbnail_path,
+                'client_select': image.client_select,
+                'favorite': getattr(image, 'favorite', False),
+                'upload_date': image.upload_date,
+                'file_size': image.file_size,
                 'event_id': image.event_id,
                 'requests_id': image.requests_id
             } for image in images], 200
@@ -1048,8 +1085,13 @@ class ImageDetail(Resource):
             if image:
                 return {
                     'id': image.id,
+                    'filename': image.filename,
                     'file_path': image.file_path,
-                    'caption': image.caption,
+                    'thumbnail_path': image.thumbnail_path,
+                    'client_select': image.client_select,
+                    'favorite': getattr(image, 'favorite', False),
+                    'upload_date': image.upload_date,
+                    'file_size': image.file_size,
                     'event_id': image.event_id,
                     'requests_id': image.requests_id
                 }, 200
@@ -1075,8 +1117,13 @@ class ImageDetail(Resource):
             session.commit()
             return {
                 'id': image.id,
+                'filename': image.filename,
                 'file_path': image.file_path,
-                'caption': image.caption,
+                'thumbnail_path': image.thumbnail_path,
+                'client_select': image.client_select,
+                'favorite': getattr(image, 'favorite', False),
+                'upload_date': image.upload_date,
+                'file_size': image.file_size,
                 'event_id': image.event_id,
                 'requests_id': image.requests_id
             }, 200
@@ -1426,6 +1473,97 @@ api.add_resource(AccessRequestDetail, '/api/access-requests/<int:request_id>')
 @app.route('/')
 def home():
     return {'message': 'Relay API is running!'}
+
+@app.route('/uploads/<path:filename>')
+def serve_uploaded_file(filename):
+    """Serve uploaded images and thumbnails"""
+    return send_from_directory('uploads', filename)
+
+@app.route('/api/upload-images', methods=['POST'])
+def upload_images():
+    session = Session()
+    try:
+        if 'images' not in request.files:
+            return jsonify({'error': 'No images provided'}), 400
+        
+        event_id = request.form.get('event_id')
+        shot_request_id = request.form.get('shot_request_id')
+        
+        if not event_id and not shot_request_id:
+            return jsonify({'error': 'Event ID or Shot Request ID is required'}), 400
+        
+        # Verify target exists
+        if event_id:
+            target = session.query(EventModel).filter_by(id=event_id).first()
+            if not target:
+                return jsonify({'error': 'Event not found'}), 404
+        else:
+            target = session.query(ShotRequestModel).filter_by(id=shot_request_id).first()
+            if not target:
+                return jsonify({'error': 'Shot Request not found'}), 404
+        
+        files = request.files.getlist('images')
+        uploaded_images = []
+        
+        for file in files:
+            if file and file.filename and allowed_file(file.filename):
+                # Generate unique filename
+                file_extension = file.filename.rsplit('.', 1)[1].lower()
+                unique_filename = f"{uuid.uuid4()}.{file_extension}"
+                
+                # Save original image
+                file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+                file.save(file_path)
+                
+                # Create thumbnail
+                thumbnail_filename = f"thumb_{unique_filename}"
+                thumbnail_path = os.path.join(THUMBNAIL_FOLDER, thumbnail_filename)
+                create_thumbnail(file_path, thumbnail_path)
+                
+                # Convert to URLs for frontend access
+                file_url = f"http://localhost:5001/uploads/{unique_filename}"
+                thumbnail_url = f"http://localhost:5001/uploads/thumbnails/{thumbnail_filename}"
+                
+                # Get file size
+                file_size = os.path.getsize(file_path)
+                
+                # Create database record
+                new_image = ImageModel(
+                    filename=file.filename,
+                    file_path=file_url,
+                    thumbnail_path=thumbnail_url,
+                    event_id=event_id if event_id else None,
+                    requests_id=shot_request_id if shot_request_id else None,
+                    upload_date=datetime.datetime.now().isoformat(),
+                    file_size=file_size,
+                    client_select=False,
+                    favorite=False
+                )
+                
+                session.add(new_image)
+                session.flush()  # Get the ID
+                
+                uploaded_images.append({
+                    'id': new_image.id,
+                    'filename': new_image.filename,
+                    'file_path': file_url,
+                    'thumbnail_path': thumbnail_url,
+                    'event_id': new_image.event_id,
+                    'requests_id': new_image.requests_id,
+                    'upload_date': new_image.upload_date,
+                    'file_size': new_image.file_size,
+                    'client_select': new_image.client_select,
+                    'favorite': new_image.favorite
+                })
+        
+        session.commit()
+        return jsonify(uploaded_images), 200
+        
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
 
 
 if __name__ == '__main__':
