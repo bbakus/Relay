@@ -807,6 +807,14 @@ class PersonnelResource(Resource):
             )
             
             session.add(new_personnel)
+            session.flush()  # Get the ID before committing
+            
+            # Handle project assignment if provided
+            if data.get('project_id'):
+                project = session.query(ProjectModel).filter_by(id=data['project_id']).first()
+                if project:
+                    new_personnel.projects.append(project)
+            
             session.commit()
             
             return {
@@ -816,7 +824,8 @@ class PersonnelResource(Resource):
                 'phone': new_personnel.phone,
                 'role': new_personnel.role,
                 'avatar': new_personnel.avatar,
-                'user_id': new_personnel.user_id
+                'user_id': new_personnel.user_id,
+                'project_ids': [project.id for project in new_personnel.projects]
             }, 201
         except Exception as e:
             session.rollback()
@@ -859,8 +868,21 @@ class PersonnelDetail(Resource):
             
             data = request.get_json()
             
+            # Handle direct project assignment
+            if 'project_id' in data:
+                project_id = data.pop('project_id')  # Remove from data to avoid setattr
+                
+                # Clear existing project assignments
+                personnel.projects.clear()
+                
+                # Assign to new project if provided
+                if project_id:
+                    project = session.query(ProjectModel).filter_by(id=project_id).first()
+                    if project:
+                        personnel.projects.append(project)
+            
             # Handle event assignments
-            if 'event_ids' in data:
+            elif 'event_ids' in data:
                 event_ids = data.pop('event_ids')  # Remove from data to avoid setattr
                 
                 # Clear existing event assignments
