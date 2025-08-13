@@ -39,7 +39,7 @@ api = Api(app)
 UPLOAD_FOLDER = 'uploads'
 THUMBNAIL_FOLDER = 'uploads/thumbnails'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 * 1024  # 5GB max file size
 
 # Create upload directories if they don't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
