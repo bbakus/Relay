@@ -3,6 +3,7 @@ from flask_cors import CORS
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 import uuid
@@ -19,6 +20,7 @@ from models import (
     Organization,
     AccessRequest,
     personnel_event_association_table,
+    event_request_association_table,
 )
 from flask_restful import Api, Resource
 from werkzeug.security import check_password_hash
@@ -538,13 +540,60 @@ class ProjectDetail(Resource):
             if not project:
                 return {'error': 'Project not found'}, 404
             
-            # With cascade='all, delete-orphan' in the model, SQLAlchemy will automatically
-            # delete all associated events when the project is deleted
-            # We can also delete them explicitly for extra safety
+            # Get event count before deletion
             event_count = len(project.events)
+            
+            # First, clear all associations for events in this project
+            event_ids = [event.id for event in project.events]
+            if event_ids:
+                # Get shot request IDs that will become orphaned
+                orphaned_shot_request_ids = session.execute(
+                    text("""
+                        SELECT sr.id 
+                        FROM shot_requests sr
+                        WHERE sr.id IN (
+                            SELECT era.shot_request_id 
+                            FROM event_request_association era 
+                            WHERE era.event_id IN :event_ids
+                        )
+                        AND sr.id NOT IN (
+                            SELECT era2.shot_request_id 
+                            FROM event_request_association era2 
+                            WHERE era2.event_id NOT IN :event_ids
+                        )
+                    """),
+                    {"event_ids": tuple(event_ids)}
+                ).fetchall()
+                
+                orphaned_ids = [row[0] for row in orphaned_shot_request_ids]
+                
+                # Clear personnel-event associations
+                session.execute(
+                    personnel_event_association_table.delete().where(
+                        personnel_event_association_table.c.event_id.in_(event_ids)
+                    )
+                )
+                
+                # Clear event-shot request associations
+                session.execute(
+                    event_request_association_table.delete().where(
+                        event_request_association_table.c.event_id.in_(event_ids)
+                    )
+                )
+                
+                # Delete orphaned shot requests
+                if orphaned_ids:
+                    session.execute(
+                        text("DELETE FROM shot_requests WHERE id IN :ids"),
+                        {"ids": tuple(orphaned_ids)}
+                    )
+                    print(f"Deleted {len(orphaned_ids)} orphaned shot requests")
+            
+            # Delete all events in the project (this will cascade to shot requests and images)
             for event in project.events:
                 session.delete(event)
             
+            # Finally delete the project
             session.delete(project)
             session.commit()
             
