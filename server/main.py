@@ -21,6 +21,7 @@ from models import (
     AccessRequest,
     personnel_event_association_table,
     event_request_association_table,
+    project_requests_association_table,
 )
 from flask_restful import Api, Resource
 from werkzeug.security import check_password_hash
@@ -581,6 +582,14 @@ class ProjectDetail(Resource):
                     )
                 )
                 
+                # Clear project-shot request associations for orphaned shot requests
+                if orphaned_ids:
+                    session.execute(
+                        project_requests_association_table.delete().where(
+                            project_requests_association_table.c.shot_request_id.in_(orphaned_ids)
+                        )
+                    )
+                
                 # Delete orphaned shot requests
                 if orphaned_ids:
                     session.execute(
@@ -624,6 +633,7 @@ class EventsResource(Resource):
                 'quick_turn': event.quick_turn,
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
+                'column_number': getattr(event, 'column_number', 0),
                 'project_id': event.project_id
             } for event in events], 200
         except Exception as e:
@@ -645,6 +655,63 @@ class EventsResource(Resource):
                 except (TypeError, ValueError):
                     return {'error': 'Invalid project_id'}, 400
 
+            # Auto-assign column number if not provided
+            column_number = data.get('column_number')
+            if column_number is None:
+                # Get all events for the same date
+                event_date = data['date']
+                existing_events = session.query(EventModel).filter_by(date=event_date).all()
+                
+                new_start_time = data.get('start_time')
+                new_end_time = data.get('end_time')
+                
+                # Check each column for conflicts and count events
+                column_options = []
+                for col in [0, 1, 2, 3]:
+                    events_in_column = [e for e in existing_events if getattr(e, 'column_number', 0) == col]
+                    
+                    # Check for time conflicts if start/end times are provided
+                    has_conflict = False
+                    if new_start_time and new_end_time:
+                        for event in events_in_column:
+                            if event.start_time and event.end_time:
+                                # Convert times to minutes for comparison
+                                def time_to_minutes(time_str):
+                                    if not time_str:
+                                        return None
+                                    try:
+                                        hours, minutes = map(int, time_str.split(':'))
+                                        return hours * 60 + minutes
+                                    except:
+                                        return None
+                                
+                                new_start_min = time_to_minutes(new_start_time)
+                                new_end_min = time_to_minutes(new_end_time)
+                                event_start_min = time_to_minutes(event.start_time)
+                                event_end_min = time_to_minutes(event.end_time)
+                                
+                                if all(t is not None for t in [new_start_min, new_end_min, event_start_min, event_end_min]):
+                                    # Check for overlap: events overlap if one starts before the other ends
+                                    if not (new_end_min <= event_start_min or new_start_min >= event_end_min):
+                                        has_conflict = True
+                                        break
+                    
+                    if not has_conflict:
+                        column_options.append((col, len(events_in_column)))
+                
+                # If no conflicts found, pick column with least events
+                # If all columns have conflicts, pick column with least events anyway
+                if column_options:
+                    column_number = min(column_options, key=lambda x: x[1])[0]
+                else:
+                    # Fallback: count events in each column and pick least occupied
+                    column_counts = {0: 0, 1: 0, 2: 0, 3: 0}
+                    for event in existing_events:
+                        col = getattr(event, 'column_number', 0)
+                        if col in column_counts:
+                            column_counts[col] += 1
+                    column_number = min(column_counts, key=column_counts.get)
+
             new_event = EventModel(
                 name=data['name'],
                 date=data['date'],
@@ -655,6 +722,7 @@ class EventsResource(Resource):
                 quick_turn=data.get('quick_turn', False),
                 deadline= data.get('deadline'),
                 process_point=data.get('process_point', 'idle'),
+                column_number=column_number,
                 project_id=project_id
             )
             
@@ -672,6 +740,7 @@ class EventsResource(Resource):
                 'quick_turn': new_event.quick_turn,
                 'deadline': new_event.deadline,
                 'process_point': getattr(new_event, 'process_point', 'idle'),
+                'column_number': getattr(new_event, 'column_number', 0),
                 'project_id': new_event.project_id
             }, 201
         except Exception as e:
@@ -744,6 +813,7 @@ class EventDetail(Resource):
                 'quick_turn': event.quick_turn,
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
+                'column_number': getattr(event, 'column_number', 0),
                 'project_id': event.project_id
             }, 200
         except Exception as e:
@@ -763,6 +833,96 @@ class EventDetail(Resource):
             session.delete(event)
             session.commit()
             return {'message': 'Event deleted successfully'}, 200
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
+
+class EventsDistribute(Resource):
+    def post(self):
+        """Redistribute existing events across columns to balance the layout"""
+        session = Session()
+        try:
+            data = request.get_json() or {}
+            target_date = data.get('date')  # Optional: redistribute events for specific date
+            
+            # Get events to redistribute
+            if target_date:
+                events = session.query(EventModel).filter_by(date=target_date).all()
+            else:
+                events = session.query(EventModel).all()
+            
+            # Group events by date
+            events_by_date = {}
+            for event in events:
+                if event.date not in events_by_date:
+                    events_by_date[event.date] = []
+                events_by_date[event.date].append(event)
+            
+            updated_count = 0
+            
+            # Process each date separately
+            for date, date_events in events_by_date.items():
+                # Sort events by start time to maintain chronological order
+                date_events.sort(key=lambda e: e.start_time or '00:00')
+                
+                # Track which time slots are occupied in each column
+                column_schedules = {0: [], 1: [], 2: [], 3: []}
+                
+                for event in date_events:
+                    # Find best column for this event
+                    best_column = 0
+                    min_conflicts = float('inf')
+                    
+                    for col in [0, 1, 2, 3]:
+                        conflicts = 0
+                        
+                        # Check for time conflicts with events already in this column
+                        if event.start_time and event.end_time:
+                            for scheduled_event in column_schedules[col]:
+                                if scheduled_event.start_time and scheduled_event.end_time:
+                                    # Convert times to minutes for comparison
+                                    def time_to_minutes(time_str):
+                                        try:
+                                            hours, minutes = map(int, time_str.split(':'))
+                                            return hours * 60 + minutes
+                                        except:
+                                            return 0
+                                    
+                                    event_start = time_to_minutes(event.start_time)
+                                    event_end = time_to_minutes(event.end_time)
+                                    scheduled_start = time_to_minutes(scheduled_event.start_time)
+                                    scheduled_end = time_to_minutes(scheduled_event.end_time)
+                                    
+                                    # Check for overlap
+                                    if not (event_end <= scheduled_start or event_start >= scheduled_end):
+                                        conflicts += 1
+                        
+                        # Prefer columns with fewer conflicts, then fewer events
+                        total_penalty = conflicts * 1000 + len(column_schedules[col])
+                        if total_penalty < min_conflicts:
+                            min_conflicts = total_penalty
+                            best_column = col
+                    
+                    # Update event column if it changed
+                    if event.column_number != best_column:
+                        event.column_number = best_column
+                        updated_count += 1
+                    
+                    # Add to column schedule
+                    column_schedules[best_column].append(event)
+            
+            session.commit()
+            
+            return {
+                'message': f'Successfully redistributed events',
+                'updated_count': updated_count,
+                'total_events': len(events),
+                'dates_processed': len(events_by_date)
+            }, 200
+            
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
@@ -967,7 +1127,16 @@ class ShotRequests(Resource):
                 'start_time': request.start_time,
                 'end_time': request.end_time,
                 'deadline': request.deadline,
-                'process_point': getattr(request, 'process_point', 'idle')
+                'process_point': getattr(request, 'process_point', 'idle'),
+                'events': [{
+                    'id': event.id,
+                    'name': event.name,
+                    'date': event.date,
+                    'start_time': event.start_time,
+                    'end_time': event.end_time,
+                    'location': event.location,
+                    'project_id': event.project_id
+                } for event in request.events]
             } for request in shot_requests], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -1038,7 +1207,16 @@ class ShotRequestDetail(Resource):
                     'start_time': shot_request.start_time,
                     'end_time': shot_request.end_time,
                     'deadline': shot_request.deadline,
-                    'process_point': getattr(shot_request, 'process_point', 'idle')
+                    'process_point': getattr(shot_request, 'process_point', 'idle'),
+                    'events': [{
+                        'id': event.id,
+                        'name': event.name,
+                        'date': event.date,
+                        'start_time': event.start_time,
+                        'end_time': event.end_time,
+                        'location': event.location,
+                        'project_id': event.project_id
+                    } for event in shot_request.events]
                 }, 200
             return {'error': 'Shot request not found'}, 404
         except Exception as e:
@@ -1529,6 +1707,7 @@ api.add_resource(ProjectsResource, '/api/projects')
 api.add_resource(ProjectDetail, '/api/projects/<int:project_id>')
 api.add_resource(EventsResource, '/api/events')
 api.add_resource(EventDetail, '/api/events/<int:event_id>')
+api.add_resource(EventsDistribute, '/api/events/redistribute')
 api.add_resource(PersonnelResource, '/api/personnel')
 api.add_resource(PersonnelDetail, '/api/personnel/<int:personnel_id>')
 api.add_resource(ShotRequests, '/api/shot-requests')

@@ -92,6 +92,8 @@ class Events(Base, SerializerMixin):
     # Pipeline/process point for coloring the schedule card
     # allowed values: idle, ingest, cull, color, delivered
     process_point = Column(String, default='idle')
+    # Column assignment for schedule (0-3 for the 4 columns)
+    column_number = Column(Integer, default=0)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'))
 
     # Relationships
