@@ -1,14 +1,34 @@
-from sqlalchemy import Column, Integer, Float, Boolean, String, Table, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, Float, Boolean, String, Table, ForeignKey, create_engine, DateTime
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
+from datetime import datetime
 
 
 Base = declarative_base()
 
 # PostgreSQL connection URL
 DATABASE_URL = 'postgresql://brandonbakus:password123@localhost:5432/relay_db'
+
+
+# Company Model - Multi-tenant parent entity
+class Company(Base, SerializerMixin):
+    __tablename__ = 'companies'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+    is_super_admin = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships - one company has many users, organizations, personnel
+    users = relationship('User', back_populates='company')
+    organizations = relationship('Organization', back_populates='company')
+    personnels = relationship('Personnel', back_populates='company')
+    
+    def __repr__(self):
+        return f'<Company {self.name} (Super Admin: {self.is_super_admin})>'
 
 
 
@@ -60,11 +80,27 @@ class User(Base, SerializerMixin):
     password_hash = Column(String, nullable=False)
     access = Column(String, nullable=False) # Admin, Client, Coordinator, Photographer, Videographer, Editor
     avatar = Column(String, default='avatar1.png') # Avatar image filename
-    # Organization relationship: many users -> one organization
+    
+    # Company relationship: many users -> one company
+    company_id = Column(Integer, ForeignKey('companies.id', ondelete='SET NULL'))
+    company = relationship('Company', back_populates='users')
+    
+    # Organization relationship: many users -> one organization (scoped within company)
     organization_id = Column(Integer, ForeignKey('organizations.id', ondelete='SET NULL'))
     organization = relationship('Organization', back_populates='users')
+    
     # 1-1 link to Personnel (optional)
     personnel = relationship('Personnel', back_populates='user', uselist=False)
+    
+    @property
+    def is_super_admin(self):
+        """Check if user is a super admin (belongs to Relay company and has Admin access)"""
+        return (self.company and self.company.is_super_admin and self.access == 'Admin')
+    
+    @property
+    def is_company_admin(self):
+        """Check if user is a company admin (has Admin access but not super admin)"""
+        return (self.access == 'Admin' and not self.is_super_admin)
 
     def set_password(self, password):
         """Hash and set the password"""
@@ -131,6 +167,11 @@ class Personnel(Base, SerializerMixin):
     phone = Column(String)
     role = Column(String)
     avatar = Column(String)
+    
+    # Company relationship: many personnel -> one company
+    company_id = Column(Integer, ForeignKey('companies.id', ondelete='CASCADE'))
+    company = relationship('Company', back_populates='personnels')
+    
     # Optional 1-1 link back to User
     user_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), unique=True)
     user = relationship('User', back_populates='personnel')
@@ -189,7 +230,11 @@ class Organization(Base, SerializerMixin):
     name = Column(String, nullable=False)
     details = Column(String)
     
-    # One organization -> many projects, many users
+    # Company relationship: many organizations -> one company
+    company_id = Column(Integer, ForeignKey('companies.id', ondelete='CASCADE'))
+    company = relationship('Company', back_populates='organizations')
+    
+    # One organization -> many projects, many users (scoped within company)
     projects = relationship('Project', back_populates='organization')
     users = relationship('User', back_populates='organization')
 
@@ -228,33 +273,40 @@ def get_session():
 
 
 def create_admin_user():
-    """Create the default admin user"""
+    """Create the default admin user with Company structure"""
     session = get_session()
     
-    # Ensure default organization exists
-    org = session.query(Organization).filter_by(name='Relay').first()
-    if not org:
-        org = Organization(name='Relay', details='Default organization')
-        session.add(org)
-        session.commit()
-
-    # Check if admin already exists
-    admin = session.query(User).filter_by(email='admin@relay.com').first()
-    if not admin:
-        admin = User(
-            name='admin',
-            email='admin@relay.com',
-            access='Admin',
-            organization=org
-        )
-        admin.set_password('password123')  # Hash the password
-        session.add(admin)
-        session.commit()
-        print("Admin user created successfully!")
-    else:
-        print("Admin user already exists!")
+    try:
+        # Ensure Relay company exists
+        company = session.query(Company).filter_by(name='Relay', is_super_admin=True).first()
+        if not company:
+            company = Company(name='Relay', is_super_admin=True)
+            session.add(company)
+            session.flush()
+        
+        # Check if admin already exists
+        admin = session.query(User).filter_by(email='admin@relay.com').first()
+        if not admin:
+            admin = User(
+                name='Super Admin',
+                email='admin@relay.com',
+                access='Admin',
+                avatar='avatar1.png',
+                company_id=company.id,
+                organization_id=None  # Super admin is not linked to any organization
+            )
+            admin.set_password('password123')  # Hash the password
+            session.add(admin)
+            session.commit()
+            print(f"✅ Super Admin user created successfully! (Is Super Admin: {admin.is_super_admin})")
+        else:
+            print("Admin user already exists!")
     
-    session.close()
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Error creating admin user: {e}")
+    finally:
+        session.close()
 
 
 

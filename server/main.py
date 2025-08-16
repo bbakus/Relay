@@ -11,6 +11,7 @@ from PIL import Image
 import datetime
 from models import (
     User,
+    Company,
     Personnel as PersonnelModel,
     Events as EventModel,
     ShotRequest as ShotRequestModel,
@@ -162,10 +163,19 @@ def authenticate_user(email, password):
 # User endpoints
 class Users(Resource):
     def get(self):
-        """Get all users"""
+        """Get users filtered by company (for company admins) or all users (for super admin)"""
         session = Session()
         try:
-            users = session.query(User).all()
+            # Get company_id from query parameter (for super admin company filtering)
+            company_id = request.args.get('company_id')
+            
+            if company_id:
+                # Filter by specific company (used by super admin when selecting a company)
+                users = session.query(User).filter_by(company_id=int(company_id)).all()
+            else:
+                # Return all users (only super admin should access this without company_id)
+                users = session.query(User).all()
+            
             payload = [
                 {
                     'id': u.id,
@@ -174,6 +184,7 @@ class Users(Resource):
                     'access': u.access,
                     'avatar': u.avatar,
                     'organization_id': getattr(u, 'organization_id', None),
+                    'company_id': getattr(u, 'company_id', None),
                 }
                 for u in users
             ]
@@ -280,13 +291,21 @@ class UserDetail(Resource):
             # If organization_id provided, update relationship
             if 'organization_id' in data:
                 org_id = data.get('organization_id')
-                if org_id is None:
+                # Handle empty string, null, or invalid org_id
+                if org_id is None or org_id == '' or org_id == 'null':
                     user.organization = None
+                    user.organization_id = None
                 else:
-                    org = session.query(Organization).filter_by(id=org_id).first()
-                    if not org:
-                        return {'error': 'Organization not found'}, 400
-                    user.organization = org
+                    try:
+                        # Ensure org_id is a valid integer
+                        org_id_int = int(org_id)
+                        org = session.query(Organization).filter_by(id=org_id_int).first()
+                        if not org:
+                            return {'error': 'Organization not found'}, 400
+                        user.organization = org
+                        user.organization_id = org_id_int
+                    except (ValueError, TypeError):
+                        return {'error': 'Invalid organization_id format'}, 400
 
             for key, value in data.items():
                 if hasattr(user, key) and key not in ('password_hash', 'organization', 'organization_id'):
@@ -343,18 +362,36 @@ class UserDetail(Resource):
 class UserLogin(Resource):
     def post(self):
         """User login"""
+        session = get_session()
         try:
             data = request.get_json()
-            user = authenticate_user(data['email'], data['password'])
             
-            if user:
+            # Authenticate user within our session to avoid lazy loading issues
+            email = data.get('email')
+            password = data.get('password')
+            
+            if not email or not password:
+                return {'error': 'Email and password are required'}, 400
+            
+            # Query user with company relationship loaded
+            user = session.query(User).filter_by(email=email).first()
+            
+            if user and user.check_password(password):
+                # Access company relationship while session is active
+                company = user.company
+                is_super_admin = company and company.is_super_admin and user.access == 'Admin'
+                is_company_admin = user.access == 'Admin' and not is_super_admin
+                
                 user_payload = {
                     'id': user.id,
                     'name': user.name,
                     'email': user.email,
                     'access': user.access,
                     'avatar': user.avatar,
-                    'organization_id': getattr(user, 'organization_id', None),
+                    'organization_id': user.organization_id,
+                    'company_id': user.company_id,
+                    'is_super_admin': is_super_admin,
+                    'is_company_admin': is_company_admin,
                 }
                 return {
                     'message': 'Login successful',
@@ -364,6 +401,8 @@ class UserLogin(Resource):
                 return {'error': 'Invalid credentials'}, 401
         except Exception as e:
             return {'error': str(e)}, 500
+        finally:
+            session.close()
 
 
 class UserSchedule(Resource):
@@ -408,10 +447,20 @@ class UserSchedule(Resource):
 # Project endpoints
 class ProjectsResource(Resource):
     def get(self):
-        """Get all projects"""
+        """Get projects filtered by organization IDs"""
         session = Session()
         try:
-            projects = session.query(ProjectModel).all()
+            # Get organization_ids from query parameter (for company filtering)
+            organization_ids = request.args.get('organization_ids')
+            
+            if organization_ids:
+                # Filter by specific organizations (used when company is selected)
+                org_id_list = [int(id.strip()) for id in organization_ids.split(',')]
+                projects = session.query(ProjectModel).filter(ProjectModel.organization_id.in_(org_id_list)).all()
+            else:
+                # Return all projects (only super admin should access this without filtering)
+                projects = session.query(ProjectModel).all()
+            
             return [{
                 'id': project.id,
                 'name': project.name,
@@ -634,7 +683,8 @@ class EventsResource(Resource):
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
                 'column_number': getattr(event, 'column_number', 0),
-                'project_id': event.project_id
+                'project_id': event.project_id,
+                'assigned_personnel': [{'personnel_id': p.id, 'name': p.name, 'role': p.role} for p in event.personnels]
             } for event in events], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -933,10 +983,19 @@ class EventsDistribute(Resource):
 # Personnel endpoints
 class PersonnelResource(Resource):
     def get(self):
-        """Get all personnel"""
+        """Get personnel filtered by company"""
         session = Session()
         try:
-            personnel = session.query(PersonnelModel).all()
+            # Get company_id from query parameter (for super admin company filtering)
+            company_id = request.args.get('company_id')
+            
+            if company_id:
+                # Filter by specific company (used by super admin when selecting a company)
+                personnel = session.query(PersonnelModel).filter_by(company_id=int(company_id)).all()
+            else:
+                # Return all personnel (only super admin should access this without company_id)
+                personnel = session.query(PersonnelModel).all()
+            
             return [{
                 'id': person.id,
                 'name': person.name,
@@ -945,6 +1004,7 @@ class PersonnelResource(Resource):
                 'role': person.role,
                 'avatar': person.avatar,
                 'user_id': person.user_id,
+                'company_id': person.company_id,
                 'event_ids': [event.id for event in person.events],
                 'project_ids': [project.id for project in person.projects]
             } for person in personnel], 200
@@ -1403,14 +1463,24 @@ class ImageDetail(Resource):
 # Organization endpoints
 class Organizations(Resource):
     def get(self):
-        """Get all organizations"""
+        """Get organizations filtered by company"""
         session = Session()
         try:
-            organizations = session.query(Organization).all()
+            # Get company_id from query parameter (for super admin company filtering)
+            company_id = request.args.get('company_id')
+            
+            if company_id:
+                # Filter by specific company (used by super admin when selecting a company)
+                organizations = session.query(Organization).filter_by(company_id=int(company_id)).all()
+            else:
+                # Return all organizations (only super admin should access this without company_id)
+                organizations = session.query(Organization).all()
+            
             return [{
                 'id': org.id,
                 'name': org.name,
-                'details': org.details
+                'details': org.details,
+                'company_id': org.company_id
             } for org in organizations], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -1497,6 +1567,149 @@ class OrganizationDetail(Resource):
             session.delete(org)
             session.commit()
             return {'message': 'Organization deleted successfully'}, 200
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
+
+# Company endpoints
+class CompaniesResource(Resource):
+    def get(self):
+        """Get all companies (Super Admin only) or current user's company"""
+        session = get_session()
+        try:
+            # For now, just return all companies - we'll add auth later
+            companies = session.query(Company).all()
+            return [{
+                'id': company.id,
+                'name': company.name,
+                'is_super_admin': company.is_super_admin,
+                'created_at': company.created_at.isoformat() if company.created_at else None,
+                'updated_at': company.updated_at.isoformat() if company.updated_at else None
+            } for company in companies], 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+    
+    def post(self):
+        """Create a new company (Super Admin only)"""
+        session = get_session()
+        try:
+            data = request.get_json()
+            
+            if not data or not data.get('name'):
+                return {'error': 'Company name is required'}, 400
+            
+            # Check if company name already exists
+            existing = session.query(Company).filter_by(name=data['name']).first()
+            if existing:
+                return {'error': 'Company name already exists'}, 400
+            
+            # Create new company (never super admin - only Relay is super admin)
+            new_company = Company(
+                name=data['name'],
+                is_super_admin=False
+            )
+            
+            session.add(new_company)
+            session.commit()
+            
+            return {
+                'id': new_company.id,
+                'name': new_company.name,
+                'is_super_admin': new_company.is_super_admin,
+                'created_at': new_company.created_at.isoformat(),
+                'updated_at': new_company.updated_at.isoformat()
+            }, 201
+            
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
+class CompanyDetail(Resource):
+    def get(self, company_id):
+        """Get a specific company"""
+        session = get_session()
+        try:
+            company = session.query(Company).filter_by(id=company_id).first()
+            
+            if not company:
+                return {'error': 'Company not found'}, 404
+            
+            return {
+                'id': company.id,
+                'name': company.name,
+                'is_super_admin': company.is_super_admin,
+                'created_at': company.created_at.isoformat() if company.created_at else None,
+                'updated_at': company.updated_at.isoformat() if company.updated_at else None
+            }, 200
+            
+        except Exception as e:
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+    
+    def put(self, company_id):
+        """Update a company (Super Admin only, cannot edit Relay)"""
+        session = get_session()
+        try:
+            company = session.query(Company).filter_by(id=company_id).first()
+            
+            if not company:
+                return {'error': 'Company not found'}, 404
+            
+            # Prevent editing of Relay company
+            if company.is_super_admin:
+                return {'error': 'Cannot edit the super admin company'}, 403
+            
+            data = request.get_json()
+            
+            # Update company name if provided
+            if 'name' in data and data['name'].strip():
+                company.name = data['name'].strip()
+                company.updated_at = datetime.datetime.now()
+            else:
+                return {'error': 'Company name is required'}, 400
+            
+            session.commit()
+            
+            return {
+                'id': company.id,
+                'name': company.name,
+                'is_super_admin': company.is_super_admin,
+                'created_at': company.created_at.isoformat() if company.created_at else None,
+                'updated_at': company.updated_at.isoformat() if company.updated_at else None
+            }, 200
+            
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
+    def delete(self, company_id):
+        """Delete a company (Super Admin only, cannot delete Relay)"""
+        session = get_session()
+        try:
+            company = session.query(Company).filter_by(id=company_id).first()
+            
+            if not company:
+                return {'error': 'Company not found'}, 404
+            
+            # Prevent deletion of Relay company
+            if company.is_super_admin:
+                return {'error': 'Cannot delete the super admin company'}, 403
+            
+            session.delete(company)
+            session.commit()
+            
+            return {'message': 'Company deleted successfully'}, 200
+            
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
@@ -1607,13 +1820,31 @@ class AccessRequestDetail(Resource):
             action = data.get('action')  # 'approve' or 'deny'
             
             if action == 'approve':
+                # Get company for the new user
+                company_id = data.get('company_id')
+                if not company_id:
+                    return {'error': 'Company ID is required for approval'}, 400
+                
+                # Verify company exists
+                company = session.query(Company).filter_by(id=company_id).first()
+                if not company:
+                    return {'error': 'Company not found'}, 404
+                
+                # Validate organization if provided
+                organization_id = data.get('organization_id')
+                if organization_id:
+                    organization = session.query(Organization).filter_by(id=organization_id, company_id=company_id).first()
+                    if not organization:
+                        return {'error': 'Organization not found or does not belong to the selected company'}, 400
+                
                 # Create new user
                 new_user = User(
                     name=req.name,
                     email=req.email,
                     access=data.get('role', 'Client'),
                     avatar=data.get('avatar', 'default-avatar.png'),
-                    organization_id=data.get('organization_id')
+                    company_id=company_id,
+                    organization_id=organization_id  # Use validated organization_id
                 )
                 temporary_password = data.get('temporary_password', 'temp123')
                 new_user.set_password(temporary_password)
@@ -1628,7 +1859,8 @@ class AccessRequestDetail(Resource):
                         email=req.email,
                         phone=req.phone or data.get('phone', ''),  # Use request phone first, then approval phone
                         role=data.get('role', 'Staff'),
-                        user_id=new_user.id
+                        user_id=new_user.id,
+                        company_id=company_id
                     )
                     session.add(new_personnel)
                 
@@ -1636,9 +1868,8 @@ class AccessRequestDetail(Resource):
                 req.processed_at = data.get('processed_at')
                 req.processed_by = data.get('processed_by')
                 
-                # Get organization name for email
-                organization = session.query(Organization).filter_by(id=data.get('organization_id')).first()
-                organization_name = organization.name if organization else req.organization
+                # Get company name for email
+                company_name = company.name
                 
                 session.commit()
                 
@@ -1648,7 +1879,7 @@ class AccessRequestDetail(Resource):
                     recipient_name=req.name,
                     login_email=req.email,
                     temporary_password=temporary_password,
-                    organization_name=organization_name
+                    organization_name=company_name
                 )
                 
                 response_message = 'Access request approved and user created'
@@ -1716,6 +1947,8 @@ api.add_resource(ImagesResource, '/api/images')
 api.add_resource(ImageDetail, '/api/images/<int:image_id>')
 api.add_resource(Organizations, '/api/organizations')
 api.add_resource(OrganizationDetail, '/api/organizations/<int:org_id>')
+api.add_resource(CompaniesResource, '/api/companies')
+api.add_resource(CompanyDetail, '/api/companies/<int:company_id>')
 api.add_resource(AccessRequests, '/api/access-requests')
 api.add_resource(AccessRequestDetail, '/api/access-requests/<int:request_id>')
 
