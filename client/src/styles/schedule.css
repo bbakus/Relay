@@ -1,0 +1,740 @@
+.schedule-container {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.schedule-header h1 {
+    color: #ffffff;
+    font-size: 2.5rem;
+    margin: 0;
+    background: linear-gradient(135deg, #ff7a18, #ff9f40);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Projects Status Section */
+.projects-status-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.projects-status-section h2 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.project-status-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.project-status-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 122, 24, 0.3);
+    transform: translateY(-2px);
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.project-name {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.project-status {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    padding: 6px 16px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid;
+    min-width: 80px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(0 0 8px currentColor);
+}
+
+.project-dates {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+}
+
+.date-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.project-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.project-selector label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.project-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.project-input:focus {
+    outline: none;
+    border-color: rgba(255, 122, 24, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.project-input option {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.project-organization {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.date-selector label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.date-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: rgba(255, 122, 24, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.loading {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    padding: 60px;
+}
+
+.schedule-grid {
+    display: flex;
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    min-height: 1000px;
+}
+
+.time-column {
+    width: 100px;
+    background: rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.time-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 122, 24, 0.1);
+    color: #ff7a18;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-sizing: border-box;
+}
+
+.time-slot {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 600;
+    position: relative;
+    box-sizing: border-box; /* consistent with grid slots */
+}
+
+.time-text {
+    margin: 0;
+    line-height: 1;
+}
+
+/* Clear hour header ambiguity: add a prominent line at the start of each hour */
+/* Hour emphasis handled by global overlay */
+
+/* Hour boundaries emphasized by the container backgrounds now */
+
+.events-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.events-header {
+    height: 60px;
+    display: flex;
+    background: rgba(255, 122, 24, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.column-header {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff7a18;
+    font-weight: 600;
+    font-size: 14px;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.column-header:last-child {
+    border-right: none;
+}
+
+.sched-events-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Overlay explicit grid elements to remove any gradient rounding issues */
+.global-grid-lines {
+    position: absolute;
+    top: 60px; /* start below header */
+    left: 0;   /* span under time column too */
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+.global-grid-slot {
+    height: 60px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-sizing: border-box; /* border INCLUDED in 60px height - no drift! */
+}
+.global-grid-slot.hour {
+    border-top: 2px solid rgba(255, 122, 24, 0.7);
+    box-sizing: border-box; /* border INCLUDED in 60px height - no drift! */
+}
+
+.no-events {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    padding: 60px;
+}
+
+.sched-event-column {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0 8px;
+}
+
+.sched-event-column:last-child {
+    border-right: none;
+}
+
+.sched-event-card {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 4px;
+    padding: 8px 12px;
+    background: rgba(255, 122, 24, 0.15);
+    border: 2px solid rgba(255, 122, 24, 0.8);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 100;
+    pointer-events: auto;
+}
+
+.sched-event-card:hover {
+    transform: translateX(2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    background: rgba(255, 122, 24, 0.25);
+    border-color: rgba(255, 122, 24, 1);
+    cursor: grab;
+}
+
+.sched-event-card:active {
+    cursor: grabbing;
+}
+
+.sched-event-column {
+    transition: background-color 0.2s ease;
+}
+
+.sched-event-column:hover {
+    background: rgba(255, 122, 24, 0.05);
+}
+
+/* Drag over styling for better visual feedback */
+.sched-event-column[data-drag-over="true"] {
+    background: rgba(255, 122, 24, 0.1);
+    border: 2px dashed rgba(255, 122, 24, 0.5);
+}
+
+/* Process point coloring - more transparent with strong borders */
+.sched-event-card.process-idle {
+    background: rgba(0, 255, 255, 0.15);
+    border: 2px solid rgba(0, 255, 255, 0.9);
+}
+
+.sched-event-card.process-ingest {
+    background: rgba(0, 128, 255, 0.15);
+    border: 2px solid rgba(0, 128, 255, 0.9);
+}
+
+.sched-event-card.process-cull {
+    background: rgba(255, 122, 24, 0.15);
+    border: 2px solid rgba(255, 122, 24, 0.9);
+}
+
+.sched-event-card.process-color {
+    background: rgba(255, 64, 64, 0.15);
+    border: 2px solid rgba(255, 64, 64, 0.9);
+}
+
+.sched-event-card.process-delivered {
+    background: rgba(0, 190, 90, 0.15);
+    border: 2px solid rgba(0, 190, 90, 0.9);
+}
+
+.event-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.event-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quick-turn {
+    font-size: 18px;
+    margin-left: 6px;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+}
+
+.event-time {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 4px;
+}
+
+.event-location {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.event-notes {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .schedule-container {
+        padding: 20px;
+    }
+    
+    .schedule-header {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    
+    .schedule-header h1 {
+        font-size: 2rem;
+    }
+    
+    .time-column {
+        width: 80px;
+    }
+    
+    .sched-event-column {
+        min-width: 150px;
+    }
+    
+    .sched-event-card {
+        padding: 8px;
+    }
+    
+    .event-header h3 {
+        font-size: 12px;
+    }
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #ff7a18, #ff9f40);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.event-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.event-detail-row:last-child {
+    border-bottom: none;
+}
+
+.event-detail-row label {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 120px;
+}
+
+.event-detail-row span {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: right;
+    flex: 1;
+    margin-left: 16px;
+}
+
+.process-point-select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    margin-left: 16px;
+}
+
+.process-point-select:focus {
+    outline: none;
+    border-color: rgba(255, 122, 24, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1);
+}
+
+.process-point-select option {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-button {
+    background: linear-gradient(135deg, #ff7a18, #ff9f40);
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
+}
+
+/* Personnel Assignment Styles in Event Modal */
+.event-personnel-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.event-personnel-section h3 {
+    color: #ffffff;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff7a18, #ff9f40);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.event-personnel-section h4 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    margin: 20px 0 12px 0;
+    font-weight: 600;
+}
+
+.assigned-personnel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.personnel-assign-dropdown-section {
+    margin-bottom: 16px;
+}
+
+.personnel-assign-dropdown {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.personnel-assign-dropdown:focus {
+    outline: none;
+    border-color: rgba(255, 122, 24, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.personnel-assign-dropdown option {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 8px;
+}
+
+.personnel-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+}
+
+.personnel-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.personnel-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.personnel-name {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.personnel-role {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Role color styling */
+.personnel-item.role-photographer .personnel-role { color: #1e90ff; }
+.personnel-item.role-editor .personnel-role { color: #ff7a18; }
+.personnel-item.role-coordinator .personnel-role { color: #ffd700; }
+.personnel-item.role-admin .personnel-role { color: #dc3545; }
+.personnel-item.role-client .personnel-role { color: #00e5ff; }
+.personnel-item.role-videographer .personnel-role { color: #8a2be2; }
+
+.unassign-personnel-btn {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    color: #dc3545;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.unassign-personnel-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+
+
+.no-personnel {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}

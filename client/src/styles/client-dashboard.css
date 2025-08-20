@@ -1,0 +1,701 @@
+/* Client Dashboard Styling */
+.client-dashboard {
+    min-height: 100vh;
+    padding: 20px;
+    color: #ffffff;
+    background: radial-gradient(1200px 600px at 10% -20%, rgba(255, 122, 24, 0.15), transparent 60%),
+                radial-gradient(900px 500px at 110% 10%, rgba(255, 184, 77, 0.1), transparent 55%),
+                linear-gradient(160deg, #0b0f17, #0f1522);
+}
+
+.client-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 0 10px;
+}
+
+.client-dashboard-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff7a18, #ff9f40);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.client-dashboard-actions {
+    display: flex;
+    gap: 15px;
+}
+
+/* Unified button styling for all three action buttons - EXACT SAME SHAPE */
+.client-dashboard-actions .add-event-btn,
+.client-dashboard-actions .add-shot-request-btn,
+.client-dashboard-actions .submit-csv-btn {
+    color: white !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    width: 140px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    font-family: inherit !important;
+    outline: none !important;
+    text-decoration: none !important;
+}
+
+/* Individual button colors */
+.client-dashboard-actions .add-event-btn {
+    background: linear-gradient(135deg, #ff7a18, #ff9500) !important;
+    box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3) !important;
+}
+
+.client-dashboard-actions .add-shot-request-btn {
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
+}
+
+.client-dashboard-actions .submit-csv-btn {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
+}
+
+/* Hover effects for all buttons */
+.client-dashboard-actions .add-event-btn:hover,
+.client-dashboard-actions .add-shot-request-btn:hover,
+.client-dashboard-actions .submit-csv-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.client-dashboard-actions .add-event-btn:hover {
+    background: linear-gradient(135deg, #ff9500, #ffb347) !important;
+    box-shadow: 0 8px 20px rgba(255, 122, 24, 0.5) !important;
+}
+
+.client-dashboard-actions .add-shot-request-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #004085) !important;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.5) !important;
+}
+
+.client-dashboard-actions .submit-csv-btn:hover {
+    background: linear-gradient(135deg, #20c997, #17a2b8) !important;
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.5) !important;
+}
+
+/* Dashboard Grid */
+.client-dashboard-grid {
+    display: grid;
+    grid-template-columns: 300px repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 20px;
+    min-height: 600px;
+}
+
+.client-metrics-vertical {
+    grid-row: 1 / -1;
+}
+
+/* Dashboard Panels */
+.client-dashboard-panel {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.client-dashboard-panel:hover {
+    border-color: rgba(255, 122, 24, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.client-dashboard-panel h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ff7a18;
+    border-bottom: 2px solid rgba(255, 122, 24, 0.3);
+    padding-bottom: 10px;
+}
+
+/* Event Lists */
+.client-event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.client-event-list::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.client-event-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 12px 16px;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.client-event-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+}
+
+.client-event-card.live {
+    border-left-color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.client-event-card.upcoming {
+    border-left-color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.client-event-card.scheduled {
+    border-left-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+
+.client-event-card.delivered {
+    border-left-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.client-event-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+    color: #ffffff;
+}
+
+.client-event-time {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 2px;
+}
+
+.client-event-date {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 2px;
+}
+
+.client-event-location {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.client-delivery-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+/* Chart Containers */
+.client-chart-container {
+    height: 250px;
+    position: relative;
+    margin-top: 10px;
+}
+
+/* Project Completion Metrics */
+.client-completion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.client-completion-grid-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.client-completion-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.client-completion-item-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.client-completion-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.client-completion-circle.small {
+    height: 220px;
+}
+
+.client-circular-chart {
+    width: 120px;
+    height: 120px;
+}
+
+.client-completion-circle.small .client-circular-chart {
+    width: 200px;
+    height: 200px;
+}
+
+.client-circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 2.8;
+}
+
+.client-circle {
+    fill: none;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+}
+
+.client-circle.events {
+    stroke: #28a745;
+}
+
+.client-circle.shots {
+    stroke: #007bff;
+}
+
+.client-circle.progress {
+    stroke: #6c63ff; /* Purple for events progress */
+}
+
+.client-percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.client-percentage.small {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.client-completion-label {
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.client-completion-text {
+    text-align: center;
+    color: #ccc;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* Shot Request Cards */
+.client-process-point-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.client-key-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+}
+
+.client-color-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.client-shot-request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.client-shot-request-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 10px 12px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.client-shot-request-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.client-request-text {
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.client-request-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.client-request-deadline {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* Toggle Buttons */
+.client-panel-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.client-toggle-button {
+    flex: 1;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.client-toggle-button.active {
+    background: #ff7a18;
+    color: white;
+    font-weight: 600;
+}
+
+.client-toggle-button:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Empty States */
+.client-empty-state {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Loading and Error States */
+.client-dashboard-loading, .client-dashboard-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    font-size: 1.2rem;
+    color: #ccc;
+}
+
+.client-dashboard-error {
+    color: #ff6b7a;
+}
+
+/* Modal Styling */
+.client-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.client-modal-content {
+    background: rgba(15, 21, 34, 0.95);
+    border: 1px solid rgba(255, 122, 24, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.client-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.client-modal-header h2 {
+    margin: 0;
+    color: #ff7a18;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.client-close-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.client-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+/* Form Styling */
+.event-form, .shot-request-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.client-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.client-form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.client-form-row .client-form-group {
+    flex: 1;
+}
+
+.client-form-group label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.client-form-group input,
+.client-form-group select,
+.client-form-group textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.client-form-group input:focus,
+.client-form-group select:focus,
+.client-form-group textarea:focus {
+    outline: none;
+    border-color: rgba(255, 122, 24, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.client-form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.client-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.client-form-actions button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.client-form-actions button[type="button"] {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+}
+
+.client-form-actions button[type="button"]:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.client-form-actions button[type="submit"] {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    color: white;
+}
+
+.client-form-actions button[type="submit"]:hover {
+    background: linear-gradient(45deg, #20c997, #17a2b8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Scrollbar Styling */
+.client-event-list::-webkit-scrollbar,
+.client-shot-request-list::-webkit-scrollbar,
+.client-modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.client-event-list::-webkit-scrollbar-track,
+.client-shot-request-list::-webkit-scrollbar-track,
+.client-modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.client-event-list::-webkit-scrollbar-thumb,
+.client-shot-request-list::-webkit-scrollbar-thumb,
+.client-modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #ff7a18, #ff9f40);
+    border-radius: 3px;
+}
+
+.client-event-list::-webkit-scrollbar-thumb:hover,
+.client-shot-request-list::-webkit-scrollbar-thumb:hover,
+.client-modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #ff9f40, #ffb84d);
+}
+
+/* Animations */
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.client-dashboard-panel {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.client-dashboard-panel:nth-child(1) { animation-delay: 0.1s; }
+.client-dashboard-panel:nth-child(2) { animation-delay: 0.2s; }
+.client-dashboard-panel:nth-child(3) { animation-delay: 0.3s; }
+.client-dashboard-panel:nth-child(4) { animation-delay: 0.4s; }
+.client-dashboard-panel:nth-child(5) { animation-delay: 0.5s; }
+.client-dashboard-panel:nth-child(6) { animation-delay: 0.6s; }
+.client-dashboard-panel:nth-child(7) { animation-delay: 0.7s; }
+.client-dashboard-panel:nth-child(8) { animation-delay: 0.8s; }
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .client-dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+    }
+    
+    .client-dashboard-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .client-dashboard-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .client-dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(8, 1fr);
+    }
+    
+    .client-dashboard {
+        padding: 15px;
+    }
+    
+    .client-form-row {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,672 @@
+import React, { useEffect, useMemo, useState } from 'react'
+import { Nav } from './Nav'
+import { useAuth } from '../context/AuthContext'
+import '../styles/personnel.css'
+
+export const Personnel = () => {
+  const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
+
+  const [personnel, setPersonnel] = useState([])
+  const [projects, setProjects] = useState([])
+  const [events, setEvents] = useState([])
+  const [selectedEventStatus, setSelectedEventStatus] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
+  // expanded state per personnel-panel
+  const [expandedAllPersonnelIds, setExpandedAllPersonnelIds] = useState(new Set())
+  const [expandedEventIds, setExpandedEventIds] = useState(new Set())
+  const [expandedPersonIds, setExpandedPersonIds] = useState(new Set())
+  const [expandedTeamMemberIds, setExpandedTeamMemberIds] = useState(new Set())
+  const [assignModalOpen, setAssignModalOpen] = useState(false)
+  const [selectedPersonnelForAssign, setSelectedPersonnelForAssign] = useState(null)
+  const [modalSelectedDate, setModalSelectedDate] = useState('')
+
+  const getRoleClass = (role) => {
+    const r = (role || '').toLowerCase()
+    if (r.includes('photographer')) return 'role-photographer'
+    if (r.includes('editor')) return 'role-editor'
+    if (r.includes('coordinator')) return 'role-coordinator'
+    if (r.includes('admin')) return 'role-admin'
+    if (r.includes('client')) return 'role-client'
+    if (r.includes('videographer')) return 'role-videographer'
+    return ''
+  }
+
+  // Fetch core data
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        setLoading(true)
+        const [pplRes, projRes, evtRes] = await Promise.all([
+          fetch('http://localhost:5001/api/personnel'),
+          fetch('http://localhost:5001/api/projects'),
+          fetch('http://localhost:5001/api/events'),
+        ])
+
+        const ppl = pplRes.ok ? await pplRes.json() : []
+        const projs = projRes.ok ? await projRes.json() : []
+        const evts = evtRes.ok ? await evtRes.json() : []
+
+        setPersonnel(Array.isArray(ppl) ? ppl : [])
+        setProjects(Array.isArray(projs) ? projs : [])
+        setEvents(Array.isArray(evts) ? evts : [])
+      } catch (e) {
+        console.error('Error fetching personnel page data:', e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAll()
+  }, [])
+
+  // Live tick to refresh event statuses
+  useEffect(() => {
+    const id = setInterval(() => setCurrentTimeTick(Date.now()), 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  // Filter projects by organization (use global selection)
+  const orgProjects = useMemo(() => {
+    if (user?.access === 'Admin' && selectedOrganizationId) {
+      return projects.filter(p => p.organization_id === parseInt(selectedOrganizationId))
+    } else if (!user?.organization_id) {
+      return projects
+    } else {
+      return projects.filter(p => p.organization_id === user.organization_id)
+    }
+  }, [projects, user?.organization_id, user?.access, selectedOrganizationId])
+
+  const selectedProject = useMemo(() => {
+    return projects.find(p => p.id === Number(selectedProjectId)) || null
+  }, [projects, selectedProjectId])
+
+  const projectEvents = useMemo(() => {
+    if (!selectedProjectId) return events
+    return events.filter(e => e.project_id === Number(selectedProjectId))
+  }, [events, selectedProjectId])
+
+  const projectTeam = useMemo(() => {
+    if (!selectedProjectId) return []
+    return personnel.filter(p => (p.project_ids || []).includes(Number(selectedProjectId)))
+  }, [personnel, selectedProjectId])
+
+  const eventsById = useMemo(() => {
+    const map = new Map()
+    for (const e of projectEvents) map.set(e.id, e)
+    return map
+  }, [projectEvents])
+
+  // Get unique dates from current project for filter dropdown
+  const projectDates = useMemo(() => {
+    const dates = [...new Set(projectEvents.map(e => e.date))].sort()
+    return dates
+  }, [projectEvents])
+
+  // Note: Date selection now handled globally via AuthContext
+
+  // Event status helpers to match Settings page scheme
+  const parseDateLocal = (dateStr) => {
+    const [y, m, d] = (dateStr || '').split('-').map(Number)
+    if (!y || !m || !d) return null
+    return new Date(y, m - 1, d)
+  }
+  const parseDateTimeLocal = (dateStr, timeStr) => {
+    const [y, m, d] = (dateStr || '').split('-').map(Number)
+    const [hh = 0, mm = 0, ss = 0] = (timeStr || '').split(':').map(Number)
+    if (!y || !m || !d) return null
+    return new Date(y, m - 1, d, hh, mm, ss)
+  }
+  const formatDateMMDDYYYY = (dateStr) => {
+    const d = parseDateLocal(dateStr)
+    if (!d) return dateStr || ''
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    const yyyy = d.getFullYear()
+    return `${mm}-${dd}-${yyyy}`
+  }
+  const formatTime12Hour = (timeStr) => {
+    if (!timeStr) return ''
+    const [rawHour = '0', rawMin = '0'] = String(timeStr).split(':')
+    let hour = Number(rawHour)
+    const minute = Number(rawMin)
+    const ampm = hour >= 12 ? 'PM' : 'AM'
+    hour = hour % 12
+    if (hour === 0) hour = 12
+    return `${hour}:${String(minute).padStart(2, '0')} ${ampm}`
+  }
+  const getEventStatus = (evt) => {
+    void currentTimeTick
+    if (!evt?.date || !evt?.start_time || !evt?.end_time) return 'scheduled'
+    const now = new Date()
+    const eventDate = parseDateLocal(evt.date)
+    const startTime = parseDateTimeLocal(evt.date, evt.start_time)
+    const endTime = parseDateTimeLocal(evt.date, evt.end_time)
+    if (!eventDate || !startTime || !endTime) return 'scheduled'
+    const isToday = now.toDateString() === eventDate.toDateString()
+    if (!isToday) {
+      if (now < startTime) return 'scheduled'
+      if (now > endTime) return 'done'
+    }
+    const timeUntilStart = startTime - now
+    const timeUntilEnd = endTime - now
+    if (timeUntilStart > 0) {
+      if (timeUntilStart <= 15 * 60 * 1000) return 'starting-soon'
+      if (timeUntilStart <= 60 * 60 * 1000) return 'upcoming'
+      return 'scheduled'
+    } else if (timeUntilEnd > 0) {
+      return 'ongoing'
+    }
+    return 'done'
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'scheduled': return '#007bff'
+      case 'upcoming': return '#fd7e14'
+      case 'starting-soon': return '#dc3545'
+      case 'ongoing': return '#28a745'
+      case 'done': return '#6c757d'
+      default: return '#007bff'
+    }
+  }
+
+  // Event -> num personnel assigned (within selected project)
+  const eventAssignmentSummary = useMemo(() => {
+    const counts = new Map()
+    if (!selectedProjectId) return []
+    for (const member of projectTeam) {
+      for (const evtId of member.event_ids || []) {
+        const evt = eventsById.get(evtId)
+        if (!evt) continue // ignore events outside project
+        counts.set(evtId, (counts.get(evtId) || 0) + 1)
+      }
+    }
+    return projectEvents.map(evt => ({
+      event: evt,
+      personnelCount: counts.get(evt.id) || 0,
+    })).sort((a, b) => a.event.date.localeCompare(b.event.date) || (a.event.start_time || '').localeCompare(b.event.start_time || ''))
+  }, [projectTeam, projectEvents, eventsById, selectedProjectId])
+
+  // Filtered events based on global selected date and status
+  const filteredEventAssignmentSummary = useMemo(() => {
+    let filtered = eventAssignmentSummary
+    
+    // Use global selectedDate for filtering
+    if (selectedDate) {
+      filtered = filtered.filter(({ event }) => event.date === selectedDate)
+    }
+    
+    if (selectedEventStatus) {
+      filtered = filtered.filter(({ event }) => {
+        const eventStatus = getEventStatus(event)
+        return eventStatus === selectedEventStatus
+      })
+    }
+    
+    return filtered
+  }, [eventAssignmentSummary, selectedDate, selectedEventStatus])
+
+  // Personnel -> num events assigned (within selected project and global date)
+  const personnelAssignmentSummary = useMemo(() => {
+    if (!selectedProjectId) return []
+    
+    // Get events for the selected date (or all events if no date selected)
+    const relevantEvents = selectedDate 
+      ? projectEvents.filter(event => event.date === selectedDate)
+      : projectEvents
+    
+    const relevantEventIds = new Set(relevantEvents.map(event => event.id))
+    
+    return projectTeam.map(member => {
+      // Count only events that are on the selected date
+      const count = (member.event_ids || []).reduce((acc, evtId) => {
+        return acc + (eventsById.has(evtId) && relevantEventIds.has(evtId) ? 1 : 0)
+      }, 0)
+      return { member, eventCount: count }
+    })
+    .filter(({ eventCount }) => selectedDate ? eventCount > 0 : true) // Only show personnel with assignments on selected date
+    .sort((a, b) => b.eventCount - a.eventCount || a.member.name.localeCompare(b.member.name))
+  }, [projectTeam, eventsById, selectedProjectId, projectEvents, selectedDate])
+
+  // Filtered events for metrics (use global date when selected)
+  const metricsEvents = useMemo(() => {
+    if (selectedDate) {
+      return projectEvents.filter(event => event.date === selectedDate)
+    }
+    return projectEvents
+  }, [projectEvents, selectedDate])
+
+
+
+  const toggleExpandedAllPersonnel = (id) => {
+    setExpandedAllPersonnelIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleExpandedEvent = (eventId) => {
+    setExpandedEventIds(prev => {
+      const next = new Set(prev)
+      next.has(eventId) ? next.delete(eventId) : next.add(eventId)
+      return next
+    })
+  }
+
+  const toggleExpandedPerson = (personId) => {
+    setExpandedPersonIds(prev => {
+      const next = new Set(prev)
+      next.has(personId) ? next.delete(personId) : next.add(personId)
+      return next
+    })
+  }
+
+  const toggleExpandedTeamMember = (memberId) => {
+    setExpandedTeamMemberIds(prev => {
+      const next = new Set(prev)
+      next.has(memberId) ? next.delete(memberId) : next.add(memberId)
+      return next
+    })
+  }
+
+  const handleAssignPersonnelToEvent = async (personnelId, eventIds) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/personnel/${personnelId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_ids: eventIds })
+      })
+
+      if (response.ok) {
+        // Refresh personnel data to get updated assignments
+        const pplRes = await fetch('http://localhost:5001/api/personnel')
+        if (pplRes.ok) {
+          const updatedPersonnel = await pplRes.json()
+          setPersonnel(Array.isArray(updatedPersonnel) ? updatedPersonnel : [])
+        }
+      } else {
+        console.error('Failed to assign personnel to event')
+      }
+    } catch (error) {
+      console.error('Error assigning personnel:', error)
+    }
+  }
+
+  return (
+    <div className='view-container'>
+      <Nav />
+      <div className='page-container'>
+        <div className='personnel-container'>
+          <div className='personnel-header'>
+            <h1>Personnel</h1>
+          </div>
+
+          {loading ? (
+            <div className='personnel-loading'>Loading...</div>
+          ) : (
+            <div className='personnel-panels-grid'>
+              {/* TOP LEFT: Panel: Team Metrics */}
+              <div className='personnel-panel metrics-personnel-panel'>
+                <div className='personnel-panel-header'>
+                  <h2>Team Metrics</h2>
+                  <span className='count-badge'>📊</span>
+                </div>
+                <div className='personnel-panel-body metrics'>
+                  {/* Key Metrics */}
+                  <div className='personnel-metrics-grid'>
+                    <div className='personnel-metric-card'>
+                      <div className='metric-number'>{personnel.length}</div>
+                      <div className='metric-label'>Total Crew</div>
+                    </div>
+                    <div className='personnel-metric-card'>
+                      <div className='metric-number'>{metricsEvents.filter(e => {
+                        const assigned = projectTeam.filter(m => (m.event_ids || []).includes(e.id))
+                        return assigned.length === 0
+                      }).length}</div>
+                      <div className='metric-label'>{selectedDate ? 'Unassigned Events (Selected Date)' : 'Unassigned Events'}</div>
+                    </div>
+                    <div className='personnel-metric-card'>
+                      <div className='metric-number'>{projectTeam.length}</div>
+                      <div className='metric-label'>Active on Project</div>
+                    </div>
+                    <div className='personnel-metric-card'>
+                      <div className='metric-number'>{metricsEvents.length}</div>
+                      <div className='metric-label'>{selectedDate ? 'Events (Selected Date)' : 'Total Events'}</div>
+                    </div>
+                  </div>
+
+                  {/* Crew Utilization Chart */}
+                  <div className='chart-section'>
+                    <h4>Crew Utilization</h4>
+                    <div className='utilization-chart'>
+                      {projectTeam.map(member => {
+                        const eventCount = (member.event_ids || []).filter(id => eventsById.has(id)).length
+                        const maxEvents = Math.max(...projectTeam.map(m => (m.event_ids || []).filter(id => eventsById.has(id)).length), 1)
+                        const utilization = (eventCount / maxEvents) * 100
+                        return (
+                          <div key={member.id} className='utilization-bar'>
+                            <div className='member-name'>{member.name}</div>
+                            <div className='bar-container'>
+                              <div 
+                                className={`bar ${getRoleClass(member.role)}`}
+                                style={{ width: `${utilization}%` }}
+                              ></div>
+                            </div>
+                            <span className='utilization-percentage'>{eventCount} events</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Role Distribution */}
+                  <div className='chart-section'>
+                    <h4>Team Composition</h4>
+                    <div className='role-distribution'>
+                      {(() => {
+                        const roleCounts = {}
+                        projectTeam.forEach(member => {
+                          const role = member.role || 'Unassigned'
+                          roleCounts[role] = (roleCounts[role] || 0) + 1
+                        })
+                        return Object.entries(roleCounts).map(([role, count]) => (
+                          <div key={role} className='role-stat'>
+                            <span className={`role-dot ${getRoleClass(role)}`}></span>
+                            <span className='role-name'>{role}</span>
+                            <span className='role-count'>{count}</span>
+                          </div>
+                        ))
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* TOP RIGHT: Panel: Assignments (by Person) */}
+              <div className='personnel-panel'>
+                <div className='personnel-panel-header'>
+                  <h2>Assignments (by Person)</h2>
+                  <span className='count-badge'>{personnelAssignmentSummary.length}</span>
+                </div>
+                <div className='personnel-panel-body list'>
+                  {personnelAssignmentSummary.length === 0 ? (
+                    <div className='personnel-empty'>No assignments</div>
+                  ) : (
+                    personnelAssignmentSummary.map(({ member, eventCount }) => {
+                      const evts = (member.event_ids || []).map(id => eventsById.get(id)).filter(Boolean)
+                      const isOpen = expandedPersonIds.has(member.id)
+                      return (
+                        <div key={member.id} className={`personnel-list-row clickable ${getRoleClass(member.role)} ${isOpen ? 'expanded' : ''}`} onClick={() => toggleExpandedPerson(member.id)}>
+                          <div className='personnel-list-main'>
+                            <div className='name'>{member.name}</div>
+                            <div className='meta'>{member.role || '—'}</div>
+                          </div>
+                          <div className='personnel-list-meta'>
+                            <span title='Events in project'>🗓️ {eventCount}</span>
+                            <span className='personnel-chevron'>{isOpen ? '▾' : '▸'}</span>
+                          </div>
+                          {isOpen && (
+                            <div className='personnel-list-details'>
+                              {evts.length === 0 ? (
+                                <div className='personnel-empty'>No events assigned</div>
+                              ) : (
+                                <ul className='event-list'>
+                                  {evts.map(e => {
+                                    const status = getEventStatus(e)
+                                    const color = getStatusColor(status)
+                                    const label = (status || '').replace('-', ' ')
+                                    return (
+                                      <li key={e.id} className={`personnel-event-card status-${status}`}>
+                                        <div className='event-card-header'>
+                                          <div className='event-name'>{e.name}</div>
+                                          <span className='event-status-badge' style={{ color, borderColor: color }}>
+                                            <span className='event-status-dot' style={{ backgroundColor: color }}></span>
+                                            {label.charAt(0).toUpperCase() + label.slice(1)}
+                                          </span>
+                                        </div>
+                                        <div className='event-meta'>
+                                          {formatDateMMDDYYYY(e.date)}
+                                          {e.start_time ? ` • ${formatTime12Hour(e.start_time)}-${formatTime12Hour(e.end_time)}` : ''}
+                                          {e.location ? ` • ${e.location}` : ''}
+                                        </div>
+                                      </li>
+                                    )
+                                  })}
+                                </ul>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* BOTTOM LEFT: Panel: Project Team Members */}
+              <div className='personnel-panel'>
+                <div className='personnel-panel-header'>
+                  <h2>Project Team Members</h2>
+                  <span className='count-badge'>{projectTeam.length}</span>
+                </div>
+                <div className='personnel-panel-body list'>
+                  {projectTeam.length === 0 ? (
+                    <div className='personnel-empty'>No team members assigned</div>
+                  ) : (
+                    projectTeam.map(m => (
+                      <div key={m.id} className={`personnel-list-row ${getRoleClass(m.role)}`}>
+                        <div className='personnel-list-main'>
+                          <div className='name-role-line'>
+                            <span className='name'>{m.name}</span>
+                            <span className='meta'>{m.role || '—'}</span>
+                          </div>
+                        </div>
+                        <div className='personnel-list-meta'>
+                          <button 
+                            className='personnel-assign-inline-btn'
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelectedPersonnelForAssign(m)
+                              setModalSelectedDate('') // Reset modal date
+                              setAssignModalOpen(true)
+                            }}
+                          >
+                            Assign
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* BOTTOM RIGHT: Panel: Assignments by Event */}
+              <div className='personnel-panel'>
+                <div className='personnel-panel-header'>
+                  <h2>Assignments by Event</h2>
+                  <div className='personnel-panel-controls'>
+                    <select
+                      value={selectedEventStatus}
+                      onChange={(e) => setSelectedEventStatus(e.target.value)}
+                      className='project-input status-filter'
+                    >
+                      <option value="">All Status</option>
+                      <option value="scheduled">Scheduled</option>
+                      <option value="upcoming">Upcoming</option>
+                      <option value="starting-soon">Starting Soon</option>
+                      <option value="ongoing">Ongoing</option>
+                      <option value="done">Done</option>
+                    </select>
+                    <span className='count-badge'>{filteredEventAssignmentSummary.length}</span>
+                  </div>
+                </div>
+                <div className='personnel-panel-body list'>
+                  {filteredEventAssignmentSummary.length === 0 ? (
+                    <div className='personnel-empty'>
+                      {selectedDate && selectedEventStatus ? 'No events match selected filters' : 
+                       selectedDate ? 'No events on selected date' : 
+                       selectedEventStatus ? 'No events with selected status' : 
+                       'No events in project'}
+                    </div>
+                  ) : (
+                    filteredEventAssignmentSummary.map(({ event, personnelCount }) => {
+                      const assigned = projectTeam.filter(m => (m.event_ids || []).includes(event.id))
+                      const isOpen = expandedEventIds.has(event.id)
+                      const status = getEventStatus(event)
+                      const color = getStatusColor(status)
+                      const label = (status || '').replace('-', ' ')
+                      return (
+                        <div key={event.id} className={`personnel-list-row clickable ${isOpen ? 'expanded' : ''}`} onClick={() => toggleExpandedEvent(event.id)}>
+                          <div className='personnel-list-main'>
+                            <div className='name'>{event.name}</div>
+                            <div className='meta'>
+                              {formatDateMMDDYYYY(event.date)}
+                              {event.start_time ? ` • ${formatTime12Hour(event.start_time)}-${formatTime12Hour(event.end_time)}` : ''}
+                            </div>
+                          </div>
+                          <div className='personnel-list-meta'>
+                            <span className='event-status-badge' style={{ color, borderColor: color }}>
+                              <span className='event-status-dot' style={{ backgroundColor: color }}></span>
+                              {label.charAt(0).toUpperCase() + label.slice(1)}
+                            </span>
+                            <span title='Assigned personnel'>👥 {personnelCount}</span>
+                            <span className='personnel-chevron'>{isOpen ? '▾' : '▸'}</span>
+                          </div>
+                          {isOpen && (
+                            <div className='personnel-list-details'>
+                              {assigned.length === 0 ? (
+                                <div className='personnel-empty'>No personnel assigned</div>
+                              ) : (
+                                <ul className='personnel-inline-list'>
+                                  {assigned.map(m => (
+                                    <li key={m.id}>{m.name}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+
+
+
+            </div>
+          )}
+
+          {/* Assignment Modal */}
+          {assignModalOpen && selectedPersonnelForAssign && (
+            <div className='personnel-assign-modal-overlay' onClick={() => {
+              setAssignModalOpen(false)
+              setModalSelectedDate('')
+            }}>
+              <div className='personnel-assign-modal' onClick={(e) => e.stopPropagation()}>
+                <div className='personnel-assign-modal-header'>
+                  <h3>Assign {selectedPersonnelForAssign.name} to Events</h3>
+                  <button 
+                    className='personnel-assign-modal-close'
+                    onClick={() => {
+                      setAssignModalOpen(false)
+                      setModalSelectedDate('')
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                <div className='personnel-assign-modal-body'>
+                  <div className='personnel-assign-date-selector'>
+                    <label>Select Date:</label>
+                    <select
+                      value={modalSelectedDate}
+                      onChange={(e) => setModalSelectedDate(e.target.value)}
+                      className='personnel-modal-date-input'
+                    >
+                      <option value="">All Dates</option>
+                      {projectDates.map(date => (
+                        <option key={date} value={date}>
+                          {new Date(date).toLocaleDateString()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className='personnel-assign-events-list'>
+                    {(() => {
+                      // Filter events by modal selected date if one is chosen
+                      const eventsToShow = modalSelectedDate 
+                        ? projectEvents.filter(event => event.date === modalSelectedDate)
+                        : projectEvents
+                      
+                      if (eventsToShow.length === 0) {
+                        return <div className='personnel-empty'>No events available for this date</div>
+                      }
+                      
+                      return eventsToShow.map(event => {
+                        const isAssigned = (selectedPersonnelForAssign.event_ids || []).includes(event.id)
+                        const status = getEventStatus(event)
+                        const color = getStatusColor(status)
+                        const label = (status || '').replace('-', ' ')
+                        
+                        return (
+                          <label key={event.id} className='personnel-assign-event-item'>
+                            <input
+                              type='checkbox'
+                              checked={isAssigned}
+                              onChange={(e) => {
+                                const currentEventIds = selectedPersonnelForAssign.event_ids || []
+                                const newEventIds = e.target.checked
+                                  ? [...currentEventIds, event.id]
+                                  : currentEventIds.filter(id => id !== event.id)
+                                
+                                handleAssignPersonnelToEvent(selectedPersonnelForAssign.id, newEventIds)
+                                
+                                // Update the selected personnel state to reflect changes immediately
+                                setSelectedPersonnelForAssign(prev => ({
+                                  ...prev,
+                                  event_ids: newEventIds
+                                }))
+                              }}
+                            />
+                            <div className='personnel-assign-event-info'>
+                              <div className='personnel-assign-event-name'>{event.name}</div>
+                              <div className='personnel-assign-event-meta'>
+                                {formatDateMMDDYYYY(event.date)}
+                                {event.start_time ? ` • ${formatTime12Hour(event.start_time)}-${formatTime12Hour(event.end_time)}` : ''}
+                                {event.location ? ` • ${event.location}` : ''}
+                              </div>
+                              <span className='personnel-assign-event-status' style={{ color, borderColor: color }}>
+                                <span className='event-status-dot' style={{ backgroundColor: color }}></span>
+                                {label.charAt(0).toUpperCase() + label.slice(1)}
+                              </span>
+                            </div>
+                          </label>
+                        )
+                      })
+                    })()}
+                  </div>
+                </div>
+                
+                <div className='personnel-assign-modal-footer'>
+                  <button 
+                    className='personnel-assign-modal-done'
+                    onClick={() => {
+                      setAssignModalOpen(false)
+                      setModalSelectedDate('')
+                    }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
