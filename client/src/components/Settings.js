@@ -64,6 +64,8 @@ export const Settings = () => {
         try {
             const isRelay = companies.find(c => c.id === parseInt(companyId))?.is_super_admin
             
+
+            
             // Fetch users for the selected company using backend filtering
             const usersResponse = await fetch(`http://localhost:5001/api/users?company_id=${companyId}`)
             if (usersResponse.ok) {
@@ -72,11 +74,17 @@ export const Settings = () => {
             }
             
             if (isRelay) {
-                // For Relay: only show Relay users, no orgs/projects unless Relay-specific
+                // For Relay: show Relay users and personnel, no orgs/projects unless Relay-specific
                 setOrganizations([])
                 setProjects([])
-                setPersonnel([])
                 setEvents([])
+                
+                // Fetch Relay personnel
+                const personnelResponse = await fetch(`http://localhost:5001/api/personnel?company_id=${companyId}`)
+                if (personnelResponse.ok) {
+                    const relayPersonnel = await personnelResponse.json()
+                    setPersonnel(relayPersonnel)
+                }
             } else {
                 // For other companies: fetch their data using backend filtering
                 const [orgsResponse, personnelResponse] = await Promise.all([
@@ -160,7 +168,14 @@ export const Settings = () => {
     // Get current company info for conditional rendering
     const currentCompanyId = user?.is_super_admin ? selectedCompanyId : user?.company_id?.toString()
     const currentCompany = companies.find(c => c.id === parseInt(currentCompanyId || '0'))
-    const isViewingRelay = currentCompany?.is_super_admin
+    
+    // For super admin, if no company is selected, default to viewing Relay
+    const isViewingRelay = user?.is_super_admin && (
+        currentCompany?.is_super_admin || 
+        (!selectedCompanyId && companies.some(c => c.is_super_admin))
+    )
+    
+
     
     // State for forms
     const [showEventForm, setShowEventForm] = useState(false)
@@ -202,6 +217,8 @@ export const Settings = () => {
         if (!personnelRoleFilter) return true
         return person.role?.toLowerCase() === personnelRoleFilter.toLowerCase()
     })
+    
+
 
     // Get unique roles from personnel for filter dropdown
     const availableRoles = [...new Set(personnel.map(p => p.role).filter(Boolean))]
@@ -220,6 +237,21 @@ export const Settings = () => {
     const [expandedCompanyCards, setExpandedCompanyCards] = useState(new Set())
     const [editingCompany, setEditingCompany] = useState(null)
     const [editCompanyForm, setEditCompanyForm] = useState({ name: '' })
+    
+    // Company details modal
+    const [showCompanyDetailsModal, setShowCompanyDetailsModal] = useState(false)
+    const [selectedCompanyForDetails, setSelectedCompanyForDetails] = useState(null)
+    const [companyDetails, setCompanyDetails] = useState({
+        users: [],
+        organizations: [],
+        projects: []
+    })
+    
+    // Company editing state
+    const [isEditingCompany, setIsEditingCompany] = useState(false)
+    const [editingCompanyData, setEditingCompanyData] = useState({
+        name: ''
+    })
 
     // Minimal live-tick to refresh time-based statuses
     const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
@@ -395,19 +427,11 @@ export const Settings = () => {
                 ? `http://localhost:5001/api/users?company_id=${user.company_id}`
                 : 'http://localhost:5001/api/users'
             
-            console.log('Full user object:', user)
-            console.log('User access:', user?.access)
-            console.log('User is super admin:', user?.is_super_admin)
-            console.log('User company ID:', user?.company_id)
-            console.log('Fetching users from:', url)
             const response = await fetch(url)
-            console.log('Users response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Users data received:', data)
                 setUsers(Array.isArray(data) ? data : [])
             } else {
-                console.error('Users fetch failed with status:', response.status)
                 setUsers([])
             }
         } catch (error) {
@@ -465,18 +489,32 @@ export const Settings = () => {
             const method = editingItem ? 'PUT' : 'POST'
             const url = editingItem ? `http://localhost:5001/api/organizations/${editingItem.id}` : 'http://localhost:5001/api/organizations'
             
+            // For company admins, include company_id when creating organizations
+            const submitData = { ...orgForm }
+            if (!editingItem && user?.company_id) {
+                submitData.company_id = user.company_id
+            }
+            
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orgForm)
+                body: JSON.stringify(submitData)
             })
             
             if (response.ok) {
+                const result = await response.json()
+                alert(editingItem ? 'Organization updated successfully!' : 'Organization created successfully!')
                 fetchOrganizations()
                 resetOrgForm()
+                setShowOrgForm(false)
+                setEditingItem(null)
+            } else {
+                const errorData = await response.json()
+                alert(errorData.error || 'Failed to save organization')
             }
         } catch (error) {
             console.error('Error saving organization:', error)
+            alert('Failed to save organization')
         }
     }
 
@@ -700,9 +738,85 @@ export const Settings = () => {
                 
                 setEditingCompany(null)
                 setEditCompanyForm({ name: '' })
-                console.log('Company updated successfully')
             } else {
-                console.error('Failed to update company')
+                alert('Failed to update company')
+            }
+        } catch (error) {
+            console.error('Error updating company:', error)
+            alert('Error updating company')
+        }
+    }
+
+    const openCompanyDetailsModal = async (company) => {
+        setSelectedCompanyForDetails(company)
+        setShowCompanyDetailsModal(true)
+        setIsEditingCompany(false)
+        setEditingCompanyData({ name: company.name })
+        
+        try {
+            // Fetch company details
+            const [usersResponse, orgsResponse, projectsResponse] = await Promise.all([
+                fetch(`http://localhost:5001/api/users?company_id=${company.id}`),
+                fetch(`http://localhost:5001/api/organizations?company_id=${company.id}`),
+                fetch(`http://localhost:5001/api/projects?company_id=${company.id}`)
+            ])
+            
+            if (usersResponse.ok && orgsResponse.ok && projectsResponse.ok) {
+                const [users, orgs, projects] = await Promise.all([
+                    usersResponse.json(),
+                    orgsResponse.json(),
+                    projectsResponse.json()
+                ])
+                
+                setCompanyDetails({
+                    users: users || [],
+                    organizations: orgs || [],
+                    projects: projects || []
+                })
+            }
+        } catch (error) {
+            console.error('Error fetching company details:', error)
+            setCompanyDetails({ users: [], organizations: [], projects: [] })
+        }
+    }
+    
+    const handleEditCompany = async (e) => {
+        e.preventDefault()
+        if (!selectedCompanyForDetails || selectedCompanyForDetails.is_super_admin) return
+        
+        try {
+            const response = await fetch(`http://localhost:5001/api/companies/${selectedCompanyForDetails.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(editingCompanyData)
+            })
+            
+            if (response.ok) {
+                // Update company in local state
+                setCompanies(companies.map(c => 
+                    c.id === selectedCompanyForDetails.id 
+                        ? { ...c, name: editingCompanyData.name }
+                        : c
+                ))
+                
+                // Update selected company if it was the edited one
+                if (selectedCompanyId === selectedCompanyForDetails.id.toString()) {
+                    setSelectedCompanyId(selectedCompanyForDetails.id.toString())
+                }
+                
+                // Update the selected company for details
+                setSelectedCompanyForDetails({
+                    ...selectedCompanyForDetails,
+                    name: editingCompanyData.name
+                })
+                
+                setIsEditingCompany(false)
+                alert('Company updated successfully!')
+            } else {
+                const data = await response.json()
+                alert(`Failed to update company: ${data.error || 'Unknown error'}`)
             }
         } catch (error) {
             console.error('Error updating company:', error)
@@ -859,6 +973,31 @@ export const Settings = () => {
     const cancelUserEdit = () => {
         setEditingUser(null)
         setUserEditForm({ access: '', organization_id: null })
+    }
+
+    const grantSuperAdminAccess = async (userId) => {
+        if (!window.confirm('Are you sure you want to grant super admin access to this user? This will give them full system access.')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`http://localhost:5001/api/users/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_super_admin: true })
+            })
+
+            if (response.ok) {
+                fetchUsers()
+                alert('Super admin access granted successfully')
+            } else {
+                const data = await response.json()
+                alert(data.error || 'Failed to grant super admin access')
+            }
+        } catch (error) {
+            console.error('Error granting super admin access:', error)
+            alert('Failed to grant super admin access')
+        }
     }
 
     // Role-based CSS class for personnel cards
@@ -1179,12 +1318,12 @@ export const Settings = () => {
                                                                 </form>
                                                             ) : (
                                                                 <div className='expanded-actions'>
-                                                                    <button 
-                                                                        className='edit-btn'
-                                                                        onClick={() => startEditingCompany(company)}
-                                                                    >
-                                                                        Edit Company
-                                                                    </button>
+                                                                                                        <button 
+                                        className='edit-btn'
+                                        onClick={() => openCompanyDetailsModal(company)}
+                                    >
+                                        View Details
+                                    </button>
                                                                     <button 
                                                                         className='delete-btn'
                                                                         onClick={() => {
@@ -1858,6 +1997,17 @@ export const Settings = () => {
                                                                                 >
                                                                                     Edit Access & Organization
                                                                                 </button>
+                                                                                {user?.is_super_admin && !userItem.is_super_admin && (
+                                                                                    <button 
+                                                                                        className='grant-super-admin-btn'
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation()
+                                                                                            grantSuperAdminAccess(userItem.id)
+                                                                                        }}
+                                                                                    >
+                                                                                        Grant Super Admin
+                                                                                    </button>
+                                                                                )}
                                                                                                                                                 <button 
                                                                     className='delete-btn'
                                                                     onClick={(e) => {
@@ -2233,6 +2383,147 @@ export const Settings = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Company Details Modal */}
+            {showCompanyDetailsModal && selectedCompanyForDetails && (
+                <div className='settings-modal-overlay'>
+                    <div className='modal-content company-details-modal'>
+                        <div className='settings-modal-header'>
+                            <h2>{selectedCompanyForDetails.name} - Company Details</h2>
+                            <div className='modal-header-actions'>
+                                {user?.is_super_admin && !selectedCompanyForDetails.is_super_admin && (
+                                    <button 
+                                        className='edit-company-btn'
+                                        onClick={() => setIsEditingCompany(!isEditingCompany)}
+                                    >
+                                        {isEditingCompany ? 'Cancel Edit' : 'Edit Company'}
+                                    </button>
+                                )}
+                                <button 
+                                    className='settings-close-btn'
+                                    onClick={() => setShowCompanyDetailsModal(false)}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Company Edit Form */}
+                        {isEditingCompany && user?.is_super_admin && !selectedCompanyForDetails.is_super_admin && (
+                            <div className='company-edit-form'>
+                                <h3>Edit Company</h3>
+                                <form onSubmit={handleEditCompany}>
+                                    <div className='form-group'>
+                                        <label htmlFor='company-name'>Company Name:</label>
+                                        <input
+                                            type='text'
+                                            id='company-name'
+                                            value={editingCompanyData.name}
+                                            onChange={(e) => setEditingCompanyData({ name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className='form-actions'>
+                                        <button type='submit' className='save-btn'>
+                                            Save Changes
+                                        </button>
+                                        <button 
+                                            type='button' 
+                                            className='cancel-btn'
+                                            onClick={() => setIsEditingCompany(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
+
+                        <div className='company-details-content'>
+                            <div className='company-details-grid'>
+                                {/* Company Users Section */}
+                                <div className='company-details-column'>
+                                    <h3>Users ({companyDetails.users.length})</h3>
+                                    <div className='company-details-list'>
+                                        {companyDetails.users.length > 0 ? (
+                                            companyDetails.users.map(user => (
+                                                <div key={user.id} className='company-detail-item'>
+                                                    <div className='user-info'>
+                                                        <img 
+                                                            src={`/images/avatars/${user.avatar || 'default-avatar.png'}`} 
+                                                            alt='User avatar' 
+                                                            className='user-avatar'
+                                                        />
+                                                        <div className='user-details'>
+                                                            <h4>{user.name}</h4>
+                                                            <p>{user.email}</p>
+                                                            <span className='user-role'>{user.access}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className='no-data'>No users found for this company.</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Company Organizations Section */}
+                                <div className='company-details-column'>
+                                    <h3>Organizations ({companyDetails.organizations.length})</h3>
+                                    <div className='company-details-list'>
+                                        {companyDetails.organizations.length > 0 ? (
+                                            companyDetails.organizations.map(org => (
+                                                <div key={org.id} className='company-detail-item'>
+                                                    <div className='org-info'>
+                                                        <h4>{org.name}</h4>
+                                                        <p>{org.details || 'No details available'}</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className='no-data'>No organizations found for this company.</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Company Projects Section */}
+                                <div className='company-details-column'>
+                                    <h3>Projects ({companyDetails.projects.length})</h3>
+                                    <div className='company-details-list'>
+                                        {companyDetails.projects.length > 0 ? (
+                                            companyDetails.projects.map(project => (
+                                                <div key={project.id} className='company-detail-item'>
+                                                    <div className='project-info'>
+                                                        <h4>{project.name}</h4>
+                                                        <p><strong>Location:</strong> {project.location}</p>
+                                                        <p><strong>Duration:</strong> {project.start_date} to {project.end_date}</p>
+                                                        {project.deliver_date && (
+                                                            <p><strong>Delivery:</strong> {project.deliver_date}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className='no-data'>No projects found for this company.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className='modal-actions'>
+                            <button 
+                                type='button' 
+                                className='cancel-btn'
+                                onClick={() => setShowCompanyDetailsModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

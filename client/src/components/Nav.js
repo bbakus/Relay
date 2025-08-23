@@ -16,6 +16,7 @@ export const Nav = () => {
   const [projects, setProjects] = useState([])
   const [events, setEvents] = useState([])
   const [companies, setCompanies] = useState([])
+  const [currentCompanyName, setCurrentCompanyName] = useState('RELAY')
 
   // Profile modal state
   const [showProfileModal, setShowProfileModal] = useState(false)
@@ -183,12 +184,27 @@ export const Nav = () => {
     }
   }
 
+  const fetchCurrentCompanyName = async () => {
+    try {
+      if (!user?.company_id) return
+      
+      const response = await fetch(`http://localhost:5001/api/companies/${user.company_id}`)
+      if (response.ok) {
+        const company = await response.json()
+        setCurrentCompanyName(company.name)
+      }
+    } catch (error) {
+      console.error('Error fetching current company name:', error)
+    }
+  }
+
   // Initial data fetch
   useEffect(() => {
     if (user) {
       fetchOrganizations()
       fetchProjects()
       fetchEvents()
+      fetchCurrentCompanyName()
       // Only fetch companies for super admin
       if (user.is_super_admin) {
         fetchCompanies()
@@ -198,11 +214,27 @@ export const Nav = () => {
 
   // Refetch organizations and projects when selected company changes (for super admin)
   useEffect(() => {
-    if (user?.is_super_admin && selectedCompanyId) {
+    if ((user?.is_super_admin && selectedCompanyId) || user?.access === 'Client') {
       fetchOrganizations()
       fetchProjects()
     }
-  }, [selectedCompanyId, user?.is_super_admin])
+  }, [selectedCompanyId, user?.is_super_admin, user?.access])
+
+  // Update company name when super admin changes selected company
+  useEffect(() => {
+    if (user?.is_super_admin && selectedCompanyId) {
+      const selectedCompany = companies.find(company => company.id === parseInt(selectedCompanyId))
+      if (selectedCompany) {
+        setCurrentCompanyName(selectedCompany.name)
+      }
+    } else if (user?.is_super_admin && !selectedCompanyId) {
+      // Super admin with no company selected shows "RELAY"
+      setCurrentCompanyName('RELAY')
+    } else if (user?.company_id && !user?.is_super_admin) {
+      // For regular users, fetch their company name
+      fetchCurrentCompanyName()
+    }
+  }, [selectedCompanyId, companies, user?.is_super_admin, user?.company_id])
 
   // Filter projects based on selected organization
   const filteredProjects = useMemo(() => {
@@ -227,9 +259,6 @@ export const Nav = () => {
     const startDate = selectedProject.start_date // "2025-08-16"
     const endDate = selectedProject.end_date     // "2025-08-19"
     
-    console.log('DEBUG: Project start_date (raw):', startDate)
-    console.log('DEBUG: Project end_date (raw):', endDate)
-    
     // Parse dates manually
     const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
     const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
@@ -242,7 +271,6 @@ export const Nav = () => {
     while (true) {
       // Format current date
       const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`
-      console.log('DEBUG: Adding date to dropdown:', dateString)
       dates.push(dateString)
       
       // Check if we've reached the end date
@@ -265,7 +293,6 @@ export const Nav = () => {
       }
     }
     
-    console.log('DEBUG: Final dates for dropdown:', dates)
     return dates
   }, [projects, selectedProjectId])
 
@@ -343,7 +370,7 @@ export const Nav = () => {
       <header className='app-header'>
         <div className='app-header-left'>
           <img className='app-header-logo' src='/images/logo/logo5.png' alt='Relay logo'/>
-          <h1>RELAY</h1>
+          <h1>{currentCompanyName}</h1>
         </div>
         
         {/* Global Filters - Visible based on user access and not on Settings page */}
@@ -365,7 +392,7 @@ export const Nav = () => {
               </div>
             )}
             
-            {/* Organization/Project Selection - Only for Admin */}
+            {/* Organization/Project Selection - For Admin */}
             {user?.access === 'Admin' && (
               <>
                 <div className='filter-group'>
@@ -396,6 +423,22 @@ export const Nav = () => {
               </>
             )}
             
+            {/* Project Selection - For Client Only */}
+            {user?.access === 'Client' && (
+              <div className='filter-group'>
+                <label>Project:</label>
+                <select 
+                  value={selectedProjectId} 
+                  onChange={(e) => setGlobalProject(e.target.value)}
+                >
+                  <option value="">Select Project</option>
+                  {projects.map(project => (
+                    <option key={project.id} value={project.id}>{project.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
             {/* Date Filter - Available to ALL user roles */}
             <div className='filter-group'>
               <label>Date:</label>
@@ -406,7 +449,6 @@ export const Nav = () => {
                 <option value="">All Dates</option>
                 {availableDates.map(date => {
                   const displayDate = formatDateDisplay(date)
-                  console.log('DEBUG: Rendering dropdown option:', date, 'Display:', displayDate)
                   return (
                     <option key={date} value={date}>
                       {displayDate}

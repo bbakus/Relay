@@ -344,12 +344,21 @@ class UserDetail(Resource):
             if personnel:
                 session.delete(personnel)
             
+            # Clean up any access requests that reference this user
+            from models import AccessRequest
+            access_requests = session.query(AccessRequest).filter_by(processed_by=user_id).all()
+            for ar in access_requests:
+                ar.processed_by = None
+            
+            # Delete the user
             session.delete(user)
             session.commit()
             
             message = 'User deleted successfully'
             if personnel:
                 message += ' (including associated personnel record)'
+            if access_requests:
+                message += f' (cleaned up {len(access_requests)} access request references)'
             
             return {'message': message}, 200
         except Exception as e:
@@ -447,13 +456,25 @@ class UserSchedule(Resource):
 # Project endpoints
 class ProjectsResource(Resource):
     def get(self):
-        """Get projects filtered by organization IDs"""
+        """Get projects filtered by organization IDs or company ID"""
         session = Session()
         try:
             # Get organization_ids from query parameter (for company filtering)
             organization_ids = request.args.get('organization_ids')
+            company_id = request.args.get('company_id')
             
-            if organization_ids:
+            if company_id:
+                # Filter by company ID - get organizations for this company, then projects
+                company = session.query(Company).filter_by(id=company_id).first()
+                if company:
+                    org_ids = [org.id for org in company.organizations]
+                    if org_ids:
+                        projects = session.query(ProjectModel).filter(ProjectModel.organization_id.in_(org_ids)).all()
+                    else:
+                        projects = []
+                else:
+                    projects = []
+            elif organization_ids:
                 # Filter by specific organizations (used when company is selected)
                 org_id_list = [int(id.strip()) for id in organization_ids.split(',')]
                 projects = session.query(ProjectModel).filter(ProjectModel.organization_id.in_(org_id_list)).all()
@@ -468,7 +489,8 @@ class ProjectsResource(Resource):
                 'start_date': project.start_date,
                 'end_date': project.end_date,
                 'deliver_date': project.deliver_date,
-                'organization_id': project.organization_id
+                'organization_id': project.organization_id,
+                'organization_name': project.organization.name if project.organization else None
             } for project in projects], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -510,7 +532,8 @@ class ProjectsResource(Resource):
                 'start_date': new_project.start_date,
                 'end_date': new_project.end_date,
                 'deliver_date': new_project.deliver_date,
-                'organization_id': new_project.organization_id
+                'organization_id': new_project.organization_id,
+                'organization_name': new_project.organization.name if new_project.organization else None
             }, 201
         except Exception as e:
             session.rollback()
@@ -533,7 +556,8 @@ class ProjectDetail(Resource):
                     'start_date': project.start_date,
                     'end_date': project.end_date,
                     'deliver_date': project.deliver_date,
-                    'organization_id': project.organization_id
+                    'organization_id': project.organization_id,
+                    'organization_name': project.organization.name if project.organization else None
                 }, 200
             return {'error': 'Project not found'}, 404
         except Exception as e:
@@ -574,7 +598,8 @@ class ProjectDetail(Resource):
                 'start_date': project.start_date,
                 'end_date': project.end_date,
                 'deliver_date': project.deliver_date,
-                'organization_id': project.organization_id
+                'organization_id': project.organization_id,
+                'organization_name': project.organization.name if project.organization else None
             }, 200
         except Exception as e:
             session.rollback()
@@ -1492,16 +1517,26 @@ class Organizations(Resource):
         session = Session()
         try:
             data = request.get_json()
+            
+            # Validate required fields
+            if not data.get('name'):
+                return {'error': 'Organization name is required'}, 400
+            
+            # Create organization with company_id if provided
             new_org = Organization(
                 name=data['name'],
-                details=data.get('details')
+                details=data.get('details'),
+                company_id=data.get('company_id')
             )
+            
             session.add(new_org)
             session.commit()
+            
             return {
                 'id': new_org.id,
                 'name': new_org.name,
-                'details': new_org.details
+                'details': new_org.details,
+                'company_id': new_org.company_id
             }, 201
         except IntegrityError as e:
             session.rollback()
@@ -2049,6 +2084,49 @@ def upload_images():
         session.close()
 
 
+def check_database_health():
+    """Check database health and clean up any obvious orphaned records"""
+    session = Session()
+    try:
+        print("🔍 Checking database health...")
+        
+        # Check for orphaned personnel records
+        from models import Personnel as PersonnelModel
+        orphaned_personnel = session.query(PersonnelModel).filter(
+            PersonnelModel.user_id.isnot(None)
+        ).outerjoin(User, PersonnelModel.user_id == User.id).filter(User.id.is_(None)).all()
+        
+        if orphaned_personnel:
+            print(f"   Found {len(orphaned_personnel)} orphaned personnel records, cleaning up...")
+            for p in orphaned_personnel:
+                p.user_id = None
+            session.commit()
+            print(f"   ✅ Cleaned up {len(orphaned_personnel)} orphaned personnel records")
+        
+        # Check for orphaned access requests
+        from models import AccessRequest
+        orphaned_requests = session.query(AccessRequest).filter(
+            AccessRequest.processed_by.isnot(None)
+        ).outerjoin(User, AccessRequest.processed_by == User.id).filter(User.id.is_(None)).all()
+        
+        if orphaned_requests:
+            print(f"   Found {len(orphaned_requests)} orphaned access request references, cleaning up...")
+            for ar in orphaned_requests:
+                ar.processed_by = None
+            session.commit()
+            print(f"   ✅ Cleaned up {len(orphaned_requests)} orphaned access request references")
+        
+        print("   ✅ Database health check completed")
+        
+    except Exception as e:
+        print(f"   ⚠️  Database health check failed: {e}")
+        session.rollback()
+    finally:
+        session.close()
+
 if __name__ == '__main__':
+    # Run database health check on startup
+    check_database_health()
+    
     app.run(debug=True, host='0.0.0.0', port=5001)
 

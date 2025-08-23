@@ -8,7 +8,7 @@ import '../../styles/client-dashboard.css'
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement)
 
 export const ClientDashboardView = () => {
-    const { user, selectedDate } = useAuth()
+    const { user, selectedDate, selectedProjectId } = useAuth()
     const [events, setEvents] = useState([])
     const [shotRequests, setShotRequests] = useState([])
     const [projects, setProjects] = useState([])
@@ -95,13 +95,20 @@ export const ClientDashboardView = () => {
         }
     }
 
-    // Get current project
+    // Get current project - use global selection or fall back to automatic selection
     const currentProject = useMemo(() => {
         if (!projects.length || !user?.organization_id) return null
         
         const userProjects = projects.filter(p => p.organization_id === user.organization_id)
         if (!userProjects.length) return null
         
+        // If a project is globally selected, use that one
+        if (selectedProjectId) {
+            const selectedProject = userProjects.find(p => p.id.toString() === selectedProjectId)
+            if (selectedProject) return selectedProject
+        }
+        
+        // Fall back to automatic selection logic
         const today = new Date().toISOString().split('T')[0]
         const ongoing = userProjects.filter(p => p.start_date <= today && today <= p.end_date)
         
@@ -115,7 +122,7 @@ export const ClientDashboardView = () => {
                 return userProjects.reduce((a, b) => (a.end_date > b.end_date ? a : b))
             }
         }
-    }, [projects, user])
+    }, [projects, user, selectedProjectId])
 
     // Filter events for current project
     const projectEvents = useMemo(() => {
@@ -404,7 +411,7 @@ export const ClientDashboardView = () => {
     return (
         <div className="client-dashboard">
             <div className="client-dashboard-header">
-                <h1>Client Dashboard - {currentProject.name}</h1>
+                <h1>{currentProject.organization_name || 'Organization'} - {currentProject.name}</h1>
                 <div className="client-dashboard-actions">
                     <button 
                         onClick={() => setShowAddEventModal(true)}
