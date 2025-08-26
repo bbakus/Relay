@@ -343,7 +343,7 @@ export const Schedule = () => {
 
     // Group events by column
     const getEventsByColumn = () => {
-        const eventsByColumn = { 0: [], 1: [], 2: [], 3: [] }
+        const eventsByColumn = { 0: [], 1: [], 2: [], 3: [], 4: [] }
         
         eventsWithPositions.forEach(event => {
             const column = event.column_number || 0
@@ -384,8 +384,8 @@ export const Schedule = () => {
 
  
 
-    // Fixed 4 columns
-    const columns = [0, 1, 2, 3]
+    // Fixed 5 columns
+    const columns = [0, 1, 2, 3, 4]
 
 
 
@@ -469,7 +469,7 @@ export const Schedule = () => {
                                 ))}
                             </div>
 
-                            {/* Events columns - Fixed 4 columns */}
+                            {/* Events columns - Fixed 5 columns */}
                             <div className='events-area'>
                                 {/* Events header to match time header */}
                                 <div className='events-header'>
@@ -477,6 +477,7 @@ export const Schedule = () => {
                                     <div className='column-header'>Column 2</div>
                                     <div className='column-header'>Column 3</div>
                                     <div className='column-header'>Column 4</div>
+                                    <div className='column-header'>Column 5</div>
                                 </div>
                                 
                                 {/* Event columns container */}
