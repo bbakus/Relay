@@ -37,8 +37,14 @@ export const Personnel = () => {
     const fetchAll = async () => {
       try {
         setLoading(true)
+        // Filter personnel by company for company admins
+        let personnelUrl = 'http://localhost:5001/api/personnel'
+        if (user?.company_id) {
+          personnelUrl = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+        }
+        
         const [pplRes, projRes, evtRes] = await Promise.all([
-          fetch('http://localhost:5001/api/personnel'),
+          fetch(personnelUrl),
           fetch('http://localhost:5001/api/projects'),
           fetch('http://localhost:5001/api/events'),
         ])

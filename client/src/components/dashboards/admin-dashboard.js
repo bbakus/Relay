@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader } from '../../utils/dateUtils'
+import { useNavigate } from 'react-router-dom'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,6 +32,7 @@ ChartJS.register(
 
 export const AdminDashboardView = () => {
   const { user, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [isCompanySwitching, setIsCompanySwitching] = useState(false)
   
@@ -41,25 +43,23 @@ export const AdminDashboardView = () => {
   const [personnel, setPersonnel] = useState([])
   const [images, setImages] = useState([])
   const [users, setUsers] = useState([])
+  const [accessRequests, setAccessRequests] = useState([])
 
   // Fetch all data
   useEffect(() => {
     const fetchData = async () => {
-      // For super admin, only fetch data when a company is selected
-      if (user?.is_super_admin && !selectedCompanyId) {
-        setLoading(false)
-        return
-      }
+
 
       try {
         setLoading(true)
-        const [projectsRes, eventsRes, shotRequestsRes, personnelRes, imagesRes, usersRes] = await Promise.all([
+        const [projectsRes, eventsRes, shotRequestsRes, personnelRes, imagesRes, usersRes, accessRequestsRes] = await Promise.all([
           fetch('http://localhost:5001/api/projects'),
           fetch('http://localhost:5001/api/events'),
           fetch('http://localhost:5001/api/shot-requests'),
           fetch('http://localhost:5001/api/personnel'),
           fetch('http://localhost:5001/api/images'),
-          fetch('http://localhost:5001/api/users')
+          fetch('http://localhost:5001/api/users'),
+          fetch('http://localhost:5001/api/access-requests')
         ])
 
         const projectsData = projectsRes.ok ? await projectsRes.json() : []
@@ -68,6 +68,7 @@ export const AdminDashboardView = () => {
         const personnelData = personnelRes.ok ? await personnelRes.json() : []
         const imagesData = imagesRes.ok ? await imagesRes.json() : []
         const usersData = usersRes.ok ? await usersRes.json() : []
+        const accessRequestsData = accessRequestsRes.ok ? await accessRequestsRes.json() : []
 
         setProjects(projectsData)
         setEvents(eventsData)
@@ -75,6 +76,7 @@ export const AdminDashboardView = () => {
         setPersonnel(personnelData)
         setImages(imagesData)
         setUsers(usersData)
+        setAccessRequests(accessRequestsData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
       } finally {
@@ -89,17 +91,7 @@ export const AdminDashboardView = () => {
   // Clear data immediately when company changes (for super admin)
   useEffect(() => {
     if (user?.is_super_admin) {
-      if (!selectedCompanyId) {
-        // Clear all data when no company is selected
-        setIsCompanySwitching(false)
-        setProjects([])
-        setEvents([])
-        setShotRequests([])
-        setPersonnel([])
-        setImages([])
-        setUsers([])
-        setLoading(false)
-      } else {
+      if (selectedCompanyId) {
         // Clear data immediately when switching companies, then fetch new data
         setIsCompanySwitching(true)
         setProjects([])
@@ -117,21 +109,15 @@ export const AdminDashboardView = () => {
 
   // Filter projects by selected organization
   const filteredProjects = useMemo(() => {
-    // For super admin, only show projects when company is selected
-    if (user?.is_super_admin && !selectedCompanyId) return []
-    if (user?.is_super_admin && selectedCompanyId && projects.length === 0) return []
     if (!selectedOrganizationId) return projects
     return projects.filter(p => p.organization_id === parseInt(selectedOrganizationId))
-  }, [projects, selectedOrganizationId, user?.is_super_admin, selectedCompanyId])
+  }, [projects, selectedOrganizationId])
 
   // Filter data by selected project
   const projectEvents = useMemo(() => {
-    // For super admin, only show events when company is selected
-    if (user?.is_super_admin && !selectedCompanyId) return []
-    if (user?.is_super_admin && selectedCompanyId && events.length === 0) return []
     if (!selectedProjectId) return events
     return events.filter(e => e.project_id === parseInt(selectedProjectId))
-  }, [events, selectedProjectId, user?.is_super_admin, selectedCompanyId])
+  }, [events, selectedProjectId])
 
   // Filter events by selected date
   const dateFilteredEvents = useMemo(() => {
@@ -525,8 +511,8 @@ export const AdminDashboardView = () => {
     )
   }
 
-  // For super admin, also show message when company is selected but data is still loading/clearing
-  if (user?.is_super_admin && selectedCompanyId && (loading || isCompanySwitching || projects.length === 0)) {
+  // For super admin, only show loading message when actually loading or switching companies
+  if (user?.is_super_admin && selectedCompanyId && (loading || isCompanySwitching)) {
     return (
       <div className="dashboard-view">
         <div className="company-selection-message">
@@ -637,6 +623,16 @@ export const AdminDashboardView = () => {
       {/* Header */}
       <div className="dashboard-header">
         <h1>Admin Dashboard</h1>
+        {accessRequests.length > 0 && (
+          <div 
+            className="access-request-notification clickable"
+            onClick={() => navigate(`/${user?.id}/settings`)}
+            title="Click to view access requests"
+          >
+            <span className="notification-badge">{accessRequests.length}</span>
+            <span className="notification-text">Pending Access Request{accessRequests.length !== 1 ? 's' : ''}</span>
+          </div>
+        )}
       </div>
 
       {/* Dashboard grid */}

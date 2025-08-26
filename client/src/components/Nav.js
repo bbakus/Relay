@@ -244,18 +244,23 @@ export const Nav = () => {
 
   // Get available dates from selected project's duration (start_date to end_date)
   const availableDates = useMemo(() => {
+    const dates = []
+    
+    // Always include today's date
+    const today = new Date().toISOString().split('T')[0]
+    dates.push(today)
+    
     if (!selectedProjectId) {
-      return []
+      return dates
     }
     
     const selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
     if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
-      return []
+      return dates
     }
     
     // Generate all dates from start_date to end_date
     // SIMPLE FIX: Just use string manipulation to avoid ALL date object timezone issues
-    const dates = []
     const startDate = selectedProject.start_date // "2025-08-16"
     const endDate = selectedProject.end_date     // "2025-08-19"
     
@@ -271,7 +276,11 @@ export const Nav = () => {
     while (true) {
       // Format current date
       const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`
-      dates.push(dateString)
+      
+      // Only add if not already included (avoid duplicates)
+      if (!dates.includes(dateString)) {
+        dates.push(dateString)
+      }
       
       // Check if we've reached the end date
       if (currentYear === endYear && currentMonth === endMonth && currentDay === endDay) {
@@ -293,7 +302,8 @@ export const Nav = () => {
       }
     }
     
-    return dates
+    // Sort dates to ensure today appears first
+    return dates.sort()
   }, [projects, selectedProjectId])
 
   // Map labels to icon image paths in public/images
@@ -342,6 +352,7 @@ export const Nav = () => {
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Personnel', to: `/${userId}/personnel` },
+        { label: 'Deliver', to: `/${userId}/deliver` },
       ]
     }
 
@@ -353,8 +364,8 @@ export const Nav = () => {
 
     if (access === 'editor') {
       return [...base,
+        { label: 'Schedule', to: `/${userId}/schedule`},
         { label: 'Events', to: `/${userId}/events` },
-        { label: 'Schedule', to:`/${userId}/schedule`},
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Deliver', to: `/${userId}/deliver` },
       ]
@@ -392,8 +403,8 @@ export const Nav = () => {
               </div>
             )}
             
-            {/* Organization/Project Selection - For Admin */}
-            {user?.access === 'Admin' && (
+            {/* Organization/Project Selection - For Admin, Editor, and Coordinator */}
+            {(user?.access === 'Admin' || user?.access === 'Editor' || user?.access === 'Coordinator') && (
               <>
                 <div className='filter-group'>
                   <label>Organization:</label>
@@ -423,8 +434,8 @@ export const Nav = () => {
               </>
             )}
             
-            {/* Project Selection - For Client Only */}
-            {user?.access === 'Client' && (
+            {/* Project Selection - For Client and Editor */}
+            {(user?.access === 'Client' || user?.access === 'Editor') && (
               <div className='filter-group'>
                 <label>Project:</label>
                 <select 

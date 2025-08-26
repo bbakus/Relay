@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext'
 import { AdminDashboardView } from "./dashboards/admin-dashboard";
 import { ClientDashboardView } from "./dashboards/client-dashboard";
 import { PhotographerDashboardView } from "./dashboards/photographer-dashboard";
+import { EditorDashboardView } from "./dashboards/editor-dashboard";
+import { CoordinatorDashboardView } from "./dashboards/coordinator-dashboard";
 
 // Simple role-to-component mapping
 function AdminDashboard() { return (
@@ -18,13 +20,21 @@ function ClientDashboard() { return (
         <ClientDashboardView/>
     </div> 
 )}
-function CoordinatorDashboard() { return <div>Coordinator overview</div> }
+function CoordinatorDashboard() { return (
+    <div className='view-container'>
+        <CoordinatorDashboardView/>
+    </div> 
+) }
 function PhotographerDashboard() { return (
       <div className='view-container'>
         <PhotographerDashboardView/>
       </div>
 ) }
-function EditorDashboard() { return <div>Editor overview</div> }
+function EditorDashboard() { return (
+  <div className='view-container'>
+    <EditorDashboardView/>
+  </div>
+) }
 
 export const Dashboard = () => {
   const { userId } = useParams()

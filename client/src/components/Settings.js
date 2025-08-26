@@ -42,6 +42,37 @@ export const Settings = () => {
         }
     }
 
+    // Fetch organizations for a specific company
+    const fetchOrganizationsForCompany = async (companyId) => {
+        if (!companyId) {
+            setOrganizations([])
+            return
+        }
+        
+        try {
+            const company = companies.find(c => c.id === parseInt(companyId))
+            if (company?.is_super_admin) {
+                // Relay company doesn't have organizations
+                setOrganizations([])
+                return
+            }
+            
+            console.log('Fetching organizations for company:', companyId, company?.name)
+            const response = await fetch(`http://localhost:5001/api/organizations?company_id=${companyId}`)
+            if (response.ok) {
+                const data = await response.json()
+                console.log('Organizations fetched:', data)
+                setOrganizations(data)
+            } else {
+                console.log('Failed to fetch organizations:', response.status)
+                setOrganizations([])
+            }
+        } catch (error) {
+            console.error('Error fetching organizations for company:', error)
+            setOrganizations([])
+        }
+    }
+
     // Fetch user's company details (for regular admins)
     const fetchUserCompany = async () => {
         if (!user?.company_id) return
@@ -74,7 +105,9 @@ export const Settings = () => {
             }
             
             if (isRelay) {
-                // For Relay: show Relay users and personnel, no orgs/projects unless Relay-specific
+                // For Relay: show Relay users and personnel, no orgs/projects
+                // Only clear data if we're actually switching TO Relay from another company
+                // Don't clear on initial load
                 setOrganizations([])
                 setProjects([])
                 setEvents([])
@@ -153,16 +186,34 @@ export const Settings = () => {
         }
     }, [user?.is_super_admin, selectedCompanyId, companies.length, setGlobalCompany])
 
+    // Initial data loading for super admin when Relay is auto-selected
+    useEffect(() => {
+        if (user?.is_super_admin && selectedCompanyId && companies.length > 0) {
+            const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+            if (selectedCompany?.is_super_admin) {
+                // For Relay company, load users and personnel without clearing other data
+                fetchUsers()
+                fetchPersonnel()
+            }
+        }
+    }, [user?.is_super_admin, selectedCompanyId, companies.length])
+
 
     
     // Fetch company-specific data when company selection changes
     useEffect(() => {
+        // Only run this if we actually have a company selected and companies are loaded
         if (user?.is_super_admin && selectedCompanyId && companies.length > 0) {
-            fetchCompanyData(selectedCompanyId)
+            const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+            if (selectedCompany && !selectedCompany.is_super_admin) {
+                // Only call fetchCompanyData for non-Relay companies
+                fetchCompanyData(selectedCompanyId)
+            }
         } else if (user?.is_company_admin && user?.company_id) {
             // For Company Admins, load their own company's data only
             fetchCompanyData(user.company_id.toString())
         }
+        // Don't handle the no-company case here - let the initial useEffect handle it
     }, [selectedCompanyId, companies, user])
     
     // Get current company info for conditional rendering
@@ -267,15 +318,19 @@ export const Settings = () => {
         fetchOrganizations()
         fetchPersonnel()
         fetchAccessRequests()
-        // fetchUsers() is handled by fetchCompanyData for Super Admin
-        if (!user?.is_super_admin) {
+        // For super admins, also fetch users for the selected company
+        if (user?.is_super_admin && selectedCompanyId) {
+            fetchUsers()
+        } else if (!user?.is_super_admin) {
             fetchUsers()
             // Fetch company details for regular admins
             if (user?.company_id) {
                 fetchUserCompany()
             }
         }
-    }, [user?.is_super_admin, user?.company_id])
+    }, [user?.is_super_admin, user?.company_id, selectedCompanyId])
+
+
 
     const fetchEvents = async () => {
         try {
@@ -367,10 +422,16 @@ export const Settings = () => {
 
     const fetchOrganizations = async () => {
         try {
-            // For non-super admins, filter by their company. For super admin, get all organizations.
-            const url = !user?.is_super_admin && user?.company_id 
-                ? `http://localhost:5001/api/organizations?company_id=${user.company_id}`
-                : 'http://localhost:5001/api/organizations'
+            let url = 'http://localhost:5001/api/organizations'
+            
+            if (user?.company_id) {
+                // For company admins, filter by their company
+                url = `http://localhost:5001/api/organizations?company_id=${user.company_id}`
+            } else if (user?.is_super_admin && selectedCompanyId) {
+                // For super admins with a company selected, filter by that company
+                url = `http://localhost:5001/api/organizations?company_id=${selectedCompanyId}`
+            }
+            // For super admins with no company selected, get all organizations
             
             const response = await fetch(url)
             if (response.ok) {
@@ -387,10 +448,16 @@ export const Settings = () => {
 
     const fetchPersonnel = async () => {
         try {
-            // For non-super admins, filter by their company. For super admin, get all personnel.
-            const url = !user?.is_super_admin && user?.company_id 
-                ? `http://localhost:5001/api/personnel?company_id=${user.company_id}`
-                : 'http://localhost:5001/api/personnel'
+            let url = 'http://localhost:5001/api/personnel'
+            
+            if (user?.company_id) {
+                // For company admins, filter by their company
+                url = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+            } else if (user?.is_super_admin && selectedCompanyId) {
+                // For super admins with a company selected, filter by that company
+                url = `http://localhost:5001/api/personnel?company_id=${selectedCompanyId}`
+            }
+            // For super admins with no company selected, get all personnel
             
             const response = await fetch(url)
             if (response.ok) {
@@ -422,10 +489,16 @@ export const Settings = () => {
 
     const fetchUsers = async () => {
         try {
-            // For non-super admins, filter by their company. For super admin, get all users.
-            const url = !user?.is_super_admin && user?.company_id 
-                ? `http://localhost:5001/api/users?company_id=${user.company_id}`
-                : 'http://localhost:5001/api/users'
+            let url = 'http://localhost:5001/api/users'
+            
+            if (user?.company_id) {
+                // For company admins, filter by their company
+                url = `http://localhost:5001/api/users?company_id=${user.company_id}`
+            } else if (user?.is_super_admin && selectedCompanyId) {
+                // For super admins with a company selected, filter by that company
+                url = `http://localhost:5001/api/users?company_id=${selectedCompanyId}`
+            }
+            // For super admins with no company selected, get all users
             
             const response = await fetch(url)
             if (response.ok) {
@@ -489,10 +562,16 @@ export const Settings = () => {
             const method = editingItem ? 'PUT' : 'POST'
             const url = editingItem ? `http://localhost:5001/api/organizations/${editingItem.id}` : 'http://localhost:5001/api/organizations'
             
-            // For company admins, include company_id when creating organizations
+            // Include company_id when creating organizations
             const submitData = { ...orgForm }
-            if (!editingItem && user?.company_id) {
-                submitData.company_id = user.company_id
+            if (!editingItem) {
+                if (user?.company_id) {
+                    // For company admins, use their company_id
+                    submitData.company_id = user.company_id
+                } else if (user?.is_super_admin && selectedCompanyId) {
+                    // For super admins, use the currently selected company
+                    submitData.company_id = parseInt(selectedCompanyId)
+                }
             }
             
             const response = await fetch(url, {
@@ -543,8 +622,110 @@ export const Settings = () => {
         }
     }
 
-        const deleteItem = async (type, id) => {
-        
+                const deleteItem = async (type, id) => {
+            // Special confirmation for project deletion
+            if (type === 'project') {
+                const project = projects.find(p => p.id === id)
+                const projectName = project ? project.name : 'this project'
+                
+                const confirmed = window.confirm(
+                    `⚠️ WARNING: You are about to delete "${projectName}"\n\n` +
+                    `This action will permanently remove:\n` +
+                    `• All events in this project\n` +
+                    `• All shot requests in this project\n` +
+                    `• All personnel assignments to this project\n` +
+                    `• All images and files associated with this project\n\n` +
+                    `This action cannot be undone.\n\n` +
+                    `Are you sure you want to continue?`
+                )
+                
+                if (!confirmed) {
+                    return
+                }
+            }
+            
+            // Special confirmation for organization deletion
+            if (type === 'organization') {
+                const organization = organizations.find(o => o.id === id)
+                const orgName = organization ? organization.name : 'this organization'
+                
+                const confirmed = window.confirm(
+                    `⚠️ WARNING: You are about to delete "${orgName}"\n\n` +
+                    `This action will permanently remove:\n` +
+                    `• All projects in this organization\n` +
+                    `• All events in those projects\n` +
+                    `• All shot requests in those projects\n` +
+                    `• All personnel assignments to those projects\n` +
+                    `• All images and files associated with those projects\n\n` +
+                    `This action cannot be undone.\n\n` +
+                    `Are you sure you want to continue?`
+                )
+                
+                if (!confirmed) {
+                    return
+                }
+            }
+            
+            // Special confirmation for user deletion
+            if (type === 'user') {
+                const user = users.find(u => u.id === id)
+                const userName = user ? user.name : 'this user'
+                
+                const confirmed = window.confirm(
+                    `⚠️ WARNING: You are about to delete "${userName}"\n\n` +
+                    `This action will permanently remove:\n` +
+                    `• The user account and all associated data\n` +
+                    `• Any personnel records associated with this user\n` +
+                    `• All user preferences and settings\n\n` +
+                    `This action cannot be undone.\n\n` +
+                    `Are you sure you want to continue?`
+                )
+                
+                if (!confirmed) {
+                    return
+                }
+            }
+            
+            // Special confirmation for personnel deletion
+            if (type === 'personnel') {
+                const personnelItem = personnel.find(p => p.id === id)
+                const personnelName = personnelItem ? personnelItem.name : 'this personnel'
+                
+                const confirmed = window.confirm(
+                    `⚠️ WARNING: You are about to delete "${personnelName}"\n\n` +
+                    `This action will permanently remove:\n` +
+                    `• The personnel record and all associated data\n` +
+                    `• All project assignments for this personnel\n` +
+                    `• All event assignments for this personnel\n\n` +
+                    `This action cannot be undone.\n\n` +
+                    `Are you sure you want to continue?`
+                )
+                
+                if (!confirmed) {
+                    return
+                }
+            }
+            
+            // Special confirmation for event deletion
+            if (type === 'event') {
+                const event = events.find(e => e.id === id)
+                const eventName = event ? event.name : 'this event'
+                
+                const confirmed = window.confirm(
+                    `⚠️ WARNING: You are about to delete "${eventName}"\n\n` +
+                    `This action will permanently remove:\n` +
+                    `• The event and all associated data\n` +
+                    `• All shot requests for this event\n` +
+                    `• All personnel assignments to this event\n` +
+                    `• All images and files associated with this event\n\n` +
+                    `This action cannot be undone.\n\n` +
+                    `Are you sure you want to continue?`
+                )
+                
+                if (!confirmed) {
+                    return
+                }
+            }
         
         try {
             // Fix personnel endpoint - it's singular 'personnel' not 'personnels'
@@ -570,7 +751,7 @@ export const Settings = () => {
             } else {
                 const data = await response.json()
                 alert(data.error || `Failed to delete ${type}`)
-            }
+                }
         } catch (error) {
             console.error(`Error deleting ${type}:`, error)
             alert(`Failed to delete ${type}`)
@@ -1095,10 +1276,12 @@ export const Settings = () => {
     
 
     const openApprovalModal = (request) => {
+        const initialCompanyId = user?.is_super_admin ? selectedCompanyId : user?.company_id?.toString()
+        
         setSelectedRequest(request)
         setApprovalForm({
             role: 'Client',
-            company_id: user?.is_super_admin ? '' : user?.company_id, // Auto-fill company for regular admins
+            company_id: initialCompanyId || '', // Auto-fill company for regular admins
             organization_id: null, // Reset organization selection
             create_personnel: false,
             temporary_password: 'temp123',
@@ -1106,6 +1289,11 @@ export const Settings = () => {
             avatar: 'avatar1.png'  // Default avatar selection
         })
         setShowApprovalModal(true)
+        
+        // If company is already selected, fetch organizations for it
+        if (initialCompanyId) {
+            fetchOrganizationsForCompany(initialCompanyId)
+        }
     }
 
     const handleApprovalSubmit = async (e) => {
@@ -1678,16 +1866,19 @@ export const Settings = () => {
                                                     onChange={(e) => setProjectForm({...projectForm, deliver_date: e.target.value})}
                                                 />
                                             </div>
-                                            <select
-                                                value={projectForm.organization_id}
-                                                onChange={(e) => setProjectForm({...projectForm, organization_id: e.target.value})}
-                                                required
-                                            >
-                                                <option value=''>Select Organization</option>
-                                                {organizations && organizations.map(org => (
-                                                    <option key={org.id} value={org.id}>{org.name}</option>
-                                                ))}
-                                            </select>
+                                            <div className='settings-form-field'>
+                                                <label>Organization</label>
+                                                <select
+                                                    value={projectForm.organization_id}
+                                                    onChange={(e) => setProjectForm({...projectForm, organization_id: e.target.value})}
+                                                    required
+                                                >
+                                                    <option value=''>Select Organization</option>
+                                                    {organizations && organizations.map(org => (
+                                                        <option key={org.id} value={org.id}>{org.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         </div>
                                         <div className='settings-form-actions'>
                                             <button type='submit' className='save-btn'>
@@ -2053,42 +2244,57 @@ export const Settings = () => {
                             </button>
                         </div>
 
-                        <div className='request-details'>
-                            <div className='settings-detail-row'>
-                                <strong>Name:</strong> {selectedRequest.name}
-                            </div>
-                            <div className='settings-detail-row'>
-                                <strong>Email:</strong> {selectedRequest.email}
-                            </div>
-                            <div className='settings-detail-row'>
-                                <strong>Organization:</strong> {selectedRequest.organization}
-                            </div>
-                            {selectedRequest.phone && (
-                                <div className='settings-detail-row'>
-                                    <strong>Phone:</strong> {selectedRequest.phone}
+                        <div className='approval-modal-content'>
+                            {/* Left Column - Request Details */}
+                            <div className='approval-left-column'>
+                                <div className='request-details-section'>
+                                    <h3>Request Details</h3>
+                                    <div className='request-details-grid'>
+                                        <div className='detail-item'>
+                                            <label>Name:</label>
+                                            <span>{selectedRequest.name}</span>
+                                        </div>
+                                        <div className='detail-item'>
+                                            <label>Email:</label>
+                                            <span>{selectedRequest.email}</span>
+                                        </div>
+                                        <div className='detail-item'>
+                                            <label>Organization:</label>
+                                            <span>{selectedRequest.organization}</span>
+                                        </div>
+                                        {selectedRequest.phone && (
+                                            <div className='detail-item'>
+                                                <label>Phone:</label>
+                                                <span>{selectedRequest.phone}</span>
+                                            </div>
+                                        )}
+                                        {selectedRequest.requested_access && (
+                                            <div className='detail-item'>
+                                                <label>Requested Role:</label>
+                                                <span>{selectedRequest.requested_access}</span>
+                                            </div>
+                                        )}
+                                        <div className='detail-item'>
+                                            <label>Submitted:</label>
+                                            <span>{new Date(selectedRequest.created_at).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {selectedRequest.message && (
+                                        <div className='message-section'>
+                                            <label>Message:</label>
+                                            <div className='message-content'>{selectedRequest.message}</div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                            {selectedRequest.requested_access && (
-                                <div className='settings-detail-row'>
-                                    <strong>Requested Role:</strong> {selectedRequest.requested_access}
-                                </div>
-                            )}
-                            {selectedRequest.message && (
-                                <div className='settings-detail-row'>
-                                    <strong>Message:</strong> {selectedRequest.message}
-                                </div>
-                            )}
-                            <div className='settings-detail-row'>
-                                <strong>Submitted:</strong> {new Date(selectedRequest.created_at).toLocaleString()}
                             </div>
-                        </div>
 
-                        <form className='settings-approval-form' onSubmit={handleApprovalSubmit}>
-                            <div className='form-section'>
-                                <h3>Approval Settings</h3>
-                                
-                                <div className='settings-form-grid'>
-                                    <div className='settings-form-field'>
+                            {/* Right Column - Approval Form */}
+                            <div className='approval-right-column'>
+                                <div className='approval-form-section'>
+                                    <h3>Approval Settings</h3>
+                                    
+                                    <div className='form-field-group'>
                                         <label>User Role:</label>
                                         <select
                                             value={approvalForm.role}
@@ -2104,14 +2310,23 @@ export const Settings = () => {
                                         </select>
                                     </div>
 
-                                    <div className='settings-form-field'>
+                                    <div className='form-field-group'>
                                         <label>Company:</label>
                                         {user?.is_super_admin ? (
-                                            <select
-                                                value={approvalForm.company_id}
-                                                onChange={(e) => setApprovalForm({...approvalForm, company_id: e.target.value})}
-                                                required
-                                            >
+                                                                                    <select
+                                            value={approvalForm.company_id}
+                                            onChange={(e) => {
+                                                const companyId = e.target.value
+                                                setApprovalForm({...approvalForm, company_id: companyId, organization_id: null})
+                                                // Fetch organizations for the selected company
+                                                if (companyId) {
+                                                    fetchOrganizationsForCompany(companyId)
+                                                } else {
+                                                    setOrganizations([])
+                                                }
+                                            }}
+                                            required
+                                        >
                                                 <option value=''>Select Company</option>
                                                 {companies && companies.map(company => (
                                                     <option key={company.id} value={company.id}>
@@ -2129,7 +2344,7 @@ export const Settings = () => {
 
                                     {/* Organization selection - only show for non-super admin roles and when company is selected */}
                                     {approvalForm.role !== 'Admin' && (
-                                        <div className='settings-form-field'>
+                                        <div className='form-field-group'>
                                             <label>Organization (Optional):</label>
                                             <select
                                                 value={approvalForm.organization_id || ''}
@@ -2149,7 +2364,7 @@ export const Settings = () => {
                                         </div>
                                     )}
 
-                                    <div className='settings-form-field'>
+                                    <div className='form-field-group'>
                                         <label>Avatar:</label>
                                         <div className='avatar-selection-wrapper'>
                                             <img 
@@ -2166,33 +2381,34 @@ export const Settings = () => {
                                             </button>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className='settings-form-field'>
-                                    <label>Temporary Password:</label>
-                                    <input
-                                        type='text'
-                                        value={approvalForm.temporary_password}
-                                        onChange={(e) => setApprovalForm({...approvalForm, temporary_password: e.target.value})}
-                                        placeholder='Temporary password for new user'
-                                        required
-                                    />
-                                </div>
+                                    <div className='form-field-group'>
+                                        <label>Temporary Password:</label>
+                                        <input
+                                            type='text'
+                                            value={approvalForm.temporary_password}
+                                            onChange={(e) => setApprovalForm({...approvalForm, temporary_password: e.target.value})}
+                                            placeholder='Temporary password for new user'
+                                            required
+                                        />
+                                    </div>
 
-                                <div className='form-field checkbox-field'>
-                                    <label>
+                                    <div className='checkbox-field-group'>
                                         <input
                                             type='checkbox'
+                                            id='create-personnel-checkbox'
                                             checked={approvalForm.create_personnel}
                                             onChange={(e) => setApprovalForm({...approvalForm, create_personnel: e.target.checked})}
                                         />
-                                        Also create personnel record (for staff roles)
-                                    </label>
+                                        <label htmlFor='create-personnel-checkbox'>
+                                            Also create personnel record
+                                        </label>
+                                    </div>
                                 </div>
-
-
                             </div>
+                        </div>
 
+                        <form onSubmit={handleApprovalSubmit}>
                             <div className='modal-actions'>
                                 <button type='submit' className='approve-btn'>
                                     Approve & Create User

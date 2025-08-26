@@ -25,6 +25,50 @@
   background-clip: text;
 }
 
+/* Access Request Notification */
+.access-request-notification {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 122, 24, 0.15);
+  border: 1px solid rgba(255, 122, 24, 0.3);
+  border-radius: 25px;
+  padding: 8px 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.access-request-notification:hover {
+  background: rgba(255, 122, 24, 0.2);
+  border-color: rgba(255, 122, 24, 0.5);
+  transform: translateY(-1px);
+}
+
+.access-request-notification.clickable {
+  cursor: pointer;
+}
+
+.notification-badge {
+  background: linear-gradient(45deg, #ff7a18, #ff9f40);
+  color: #ffffff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 24px;
+}
+
+.notification-text {
+  color: #ff7a18;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
 .dashboard-filters {
   display: flex;
   gap: 20px;

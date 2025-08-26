@@ -97,31 +97,37 @@ export const ClientDashboardView = () => {
 
     // Get current project - use global selection or fall back to automatic selection
     const currentProject = useMemo(() => {
-        if (!projects.length || !user?.organization_id) return null
+        if (!projects.length) return null
         
-        const userProjects = projects.filter(p => p.organization_id === user.organization_id)
-        if (!userProjects.length) return null
-        
-        // If a project is globally selected, use that one
+        // If a project is globally selected, use that one (regardless of organization)
         if (selectedProjectId) {
-            const selectedProject = userProjects.find(p => p.id.toString() === selectedProjectId)
+            const selectedProject = projects.find(p => p.id.toString() === selectedProjectId)
             if (selectedProject) return selectedProject
         }
         
-        // Fall back to automatic selection logic
-        const today = new Date().toISOString().split('T')[0]
-        const ongoing = userProjects.filter(p => p.start_date <= today && today <= p.end_date)
-        
-        if (ongoing.length) {
-            return ongoing.reduce((a, b) => (a.start_date > b.start_date ? a : b))
-        } else {
-            const upcoming = userProjects.filter(p => p.start_date >= today)
-            if (upcoming.length) {
-                return upcoming.reduce((a, b) => (a.start_date < b.start_date ? a : b))
+        // If user has an organization_id, filter by that
+        if (user?.organization_id) {
+            const userProjects = projects.filter(p => p.organization_id === user.organization_id)
+            if (!userProjects.length) return null
+            
+            // Fall back to automatic selection logic for user's organization
+            const today = new Date().toISOString().split('T')[0]
+            const ongoing = userProjects.filter(p => p.start_date <= today && today <= p.end_date)
+            
+            if (ongoing.length) {
+                return ongoing.reduce((a, b) => (a.start_date > b.start_date ? a : b))
             } else {
-                return userProjects.reduce((a, b) => (a.end_date > b.end_date ? a : b))
+                const upcoming = userProjects.filter(p => p.start_date >= today)
+                if (upcoming.length) {
+                    return upcoming.reduce((a, b) => (a.start_date < b.start_date ? a : b))
+                } else {
+                    return userProjects.reduce((a, b) => (a.end_date > b.end_date ? a : b))
+                }
             }
         }
+        
+        // If no organization_id, just return the first available project
+        return projects[0]
     }, [projects, user, selectedProjectId])
 
     // Filter events for current project

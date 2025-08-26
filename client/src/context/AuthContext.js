@@ -70,11 +70,15 @@ export function AuthProvider({ children }) {
     setSelectedProjectId(projectId)
     if (projectId) {
       localStorage.setItem('relay_selected_project', projectId)
+      // Set date to today when a new project is selected
+      const today = new Date().toISOString().split('T')[0]
+      setSelectedDate(today)
+      localStorage.setItem('relay_selected_date', today)
     } else {
       localStorage.removeItem('relay_selected_project')
+      // Clear date when no project is selected
+      setGlobalDate('')
     }
-    // Reset date when project changes
-    setGlobalDate('')
   }
 
   const setGlobalDate = (date) => {
@@ -103,6 +107,13 @@ export function AuthProvider({ children }) {
               // Also set organization for this project
               setSelectedOrganizationId(currentProject.organization_id.toString())
               localStorage.setItem('relay_selected_organization', currentProject.organization_id.toString())
+              
+              // Set default date to today if no date is currently selected
+              if (!selectedDate) {
+                const today = new Date().toISOString().split('T')[0]
+                setSelectedDate(today)
+                localStorage.setItem('relay_selected_date', today)
+              }
             }
           }
         } catch (error) {
@@ -112,7 +123,7 @@ export function AuthProvider({ children }) {
     }
 
     autoSelectProjectForNonAdmin()
-  }, [user, selectedProjectId])
+  }, [user, selectedProjectId, selectedDate])
 
   return (
     <AuthContext.Provider value={{ 
