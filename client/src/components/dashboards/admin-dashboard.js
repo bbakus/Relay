@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { formatDateForHeader } from '../../utils/dateUtils'
+import { formatDateForHeader, formatTime12Hour } from '../../utils/dateUtils'
 import { useNavigate } from 'react-router-dom'
 import {
   Chart as ChartJS,
@@ -45,6 +45,27 @@ export const AdminDashboardView = () => {
   const [users, setUsers] = useState([])
   const [accessRequests, setAccessRequests] = useState([])
   const [deliveredTab, setDeliveredTab] = useState('events') // 'events' or 'shotRequests'
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false)
+  const [selectedStaffForAssignment, setSelectedStaffForAssignment] = useState(null)
+  const [showEventForm, setShowEventForm] = useState(false)
+  const [showShotRequestForm, setShowShotRequestForm] = useState(false)
+  
+  // Form states for creating new events and shot requests
+  const [eventForm, setEventForm] = useState({
+    name: '',
+    date: '',
+    start_time: '',
+    end_time: '',
+    location: '',
+    description: '',
+    process_point: 'idle'
+  })
+  
+  const [shotRequestForm, setShotRequestForm] = useState({
+    request: '',
+    description: '',
+    process_point: 'idle'
+  })
 
   // Fetch all data
   useEffect(() => {
@@ -53,11 +74,17 @@ export const AdminDashboardView = () => {
 
       try {
         setLoading(true)
+        // Filter personnel by company for company admins (same logic as Personnel component)
+        let personnelUrl = 'http://localhost:5001/api/personnel'
+        if (user?.company_id) {
+          personnelUrl = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+        }
+        
         const [projectsRes, eventsRes, shotRequestsRes, personnelRes, imagesRes, usersRes, accessRequestsRes] = await Promise.all([
           fetch('http://localhost:5001/api/projects'),
           fetch('http://localhost:5001/api/events'),
           fetch('http://localhost:5001/api/shot-requests'),
-          fetch('http://localhost:5001/api/personnel'),
+          fetch(personnelUrl),
           fetch('http://localhost:5001/api/images'),
           fetch('http://localhost:5001/api/users'),
           fetch('http://localhost:5001/api/access-requests')
@@ -87,7 +114,7 @@ export const AdminDashboardView = () => {
     }
 
     fetchData()
-  }, [user?.is_super_admin, selectedCompanyId])
+  }, [user?.is_super_admin, selectedCompanyId, user?.company_id])
 
   // Clear data immediately when company changes (for super admin)
   useEffect(() => {
@@ -328,7 +355,7 @@ export const AdminDashboardView = () => {
     void currentTimeTick // Force recalculation
     
     const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Videographer'].includes(p.role)
+      ['Photographer', 'Videographer', 'Admin'].includes(p.role)
     )
 
     const staffStatus = []
@@ -403,7 +430,7 @@ export const AdminDashboardView = () => {
   // Exhaustion level calculation
   const exhaustionLevel = useMemo(() => {
     const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Videographer'].includes(p.role)
+      ['Photographer', 'Videographer', 'Admin'].includes(p.role)
     )
     
     // ALWAYS use global date filter for staff assignments
@@ -630,6 +657,106 @@ export const AdminDashboardView = () => {
         grid: { color: 'rgba(255, 255, 255, 0.1)' }
       }
     }
+  }
+
+  // Helper functions for staff assignment and event creation
+  const handleAssignStaffToEvent = async (staffId, eventIds) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/personnel/${staffId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_ids: eventIds })
+      })
+      
+      if (response.ok) {
+        // Refresh personnel data to update the UI
+        const personnelRes = await fetch('http://localhost:5001/api/personnel')
+        if (personnelRes.ok) {
+          const personnelData = await personnelRes.json()
+          setPersonnel(personnelData)
+        }
+      }
+    } catch (error) {
+      console.error('Error assigning staff to event:', error)
+    }
+  }
+
+  const handleCreateEvent = async (eventData) => {
+    try {
+      const response = await fetch('http://localhost:5001/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...eventData,
+          project_id: selectedProjectId,
+          organization_id: selectedOrganizationId
+        })
+      })
+      
+      if (response.ok) {
+        const newEvent = await response.json()
+        setEvents(prev => [...prev, newEvent])
+        setShowEventForm(false)
+        setEventForm({
+          name: '',
+          date: '',
+          start_time: '',
+          end_time: '',
+          location: '',
+          description: '',
+          process_point: 'idle'
+        })
+      }
+    } catch (error) {
+      console.error('Error creating event:', error)
+    }
+  }
+
+  const handleCreateShotRequest = async (shotRequestData) => {
+    try {
+      const response = await fetch('http://localhost:5001/api/shot-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...shotRequestData,
+          project_id: selectedProjectId,
+          organization_id: selectedOrganizationId
+        })
+      })
+      
+      if (response.ok) {
+        const newShotRequest = await response.json()
+        setShotRequests(prev => [...prev, newShotRequest])
+        setShowShotRequestForm(false)
+        setShotRequestForm({
+          request: '',
+          description: '',
+          process_point: 'idle'
+        })
+      }
+    } catch (error) {
+      console.error('Error creating shot request:', error)
+    }
+  }
+
+  const resetEventForm = () => {
+    setEventForm({
+      name: '',
+      date: '',
+      start_time: '',
+      end_time: '',
+      location: '',
+      description: '',
+      process_point: 'idle'
+    })
+  }
+
+  const resetShotRequestForm = () => {
+    setShotRequestForm({
+      request: '',
+      description: '',
+      process_point: 'idle'
+    })
   }
 
   return (
@@ -906,7 +1033,15 @@ export const AdminDashboardView = () => {
               <h4>Current Status:</h4>
               {staffLoad.staffStatus.length > 0 ? (
                 staffLoad.staffStatus.map((staff) => (
-                  <div key={staff.name} className={`staff-row ${staff.isAssigned ? 'assigned' : 'free'}`}>
+                  <div 
+                    key={staff.name} 
+                    className={`staff-row ${staff.isAssigned ? 'assigned' : 'free'} clickable`}
+                    onClick={() => {
+                      setSelectedStaffForAssignment(staff)
+                      setAssignmentModalOpen(true)
+                    }}
+                    title="Click to assign to events"
+                  >
                     <div className="staff-info">
                       <span className="staff-name">{staff.name}</span>
                       <span className="staff-role">({staff.role})</span>
@@ -1004,6 +1139,275 @@ export const AdminDashboardView = () => {
           </div>
         </div>
       </div>
+
+      {/* Staff Assignment Modal */}
+      {assignmentModalOpen && selectedStaffForAssignment && (
+        <div className="staff-assignment-modal-overlay" onClick={() => {
+          setAssignmentModalOpen(false)
+          setSelectedStaffForAssignment(null)
+        }}>
+          <div className="staff-assignment-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="staff-assignment-modal-header">
+              <h3>Assign {selectedStaffForAssignment.name} to Events</h3>
+              <button 
+                className="staff-assignment-modal-close"
+                onClick={() => {
+                  setAssignmentModalOpen(false)
+                  setSelectedStaffForAssignment(null)
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="staff-assignment-modal-body">
+              {/* Create New Event/Shot Request Section */}
+              <div className="creation-section">
+                <h4>Create New</h4>
+                <div className="creation-buttons">
+                  <button 
+                    className="creation-btn event-btn"
+                    onClick={() => setShowEventForm(true)}
+                  >
+                    + New Event
+                  </button>
+                  <button 
+                    className="creation-btn shot-request-btn"
+                    onClick={() => setShowShotRequestForm(true)}
+                  >
+                    + New Shot Request
+                  </button>
+                </div>
+              </div>
+
+              {/* Event Creation Form */}
+              {showEventForm && (
+                <div className="event-creation-form">
+                  <h4>Create New Event</h4>
+                  <div className="form-grid">
+                    <div className="form-field">
+                      <label>Event Name:</label>
+                      <input
+                        type="text"
+                        value={eventForm.name}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Enter event name"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Date:</label>
+                      <input
+                        type="date"
+                        value={eventForm.date}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, date: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Start Time:</label>
+                      <input
+                        type="time"
+                        value={eventForm.start_time}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, start_time: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>End Time:</label>
+                      <input
+                        type="time"
+                        value={eventForm.end_time}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, end_time: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Location:</label>
+                      <input
+                        type="text"
+                        value={eventForm.location}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Enter location"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Description:</label>
+                      <textarea
+                        value={eventForm.description}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Enter description"
+                        rows="3"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Process Point:</label>
+                      <select
+                        value={eventForm.process_point}
+                        onChange={(e) => setEventForm(prev => ({ ...prev, process_point: e.target.value }))}
+                      >
+                        <option value="idle">Idle</option>
+                        <option value="ingest">Ingest</option>
+                        <option value="cull">Cull</option>
+                        <option value="color">Color</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button 
+                      className="form-btn primary"
+                      onClick={() => handleCreateEvent(eventForm)}
+                    >
+                      Create Event
+                    </button>
+                    <button 
+                      className="form-btn secondary"
+                      onClick={() => {
+                        setShowEventForm(false)
+                        resetEventForm()
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Shot Request Creation Form */}
+              {showShotRequestForm && (
+                <div className="shot-request-creation-form">
+                  <h4>Create New Shot Request</h4>
+                  <div className="form-grid">
+                    <div className="form-field">
+                      <label>Request:</label>
+                      <input
+                        type="text"
+                        value={shotRequestForm.request}
+                        onChange={(e) => setShotRequestForm(prev => ({ ...prev, request: e.target.value }))}
+                        placeholder="Enter shot request"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Description:</label>
+                      <textarea
+                        value={shotRequestForm.description}
+                        onChange={(e) => setShotRequestForm(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Enter description"
+                        rows="3"
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label>Process Point:</label>
+                      <select
+                        value={shotRequestForm.process_point}
+                        onChange={(e) => setShotRequestForm(prev => ({ ...prev, process_point: e.target.value }))}
+                      >
+                        <option value="idle">Idle</option>
+                        <option value="ingest">Ingest</option>
+                        <option value="cull">Cull</option>
+                        <option value="color">Color</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button 
+                      className="form-btn primary"
+                      onClick={() => handleCreateShotRequest(shotRequestForm)}
+                    >
+                      Create Shot Request
+                    </button>
+                    <button 
+                      className="form-btn secondary"
+                      onClick={() => {
+                        setShowShotRequestForm(false)
+                        resetShotRequestForm()
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Event Assignment Section */}
+              <div className="assignment-section">
+                <h4>Assign to Existing Events</h4>
+                <div className="available-events-list">
+                  {(() => {
+                    // Filter events that are not 'done' and show them for assignment
+                    const availableEvents = projectEvents.filter(event => {
+                      const status = getEventStatus(event)
+                      return status !== 'done'
+                    }).sort((a, b) => {
+                      // Sort by date, then by start time
+                      if (a.date !== b.date) return a.date.localeCompare(b.date)
+                      if (!a.start_time || !b.start_time) return 0
+                      return a.start_time.localeCompare(b.start_time)
+                    })
+
+                    if (availableEvents.length === 0) {
+                      return <div className="no-data">No events available for assignment</div>
+                    }
+
+                    return availableEvents.map(event => {
+                      const isAssigned = (selectedStaffForAssignment.event_ids || []).includes(event.id)
+                      const status = getEventStatus(event)
+                      const color = getProcessPointColor(status)
+                      
+                      return (
+                        <label key={event.id} className={`event-assignment-item status-${status}`}>
+                          <input
+                            type="checkbox"
+                            checked={isAssigned}
+                            onChange={(e) => {
+                              const currentEventIds = selectedStaffForAssignment.event_ids || []
+                              const newEventIds = e.target.checked
+                                ? [...currentEventIds, event.id]
+                                : currentEventIds.filter(id => id !== event.id)
+                              
+                              handleAssignStaffToEvent(selectedStaffForAssignment.id, newEventIds)
+                              
+                              // Update the selected staff state to reflect changes immediately
+                              setSelectedStaffForAssignment(prev => ({
+                                ...prev,
+                                event_ids: newEventIds
+                              }))
+                            }}
+                          />
+                          <div className="event-assignment-info">
+                            <div className="event-assignment-name">{event.name}</div>
+                            <div className="event-assignment-meta">
+                              {event.date} • {event.start_time ? (
+                                <span className="event-time">
+                                  {formatTime12Hour(event.start_time)}-{formatTime12Hour(event.end_time)}
+                                </span>
+                              ) : 'No time'}
+                              {event.location ? ` • ${event.location}` : ''}
+                            </div>
+                            <span className="event-assignment-status">
+                              {status}
+                            </span>
+                          </div>
+                        </label>
+                      )
+                    })
+                  })()}
+                </div>
+              </div>
+            </div>
+            
+            <div className="staff-assignment-modal-footer">
+              <button 
+                className="staff-assignment-modal-done"
+                onClick={() => {
+                  setAssignmentModalOpen(false)
+                  setSelectedStaffForAssignment(null)
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

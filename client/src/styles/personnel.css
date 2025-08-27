@@ -176,6 +176,19 @@
   font-size: 1.1rem;
 }
 
+/* Make assignment numbers orange */
+.personnel-list-meta span[title*="Assigned personnel"],
+.personnel-list-meta span[title*="Events in project"] {
+  color: #ff7a18;
+  font-weight: 700;
+}
+
+/* Make event titles orange in assignments by event section */
+.personnel-list-row .name {
+  color: #ff7a18;
+  font-weight: 700;
+}
+
 .personnel-chevron {
   color: rgba(255, 255, 255, 0.7);
   font-weight: 700;

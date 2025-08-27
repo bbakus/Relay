@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Nav } from './Nav'
 import { useAuth } from '../context/AuthContext'
+import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/personnel.css'
 
 export const Personnel = () => {
@@ -374,7 +375,6 @@ export const Personnel = () => {
               <div className='personnel-panel metrics-personnel-panel'>
                 <div className='personnel-panel-header'>
                   <h2>Team Metrics</h2>
-                  <span className='count-badge'>📊</span>
                 </div>
                 <div className='personnel-panel-body metrics'>
                   {/* Key Metrics */}
@@ -388,7 +388,7 @@ export const Personnel = () => {
                         const assigned = projectTeam.filter(m => (m.event_ids || []).includes(e.id))
                         return assigned.length === 0
                       }).length}</div>
-                      <div className='metric-label'>{selectedDate ? 'Unassigned Events (Selected Date)' : 'Unassigned Events'}</div>
+                      <div className='metric-label'>{selectedDate ? `Unassigned Events (${formatDateForHeader(selectedDate)})` : 'Unassigned Events'}</div>
                     </div>
                     <div className='personnel-metric-card'>
                       <div className='metric-number'>{projectTeam.length}</div>
@@ -396,7 +396,7 @@ export const Personnel = () => {
                     </div>
                     <div className='personnel-metric-card'>
                       <div className='metric-number'>{metricsEvents.length}</div>
-                      <div className='metric-label'>{selectedDate ? 'Events (Selected Date)' : 'Total Events'}</div>
+                      <div className='metric-label'>{selectedDate ? `Events (${formatDateForHeader(selectedDate)})` : 'Total Events'}</div>
                     </div>
                   </div>
 
@@ -467,8 +467,8 @@ export const Personnel = () => {
                             <div className='meta'>{member.role || '—'}</div>
                           </div>
                           <div className='personnel-list-meta'>
-                            <span title='Events in project'>🗓️ {eventCount}</span>
-                            <span className='personnel-chevron'>{isOpen ? '▾' : '▸'}</span>
+                            <span title='Events in project'>{eventCount}</span>
+                            <span className='personnel-chevron'>{isOpen ? '▼' : '▶'}</span>
                           </div>
                           {isOpen && (
                             <div className='personnel-list-details'>
@@ -585,8 +585,7 @@ export const Personnel = () => {
                           <div className='personnel-list-main'>
                             <div className='name'>{event.name}</div>
                             <div className='meta'>
-                              {formatDateMMDDYYYY(event.date)}
-                              {event.start_time ? ` • ${formatTime12Hour(event.start_time)}-${formatTime12Hour(event.end_time)}` : ''}
+                              {event.start_time ? `${formatTime12Hour(event.start_time)}-${formatTime12Hour(event.end_time)}` : 'No time specified'}
                             </div>
                           </div>
                           <div className='personnel-list-meta'>
@@ -594,8 +593,8 @@ export const Personnel = () => {
                               <span className='event-status-dot' style={{ backgroundColor: color }}></span>
                               {label.charAt(0).toUpperCase() + label.slice(1)}
                             </span>
-                            <span title='Assigned personnel'>👥 {personnelCount}</span>
-                            <span className='personnel-chevron'>{isOpen ? '▾' : '▸'}</span>
+                            <span title='Assigned personnel'>{personnelCount}</span>
+                            <span className='personnel-chevron'>{isOpen ? '▼' : '▶'}</span>
                           </div>
                           {isOpen && (
                             <div className='personnel-list-details'>
@@ -637,9 +636,9 @@ export const Personnel = () => {
                       setAssignModalOpen(false)
                       setModalSelectedDate('')
                     }}
-                  >
-                    ×
-                  </button>
+                                      >
+                      ✕
+                    </button>
                 </div>
                 
                 <div className='personnel-assign-modal-body'>

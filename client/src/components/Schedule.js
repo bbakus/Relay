@@ -84,7 +84,13 @@ export const Schedule = () => {
 
     const fetchPersonnel = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/personnel')
+            // Filter personnel by company for company admins (same logic as Personnel component)
+            let personnelUrl = 'http://localhost:5001/api/personnel'
+            if (user?.company_id) {
+                personnelUrl = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+            }
+            
+            const response = await fetch(personnelUrl)
             if (response.ok) {
                 const data = await response.json()
                 setPersonnel(Array.isArray(data) ? data : [])
@@ -123,7 +129,7 @@ export const Schedule = () => {
         fetchProjects()
         fetchPersonnel()
         fetchEvents()
-    }, [activeDate, selectedProjectId, isAdmin])
+    }, [activeDate, selectedProjectId, isAdmin, user?.company_id])
 
 
 

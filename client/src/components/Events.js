@@ -21,6 +21,7 @@ export const Events = () => {
     // Filter states for All Events section (use global selectedDate for date filtering)
     const [filterQuickTurn, setFilterQuickTurn] = useState('all')
     const [filterProcessPoint, setFilterProcessPoint] = useState('all')
+    const [filterDate, setFilterDate] = useState('all')
     
     // Filter states for Today's Events section
     const [todayFilterQuickTurn, setTodayFilterQuickTurn] = useState('all')
@@ -264,18 +265,78 @@ export const Events = () => {
         return events.filter(event => event.project_id === currentProject.id)
     }, [events, currentProject])
     
-    // Get unique dates from project events for filter dropdown
-    const projectDates = useMemo(() => {
-        if (!currentProject) return []
-        const dates = [...new Set(projectEvents.map(event => event.date))]
+    // Get available dates from selected project's duration (start_date to end_date) - matching Personnel component logic
+    const availableDates = useMemo(() => {
+        const dates = []
+        
+        // Always include today's date
+        const today = new Date().toISOString().split('T')[0]
+        dates.push(today)
+        
+        if (!selectedProjectId) {
+            return dates
+        }
+        
+        const selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
+        if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
+            return dates
+        }
+        
+        // Generate all dates from start_date to end_date
+        // Use string manipulation to avoid date object timezone issues
+        const startDate = selectedProject.start_date
+        const endDate = selectedProject.end_date
+        
+        // Parse dates manually
+        const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+        const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+        
+        // Generate dates by incrementing day numbers
+        let currentYear = startYear
+        let currentMonth = startMonth
+        let currentDay = startDay
+        
+        while (true) {
+            // Format current date
+            const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`
+            
+            // Only add if not already included (avoid duplicates)
+            if (!dates.includes(dateString)) {
+                dates.push(dateString)
+            }
+            
+            // Check if we've reached the end date
+            if (currentYear === endYear && currentMonth === endMonth && currentDay === endDay) {
+                break
+            }
+            
+            // Increment day
+            currentDay++
+            
+            // Handle month/year rollover (simplified - just handle up to day 31)
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate()
+            if (currentDay > daysInMonth) {
+                currentDay = 1
+                currentMonth++
+                if (currentMonth > 12) {
+                    currentMonth = 1
+                    currentYear++
+                }
+            }
+        }
+        
+        // Sort dates to ensure today appears first
         return dates.sort()
-    }, [projectEvents])
+    }, [projects, selectedProjectId])
     
     // Filtered events for All Events section (show ALL events in project, not filtered by global date)
     const filteredProjectEvents = useMemo(() => {
         let filtered = projectEvents
         
-        // NOTE: Do NOT filter by global selectedDate here - this panel shows ALL events in the project
+        // Filter by date (if a specific date is selected)
+        if (filterDate !== 'all') {
+            filtered = filtered.filter(event => event.date === filterDate)
+        }
         
         // Filter by quick turn
         if (filterQuickTurn !== 'all') {
@@ -288,8 +349,22 @@ export const Events = () => {
             filtered = filtered.filter(event => (event.process_point || 'idle') === filterProcessPoint)
         }
         
+        // Sort by date first, then by start time within each date
+        filtered.sort((a, b) => {
+            // First sort by date (chronological order)
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date)
+            }
+            
+            // If same date, sort by start time (earliest to latest)
+            if (!a.start_time && !b.start_time) return 0
+            if (!a.start_time) return 1
+            if (!b.start_time) return -1
+            return a.start_time.localeCompare(b.start_time)
+        })
+        
         return filtered
-    }, [projectEvents, filterQuickTurn, filterProcessPoint])
+    }, [projectEvents, filterQuickTurn, filterProcessPoint, filterDate])
     
     // Event filtering by status and date (use global selectedDate, fallback to today)
     const todaysEvents = useMemo(() => {
@@ -311,6 +386,14 @@ export const Events = () => {
         if (todayFilterProcessPoint !== 'all') {
             filtered = filtered.filter(event => (event.process_point || 'idle') === todayFilterProcessPoint)
         }
+        
+        // Sort by start time from earliest to latest
+        filtered.sort((a, b) => {
+            if (!a.start_time && !b.start_time) return 0
+            if (!a.start_time) return 1
+            if (!b.start_time) return -1
+            return a.start_time.localeCompare(b.start_time)
+        })
         
         return filtered
     }, [todaysEvents, todayFilterQuickTurn, todayFilterProcessPoint])
@@ -710,6 +793,22 @@ export const Events = () => {
                         
                         {/* Filters */}
                         <div className="events-filter-controls">
+                            <div className="events-filter-group">
+                                <label>Date:</label>
+                                <select 
+                                    value={filterDate} 
+                                    onChange={(e) => setFilterDate(e.target.value)}
+                                    className="events-filter-select"
+                                >
+                                    <option value="all">All Dates</option>
+                                    {availableDates.map(date => (
+                                        <option key={date} value={date}>
+                                            {formatDateForHeader(date)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            
                             <div className="events-filter-group">
                                 <label>Quick Turn:</label>
                                 <select 
