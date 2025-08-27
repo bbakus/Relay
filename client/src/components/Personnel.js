@@ -102,11 +102,69 @@ export const Personnel = () => {
     return map
   }, [projectEvents])
 
-  // Get unique dates from current project for filter dropdown
-  const projectDates = useMemo(() => {
-    const dates = [...new Set(projectEvents.map(e => e.date))].sort()
-    return dates
-  }, [projectEvents])
+  // Get available dates from selected project's duration (start_date to end_date) - matching Nav component logic
+  const availableDates = useMemo(() => {
+    const dates = []
+    
+    // Always include today's date
+    const today = new Date().toISOString().split('T')[0]
+    dates.push(today)
+    
+    if (!selectedProjectId) {
+      return dates
+    }
+    
+    const selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
+    if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
+      return dates
+    }
+    
+    // Generate all dates from start_date to end_date
+    // Use string manipulation to avoid date object timezone issues
+    const startDate = selectedProject.start_date
+    const endDate = selectedProject.end_date
+    
+    // Parse dates manually
+    const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+    const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+    
+    // Generate dates by incrementing day numbers
+    let currentYear = startYear
+    let currentMonth = startMonth
+    let currentDay = startDay
+    
+    while (true) {
+      // Format current date
+      const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`
+      
+      // Only add if not already included (avoid duplicates)
+      if (!dates.includes(dateString)) {
+        dates.push(dateString)
+      }
+      
+      // Check if we've reached the end date
+      if (currentYear === endYear && currentMonth === endMonth && currentDay === endDay) {
+        break
+      }
+      
+      // Increment day
+      currentDay++
+      
+      // Handle month/year rollover (simplified - just handle up to day 31)
+      const daysInMonth = new Date(currentYear, currentMonth, 0).getDate()
+      if (currentDay > daysInMonth) {
+        currentDay = 1
+        currentMonth++
+        if (currentMonth > 12) {
+          currentMonth = 1
+          currentYear++
+        }
+      }
+    }
+    
+    // Sort dates to ensure today appears first
+    return dates.sort()
+  }, [projects, selectedProjectId])
 
   // Note: Date selection now handled globally via AuthContext
 
@@ -593,20 +651,31 @@ export const Personnel = () => {
                       className='personnel-modal-date-input'
                     >
                       <option value="">All Dates</option>
-                      {projectDates.map(date => (
+                      {availableDates.map(date => (
                         <option key={date} value={date}>
-                          {new Date(date).toLocaleDateString()}
+                          {formatDateMMDDYYYY(date)}
                         </option>
                       ))}
                     </select>
                   </div>
                   
-                  <div className='personnel-assign-events-list'>
+                  <div className='personnel-assign-events-grid'>
                     {(() => {
                       // Filter events by modal selected date if one is chosen
-                      const eventsToShow = modalSelectedDate 
+                      let eventsToShow = modalSelectedDate 
                         ? projectEvents.filter(event => event.date === modalSelectedDate)
                         : projectEvents
+                      
+                      // Sort events by time in ascending order (earliest first)
+                      eventsToShow = eventsToShow.sort((a, b) => {
+                        // If no start time, put them at the end
+                        if (!a.start_time && !b.start_time) return 0
+                        if (!a.start_time) return 1
+                        if (!b.start_time) return -1
+                        
+                        // Compare times (ascending order - earliest first)
+                        return a.start_time.localeCompare(b.start_time)
+                      })
                       
                       if (eventsToShow.length === 0) {
                         return <div className='personnel-empty'>No events available for this date</div>
@@ -619,36 +688,37 @@ export const Personnel = () => {
                         const label = (status || '').replace('-', ' ')
                         
                         return (
-                          <label key={event.id} className='personnel-assign-event-item'>
-                            <input
-                              type='checkbox'
-                              checked={isAssigned}
-                              onChange={(e) => {
-                                const currentEventIds = selectedPersonnelForAssign.event_ids || []
-                                const newEventIds = e.target.checked
-                                  ? [...currentEventIds, event.id]
-                                  : currentEventIds.filter(id => id !== event.id)
-                                
-                                handleAssignPersonnelToEvent(selectedPersonnelForAssign.id, newEventIds)
-                                
-                                // Update the selected personnel state to reflect changes immediately
-                                setSelectedPersonnelForAssign(prev => ({
-                                  ...prev,
-                                  event_ids: newEventIds
-                                }))
-                              }}
-                            />
-                            <div className='personnel-assign-event-info'>
-                              <div className='personnel-assign-event-name'>{event.name}</div>
-                              <div className='personnel-assign-event-meta'>
-                                {formatDateMMDDYYYY(event.date)}
-                                {event.start_time ? ` • ${formatTime12Hour(event.start_time)}-${formatTime12Hour(event.end_time)}` : ''}
-                                {event.location ? ` • ${event.location}` : ''}
-                              </div>
-                              <span className='personnel-assign-event-status' style={{ color, borderColor: color }}>
+                          <label key={event.id} className='personnel-assign-event-card'>
+                            <div className='event-card-header'>
+                              <input
+                                type='checkbox'
+                                checked={isAssigned}
+                                onChange={(e) => {
+                                  const currentEventIds = selectedPersonnelForAssign.event_ids || []
+                                  const newEventIds = e.target.checked
+                                    ? [...currentEventIds, event.id]
+                                    : currentEventIds.filter(id => id !== event.id)
+                                  
+                                  handleAssignPersonnelToEvent(selectedPersonnelForAssign.id, newEventIds)
+                                  
+                                  // Update the selected personnel state to reflect changes immediately
+                                  setSelectedPersonnelForAssign(prev => ({
+                                    ...prev,
+                                    event_ids: newEventIds
+                                  }))
+                                }}
+                              />
+                              <span className='event-card-status' style={{ color, borderColor: color }}>
                                 <span className='event-status-dot' style={{ backgroundColor: color }}></span>
                                 {label.charAt(0).toUpperCase() + label.slice(1)}
                               </span>
+                            </div>
+                            <div className='event-card-content'>
+                              <div className='event-card-name'>{event.name}</div>
+                              <div className='event-card-time'>
+                                {event.start_time ? `${formatTime12Hour(event.start_time)} - ${formatTime12Hour(event.end_time)}` : 'No time specified'}
+                              </div>
+
                             </div>
                           </label>
                         )
