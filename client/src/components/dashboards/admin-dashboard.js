@@ -44,6 +44,7 @@ export const AdminDashboardView = () => {
   const [images, setImages] = useState([])
   const [users, setUsers] = useState([])
   const [accessRequests, setAccessRequests] = useState([])
+  const [deliveredTab, setDeliveredTab] = useState('events') // 'events' or 'shotRequests'
 
   // Fetch all data
   useEffect(() => {
@@ -446,6 +447,19 @@ export const AdminDashboardView = () => {
     return deliveredEventsWithImages
   }, [deliveredEvents, images])
   
+  // Live/Ongoing Events - events that are currently happening
+  const liveEvents = useMemo(() => {
+    void currentTimeTick // Force recalculation for real-time status
+    return projectEvents.filter(event => {
+      const status = getEventStatus(event)
+      return status === 'ongoing'
+    }).sort((a, b) => {
+      // Sort by start time (earliest ongoing first)
+      if (!a.start_time || !b.start_time) return 0
+      return a.start_time.localeCompare(b.start_time)
+    })
+  }, [projectEvents, currentTimeTick, getEventStatus])
+  
   // Helper function to create hourly distribution for selected date (6am - 11pm)
   const createHourlyDistribution = (events, targetDate) => {
     const hours = []
@@ -661,34 +675,74 @@ export const AdminDashboardView = () => {
           </div>
         </div>
 
-        {/* Delivered Shot Requests */}
+        {/* Combined Delivered Today Section with Tabs */}
         <div className="dashboard-card">
-          <h3>Delivered Today ({deliveredShotRequests.length})</h3>
-          <div className="shot-requests-list">
-            {deliveredShotRequests.length > 0 ? (
-              deliveredShotRequests.slice(0, 8).map(sr => {
-                // Get the first event from the events array
-                const event = sr.events && sr.events.length > 0 ? sr.events[0] : null
-                return (
-                  <div key={sr.id} className="shot-request-item">
-                    <div className="shot-request-info">
-                      <span className="shot-request-name">{sr.request}</span>
-                      <span className="shot-request-event">{event?.name || 'Unknown Event'}</span>
+          <div className="delivered-tabs-header">
+            <h3>Delivered Today</h3>
+            <div className="delivered-tabs">
+              <button 
+                className={`delivered-tab ${deliveredTab === 'events' ? 'active' : ''}`}
+                onClick={() => setDeliveredTab('events')}
+              >
+                Events ({deliveredEvents.length})
+              </button>
+              <button 
+                className={`delivered-tab ${deliveredTab === 'shotRequests' ? 'active' : ''}`}
+                onClick={() => setDeliveredTab('shotRequests')}
+              >
+                Shot Requests ({deliveredShotRequests.length})
+              </button>
+            </div>
+          </div>
+          
+          <div className="delivered-tab-content">
+            {deliveredTab === 'events' ? (
+              // Events Tab
+              <div className="admin-events-list">
+                {deliveredEvents.length > 0 ? (
+                  deliveredEvents.slice(0, 8).map(event => (
+                    <div key={event.id} className="admin-event-item delivered">
+                      <div className="delivered-indicator">✓</div>
+                      <span className="admin-event-name">{event.name}</span>
+                      <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
                     </div>
-                    <span 
-                      className="shot-request-process-point delivered"
-                      style={{ color: '#22c55e' }}
-                    >
-                      delivered
-                    </span>
-                  </div>
-                )
-              })
+                  ))
+                ) : (
+                  <p className="no-data">No delivered events for {selectedDate ? formatDateForHeader(selectedDate) : 'today'}</p>
+                )}
+                {deliveredEvents.length > 8 && (
+                  <p className="more-events">+{deliveredEvents.length - 8} more events</p>
+                )}
+              </div>
             ) : (
-                              <p className="no-data">No delivered shot requests for {selectedDate ? formatDateForHeader(selectedDate) : 'today'}</p>
-            )}
-            {deliveredShotRequests.length > 8 && (
-              <p className="more-events">+{deliveredShotRequests.length - 8} more delivered</p>
+              // Shot Requests Tab
+              <div className="shot-requests-list">
+                {deliveredShotRequests.length > 0 ? (
+                  deliveredShotRequests.slice(0, 8).map(sr => {
+                    // Get the first event from the events array
+                    const event = sr.events && sr.events.length > 0 ? sr.events[0] : null
+                    return (
+                      <div key={sr.id} className="shot-request-item">
+                        <div className="shot-request-info">
+                          <span className="shot-request-name">{sr.request}</span>
+                          <span className="shot-request-event">{event?.name || 'Unknown Event'}</span>
+                        </div>
+                        <span 
+                          className="shot-request-process-point delivered"
+                          style={{ color: '#22c55e' }}
+                        >
+                          delivered
+                        </span>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <p className="no-data">No delivered shot requests for {selectedDate ? formatDateForHeader(selectedDate) : 'today'}</p>
+                )}
+                {deliveredShotRequests.length > 8 && (
+                  <p className="more-events">+{deliveredShotRequests.length - 8} more delivered</p>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -890,7 +944,6 @@ export const AdminDashboardView = () => {
                   >
                     {event.process_point}
                   </span>
-                  <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
                 </div>
               ))
             ) : (
@@ -902,23 +955,26 @@ export const AdminDashboardView = () => {
           </div>
         </div>
 
-        {/* Delivered Events List */}
-        <div className="dashboard-card delivered-events">
-          <h3>Delivered Events ({deliveredEvents.length})</h3>
+        {/* Live Events - Currently Ongoing */}
+        <div className="dashboard-card">
+          <h3>Live Events ({liveEvents.length})</h3>
           <div className="admin-events-list">
-            {deliveredEvents.length > 0 ? (
-              deliveredEvents.slice(0, 8).map(event => (
-                <div key={event.id} className="admin-event-item delivered">
-                  <div className="delivered-indicator">✓</div>
+            {liveEvents.length > 0 ? (
+              liveEvents.slice(0, 8).map(event => (
+                <div key={event.id} className="admin-event-item live">
+                  <div className="live-indicator">●</div>
                   <span className="admin-event-name">{event.name}</span>
-                  <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
+                  <span className="admin-event-time">
+                    {event.start_time ? `${event.start_time} - ${event.end_time}` : 'No time specified'}
+                  </span>
+                  <span className="admin-event-location">{event.location || 'No location'}</span>
                 </div>
               ))
             ) : (
-              <p className="no-data">No delivered events</p>
+              <p className="no-data">No live events currently</p>
             )}
-            {deliveredEvents.length > 8 && (
-              <p className="more-events">+{deliveredEvents.length - 8} more events</p>
+            {liveEvents.length > 8 && (
+              <p className="more-events">+{liveEvents.length - 8} more live events</p>
             )}
           </div>
         </div>
@@ -932,7 +988,6 @@ export const AdminDashboardView = () => {
                 <div key={event.id} className="admin-image-count-item">
                   <div className="admin-event-info">
                     <span className="admin-event-name">{event.name}</span>
-                    <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
                   </div>
                   <div className="admin-image-count">
                     <span className="count-number">{event.imageCount}</span>
