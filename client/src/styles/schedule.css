@@ -738,3 +738,36 @@
     border-radius: 8px;
     border: 1px dashed rgba(255, 255, 255, 0.1);
 }
+
+/* Quick Turn Toggle Styles */
+.quick-turn-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-turn-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ff7a18;
+    cursor: pointer;
+}
+
+.quick-turn-toggle label {
+    color: #ffffff;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Delete Button Styles */
+.delete-button {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+    color: #dc3545 !important;
+}
+
+.delete-button:hover {
+    background: rgba(220, 53, 69, 0.2) !important;
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
+}

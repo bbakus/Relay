@@ -386,10 +386,16 @@ class UserLogin(Resource):
             user = session.query(User).filter_by(email=email).first()
             
             if user and user.check_password(password):
-                # Access company relationship while session is active
-                company = user.company
-                is_super_admin = company and company.is_super_admin and user.access == 'Admin'
-                is_company_admin = user.access == 'Admin' and not is_super_admin
+                # Get company info directly from company_id to avoid lazy loading issues
+                company_id = user.company_id
+                company = None
+                is_super_admin = False
+                is_company_admin = False
+                
+                if company_id:
+                    company = session.query(Company).filter_by(id=company_id).first()
+                    is_super_admin = company and company.is_super_admin and user.access == 'Admin'
+                    is_company_admin = user.access == 'Admin' and not is_super_admin
                 
                 user_payload = {
                     'id': user.id,
@@ -1048,7 +1054,8 @@ class PersonnelResource(Resource):
                 email=data.get('email'),
                 phone=data.get('phone'),
                 role=data.get('role'),
-                avatar=data.get('avatar')
+                avatar=data.get('avatar'),
+                company_id=data.get('company_id')  # Add company_id field
             )
             
             session.add(new_personnel)
@@ -1070,6 +1077,7 @@ class PersonnelResource(Resource):
                 'role': new_personnel.role,
                 'avatar': new_personnel.avatar,
                 'user_id': new_personnel.user_id,
+                'company_id': new_personnel.company_id,  # Include company_id in response
                 'project_ids': [project.id for project in new_personnel.projects]
             }, 201
         except Exception as e:

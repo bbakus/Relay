@@ -27,6 +27,8 @@ export const Settings = () => {
     const [users, setUsers] = useState([])
     const [companies, setCompanies] = useState([])
     
+
+    
     // Fetch companies (for Super Admin)
     const fetchCompanies = async () => {
         if (user?.is_super_admin) {
@@ -209,10 +211,8 @@ export const Settings = () => {
                 // Only call fetchCompanyData for non-Relay companies
                 fetchCompanyData(selectedCompanyId)
             }
-        } else if (user?.is_company_admin && user?.company_id) {
-            // For Company Admins, load their own company's data only
-            fetchCompanyData(user.company_id.toString())
         }
+        // Company admins should NOT call fetchCompanyData - they use individual fetch functions
         // Don't handle the no-company case here - let the initial useEffect handle it
     }, [selectedCompanyId, companies, user])
     
@@ -278,7 +278,7 @@ export const Settings = () => {
     const [eventForm, setEventForm] = useState({ name: '', date: '', start_time: '', end_time: '', location: '', notes: '', quick_turn: false, deadline: '', project_id: null })
     const [projectForm, setProjectForm] = useState({ name: '', location: '', start_date: '', end_date: '', deliver_date: '', organization_id: null })
     const [orgForm, setOrgForm] = useState({ name: '', details: '' })
-    const [personnelForm, setPersonnelForm] = useState({ name: '', role: '', email: '', phone: '', availability: '', organization_id: null, project_id: null })
+    const [personnelForm, setPersonnelForm] = useState({ name: '', role: '', email: '', phone: '', availability: '', project_id: null })
     const [approvalForm, setApprovalForm] = useState({ role: 'Client', company_id: '', organization_id: null, create_personnel: false, temporary_password: 'temp123', phone: '', avatar: 'avatar1.png' })
     const [assignForm, setAssignForm] = useState({ selectedProjectIds: [] })
     
@@ -450,14 +450,13 @@ export const Settings = () => {
         try {
             let url = 'http://localhost:5001/api/personnel'
             
-            if (user?.company_id) {
+            if (user?.company_id !== null && user?.company_id !== undefined) {
                 // For company admins, filter by their company
                 url = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
             } else if (user?.is_super_admin && selectedCompanyId) {
                 // For super admins with a company selected, filter by that company
                 url = `http://localhost:5001/api/personnel?company_id=${selectedCompanyId}`
             }
-            // For super admins with no company selected, get all personnel
             
             const response = await fetch(url)
             if (response.ok) {
@@ -491,14 +490,13 @@ export const Settings = () => {
         try {
             let url = 'http://localhost:5001/api/users'
             
-            if (user?.company_id) {
+            if (user?.company_id !== null && user?.company_id !== undefined) {
                 // For company admins, filter by their company
                 url = `http://localhost:5001/api/users?company_id=${user.company_id}`
             } else if (user?.is_super_admin && selectedCompanyId) {
                 // For super admins with a company selected, filter by that company
                 url = `http://localhost:5001/api/users?company_id=${selectedCompanyId}`
             }
-            // For super admins with no company selected, get all users
             
             const response = await fetch(url)
             if (response.ok) {
@@ -603,15 +601,29 @@ export const Settings = () => {
             const method = editingItem ? 'PUT' : 'POST'
             const url = editingItem ? `http://localhost:5001/api/personnel/${editingItem.id}` : 'http://localhost:5001/api/personnel'
             
+            // Prepare the data to send, including company_id for company admins
+            const submitData = { ...personnelForm }
+            
+            // Clean up form data - convert empty strings to null for optional fields
+            if (submitData.project_id === '') {
+                submitData.project_id = null
+            }
+            
+            // For company admins, ensure company_id is set
+            if (user?.company_id && !editingItem) {
+                submitData.company_id = user.company_id
+            }
+            
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(personnelForm)
+                body: JSON.stringify(submitData)
             })
             
             if (response.ok) {
                 await fetchPersonnel() // Make sure fetch completes
                 resetPersonnelForm()
+                setEditingItem(null) // Clear editing state
                 
             } else {
                 const data = await response.json()
@@ -796,7 +808,7 @@ export const Settings = () => {
                 email: item.email || '',
                 phone: item.phone || '',
                 availability: item.availability || '',
-                event_ids: item.event_ids || []
+                project_id: item.project_ids && item.project_ids.length > 0 ? item.project_ids[0] : null
             })
             setShowPersonnelForm(true)
         }
@@ -1394,7 +1406,7 @@ export const Settings = () => {
     }
 
     const resetPersonnelForm = () => {
-        setPersonnelForm({ name: '', role: '', email: '', phone: '', availability: '', organization_id: null, project_id: null })
+        setPersonnelForm({ name: '', role: '', email: '', phone: '', availability: '', project_id: null })
         setShowPersonnelForm(false)
         setEditingItem(null)
     }
@@ -1576,86 +1588,97 @@ export const Settings = () => {
 
                                 {showPersonnelForm && (
                                     <form className='settings-item-form' onSubmit={handlePersonnelSubmit}>
-                                        <div className='settings-form-grid'>
-                                            <input
-                                                type='text'
-                                                placeholder='Full Name'
-                                                value={personnelForm.name}
-                                                onChange={(e) => setPersonnelForm({...personnelForm, name: e.target.value})}
-                                                required
-                                            />
-                                            <div className='settings-form-field'>
-                                                <label>Role</label>
-                                                <select
-                                                    value={personnelForm.role}
-                                                    onChange={(e) => setPersonnelForm({...personnelForm, role: e.target.value})}
-                                                    required
-                                                >
-                                                    <option value=''>Select Role</option>
-                                                    <option value='Client'>Client</option>
-                                                    <option value='Coordinator'>Coordinator</option>
-                                                    <option value='Photographer'>Photographer</option>
-                                                    <option value='Videographer'>Videographer</option>
-                                                    <option value='Editor'>Editor</option>
-                                                    <option value='Admin'>Admin</option>
-                                                </select>
+                                        <div className='personnel-form-grid'>
+                                            <div className='form-row'>
+                                                <div className='form-field'>
+                                                    <label>Full Name *</label>
+                                                    <input
+                                                        type='text'
+                                                        placeholder='Enter full name'
+                                                        value={personnelForm.name}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, name: e.target.value})}
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className='form-field'>
+                                                    <label>Role *</label>
+                                                    <select
+                                                        value={personnelForm.role}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, role: e.target.value})}
+                                                        required
+                                                    >
+                                                        <option value=''>Select a role</option>
+                                                        <option value='Client'>Client</option>
+                                                        <option value='Coordinator'>Coordinator</option>
+                                                        <option value='Photographer'>Photographer</option>
+                                                        <option value='Videographer'>Videographer</option>
+                                                        <option value='Editor'>Editor</option>
+                                                        <option value='Admin'>Admin</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div className='settings-form-field'>
-                                                <label>Organization</label>
-                                                <select
-                                                    value={personnelForm.organization_id}
-                                                    onChange={(e) => setPersonnelForm({...personnelForm, organization_id: e.target.value})}
-                                                    required
-                                                >
-                                                    <option value=''>Select Organization</option>
-                                                    {organizations.map(org => (
-                                                        <option key={org.id} value={org.id}>{org.name}</option>
-                                                    ))}
-                                                </select>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field'>
+                                                    <label>Email</label>
+                                                    <input
+                                                        type='email'
+                                                        placeholder='Enter email address'
+                                                        value={personnelForm.email}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, email: e.target.value})}
+                                                    />
+                                                </div>
+                                                <div className='form-field'>
+                                                    <label>Phone</label>
+                                                    <input
+                                                        type='tel'
+                                                        placeholder='Enter phone number'
+                                                        value={personnelForm.phone}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, phone: e.target.value})}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className='settings-form-field'>
-                                                <label>Project</label>
-                                                <select
-                                                    value={personnelForm.project_id}
-                                                    onChange={(e) => setPersonnelForm({...personnelForm, project_id: e.target.value})}
-                                                >
-                                                    <option value=''>Select Project (Optional)</option>
-                                                    {projects.map(project => {
-                                                        const org = organizations.find(o => o.id === project.organization_id)
-                                                        return (
-                                                            <option key={project.id} value={project.id}>
-                                                                {project.name} ({org?.name || 'Unknown Org'})
-                                                            </option>
-                                                        )
-                                                    })}
-                                                </select>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field full-width'>
+                                                    <label>Project Assignment (Optional)</label>
+                                                    <select
+                                                        value={personnelForm.project_id}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, project_id: e.target.value})}
+                                                    >
+                                                        <option value=''>No Project Assignment</option>
+                                                        {projects.map(project => {
+                                                            const org = organizations.find(o => o.id === project.organization_id)
+                                                            return (
+                                                                <option key={project.id} value={project.id}>
+                                                                    {project.name} - {org?.name || 'Unknown Org'}
+                                                                </option>
+                                                            )
+                                                        })}
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <input
-                                                type='email'
-                                                placeholder='Email'
-                                                value={personnelForm.email}
-                                                onChange={(e) => setPersonnelForm({...personnelForm, email: e.target.value})}
-                                            />
-                                            <input
-                                                type='tel'
-                                                placeholder='Phone'
-                                                value={personnelForm.phone}
-                                                onChange={(e) => setPersonnelForm({...personnelForm, phone: e.target.value})}
-                                            />
-                                        </div>
-                                        <textarea
-                                            placeholder='Availability Notes'
-                                            value={personnelForm.availability}
-                                            onChange={(e) => setPersonnelForm({...personnelForm, availability: e.target.value})}
-                                            rows='2'
-                                        />
-                                        <div className='settings-form-actions'>
-                                            <button type='submit' className='save-btn'>
-                                                {editingItem ? 'Update' : 'Create'} Personnel
-                                            </button>
-                                            <button type='button' className='cancel-btn' onClick={resetPersonnelForm}>
-                                                Cancel
-                                            </button>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field full-width'>
+                                                    <label>Availability Notes</label>
+                                                    <textarea
+                                                        placeholder='Enter availability information, schedule preferences, or any other relevant notes'
+                                                        value={personnelForm.availability}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, availability: e.target.value})}
+                                                        rows='3'
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='form-actions'>
+                                                <button type='submit' className='save-btn'>
+                                                    {editingItem ? 'Update' : 'Create'} Personnel
+                                                </button>
+                                                <button type='button' className='cancel-btn' onClick={resetPersonnelForm}>
+                                                    Cancel
+                                                </button>
+                                            </div>
                                         </div>
                                     </form>
                                 )}

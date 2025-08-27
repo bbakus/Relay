@@ -194,6 +194,63 @@ export const Schedule = () => {
         }
     }
 
+    const handleQuickTurnChange = async (eventId, newQuickTurn) => {
+        try {
+            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    quick_turn: newQuickTurn
+                })
+            })
+
+            if (response.ok) {
+                // Update the selectedEvent immediately for modal display
+                setSelectedEvent(prev => prev ? { ...prev, quick_turn: newQuickTurn } : null)
+                
+                // Update events state directly instead of fetching all events to prevent scroll jump
+                setEvents(prevEvents => 
+                    prevEvents.map(event => 
+                        event.id === eventId 
+                            ? { ...event, quick_turn: newQuickTurn }
+                            : event
+                    )
+                )
+            } else {
+                console.error('Failed to update quick turn status')
+            }
+        } catch (error) {
+            console.error('Error updating quick turn status:', error)
+        }
+    }
+
+    const handleDeleteEvent = async (eventId) => {
+        if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+            return
+        }
+        
+        try {
+            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+                method: 'DELETE'
+            })
+            
+            if (response.ok) {
+                // Remove the event from local state
+                setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId))
+                
+                // Close modal and clear selected event
+                setSelectedEvent(null)
+                setShowModal(false)
+            } else {
+                console.error('Failed to delete event')
+            }
+        } catch (error) {
+            console.error('Error deleting event:', error)
+        }
+    }
+
     // Handle personnel assignment to event
     const handleAssignPersonnelToEvent = async (personnelId, eventIds) => {
         try {
@@ -402,18 +459,34 @@ export const Schedule = () => {
         setSelectedEvent(null)
     }
 
-    // Get personnel assigned to the selected event
+    // Get personnel assigned to the selected event (and assigned to the current project)
     const getAssignedPersonnel = () => {
         if (!selectedEvent) return []
-        return personnel.filter(person => 
+        
+        // First filter by project - only show personnel assigned to the current project
+        const projectPersonnel = personnel.filter(person => {
+            if (!selectedProjectId) return true // If no project selected, show all
+            return (person.project_ids || []).includes(Number(selectedProjectId))
+        })
+        
+        // Then filter to only show personnel assigned to this event
+        return projectPersonnel.filter(person => 
             (person.event_ids || []).includes(selectedEvent.id)
         )
     }
 
-    // Get available personnel (not assigned to this event)
+    // Get available personnel (not assigned to this event AND assigned to the current project)
     const getAvailablePersonnel = () => {
         if (!selectedEvent) return []
-        return personnel.filter(person => 
+        
+        // First filter by project - only show personnel assigned to the current project
+        const projectPersonnel = personnel.filter(person => {
+            if (!selectedProjectId) return true // If no project selected, show all
+            return (person.project_ids || []).includes(Number(selectedProjectId))
+        })
+        
+        // Then filter out personnel already assigned to this event
+        return projectPersonnel.filter(person => 
             !(person.event_ids || []).includes(selectedEvent.id)
         )
     }
@@ -575,7 +648,17 @@ export const Schedule = () => {
                             
                             <div className="event-detail-row">
                                 <label>Quick Turn:</label>
-                                <span>{selectedEvent.quick_turn ? 'Yes ⚡' : 'No'}</span>
+                                <div className="quick-turn-toggle">
+                                    <input
+                                        type="checkbox"
+                                        id="quick-turn-checkbox"
+                                        checked={selectedEvent.quick_turn || false}
+                                        onChange={(e) => handleQuickTurnChange(selectedEvent.id, e.target.checked)}
+                                    />
+                                    <label htmlFor="quick-turn-checkbox">
+                                        {selectedEvent.quick_turn ? 'Yes ⚡' : 'No'}
+                                    </label>
+                                </div>
                             </div>
                             
                             {selectedEvent.deadline && (
@@ -664,6 +747,12 @@ export const Schedule = () => {
                         </div>
                         
                         <div className="modal-footer">
+                            <button 
+                                className="modal-button delete-button" 
+                                onClick={() => handleDeleteEvent(selectedEvent.id)}
+                            >
+                                Delete Event
+                            </button>
                             <button className="modal-button" onClick={closeModal}>Close</button>
                         </div>
                     </div>
