@@ -289,6 +289,9 @@ export const Settings = () => {
     const [editingCompany, setEditingCompany] = useState(null)
     const [editCompanyForm, setEditCompanyForm] = useState({ name: '' })
     
+    // Popup state for organization requirement
+    const [showOrgRequiredPopup, setShowOrgRequiredPopup] = useState(false)
+    
     // Company details modal
     const [showCompanyDetailsModal, setShowCompanyDetailsModal] = useState(false)
     const [selectedCompanyForDetails, setSelectedCompanyForDetails] = useState(null)
@@ -531,6 +534,15 @@ export const Settings = () => {
         } catch (error) {
             console.error('Error saving event:', error)
         }
+    }
+
+    const handleAddProjectClick = () => {
+        // Check if organizations exist before allowing project creation
+        if (!organizations || organizations.length === 0) {
+            setShowOrgRequiredPopup(true)
+            return
+        }
+        setShowProjectForm(true)
     }
 
     const handleProjectSubmit = async (e) => {
@@ -1840,7 +1852,7 @@ export const Settings = () => {
                                     <h2>Project Management</h2>
                                     <button 
                                         className='add-btn'
-                                        onClick={() => setShowProjectForm(true)}
+                                        onClick={handleAddProjectClick}
                                     >
                                         Add Project
                                     </button>
@@ -1912,6 +1924,38 @@ export const Settings = () => {
                                             </button>
                                         </div>
                                     </form>
+                                )}
+
+                                {/* Organization Required Popup */}
+                                {showOrgRequiredPopup && (
+                                    <div className='org-required-popup-overlay'>
+                                        <div className='org-required-popup'>
+                                            <div className='popup-header'>
+                                                <h3>⚠️ Organization Required</h3>
+                                            </div>
+                                            <div className='popup-content'>
+                                                <p>You need to create an organization before you can create a project.</p>
+                                                <p>Projects are organized within organizations, so please add an organization first.</p>
+                                            </div>
+                                            <div className='popup-actions'>
+                                                <button 
+                                                    className='popup-btn primary'
+                                                    onClick={() => {
+                                                        setShowOrgRequiredPopup(false)
+                                                        setShowOrgForm(true)
+                                                    }}
+                                                >
+                                                    Add Organization
+                                                </button>
+                                                <button 
+                                                    className='popup-btn secondary'
+                                                    onClick={() => setShowOrgRequiredPopup(false)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
 
                                 <div className='settings-items-list'>
