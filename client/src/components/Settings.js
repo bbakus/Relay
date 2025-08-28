@@ -217,6 +217,22 @@ export const Settings = () => {
         // Don't handle the no-company case here - let the initial useEffect handle it
     }, [selectedCompanyId, companies, user])
     
+    // Additional effect to refresh data when company changes for super admin
+    useEffect(() => {
+        if (user?.is_super_admin && selectedCompanyId) {
+            // Always refresh data when company changes
+            const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+            if (selectedCompany) {
+                if (selectedCompany.is_super_admin) {
+                    fetchUsers()
+                    fetchPersonnel()
+                } else {
+                    fetchCompanyData(selectedCompanyId)
+                }
+            }
+        }
+    }, [selectedCompanyId, user?.is_super_admin])
+    
     // Get current company info for conditional rendering
     const currentCompanyId = user?.is_super_admin ? selectedCompanyId : user?.company_id?.toString()
     const currentCompany = companies.find(c => c.id === parseInt(currentCompanyId || '0'))
@@ -1187,10 +1203,21 @@ export const Settings = () => {
         }
 
         try {
+            // Find the Relay company
+            const relayCompany = companies.find(c => c.is_super_admin)
+            if (!relayCompany) {
+                alert('Relay company not found. Cannot grant super admin access.')
+                return
+            }
+
             const response = await fetch(`${API_CONFIG.baseUrl}/api/users/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ is_super_admin: true })
+                body: JSON.stringify({ 
+                    company_id: relayCompany.id,
+                    access: 'Admin',
+                    organization_id: null
+                })
             })
 
             if (response.ok) {
@@ -1359,7 +1386,8 @@ export const Settings = () => {
                 }
                 setShowApprovalModal(false)
                 setSelectedRequest(null)
-                
+                // Reset approval form
+                setApprovalForm({ role: 'Client', company_id: '', organization_id: null, create_personnel: false, temporary_password: 'temp123', phone: '', avatar: 'avatar1.png' })
                 
             } else {
                 const data = await response.json()
