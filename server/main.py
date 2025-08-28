@@ -2105,7 +2105,7 @@ def upload_images():
 def setup_database():
     try:
         # Import here to avoid circular imports
-        from models import init_db, engine
+        from models import init_db
         from sqlalchemy import text
         
         print("Starting database setup...")
