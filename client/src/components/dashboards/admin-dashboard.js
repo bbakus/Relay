@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { API_CONFIG } from '../utils/apiConfig'
+import { API_CONFIG } from '../../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader, formatTime12Hour } from '../../utils/dateUtils'
 import { useNavigate } from 'react-router-dom'

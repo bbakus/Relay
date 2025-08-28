@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { API_CONFIG } from '../utils/apiConfig'
+import { API_CONFIG } from '../../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js'
 import { Line, Pie } from 'react-chartjs-2'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { API_CONFIG } from '../utils/apiConfig'
+import { API_CONFIG } from '../../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader } from '../../utils/dateUtils'
 import '../../styles/photographer-dashboard.css'
