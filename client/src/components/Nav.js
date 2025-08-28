@@ -488,12 +488,31 @@ export const Nav = () => {
       <nav className='nav'>
         <div className='nav-inner'>
           <div className='nav-links'>
-            {itemsWithIcons.map((item) => (
-              <Link key={item.to} to={item.to} className='nav-link'>
-                <img src={item.icon} alt={item.label} className='nav-link-icon' />
-                <span className='nav-link-label'>{item.label}</span>
-              </Link>
-            ))}
+            {itemsWithIcons.map((item) => {
+              // Check if this is an external link (Deliver button)
+              if (item.label === 'Deliver') {
+                return (
+                  <a 
+                    key={item.label} 
+                    href="https://www.shootproof.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className='nav-link'
+                  >
+                    <img src={item.icon} alt={item.label} className='nav-link-icon' />
+                    <span className='nav-link-label'>{item.label}</span>
+                  </a>
+                )
+              }
+              
+              // Regular internal navigation
+              return (
+                <Link key={item.to} to={item.to} className='nav-link'>
+                  <img src={item.icon} alt={item.label} className='nav-link-icon' />
+                  <span className='nav-link-label'>{item.label}</span>
+                </Link>
+              )
+            })}
           </div>
           <div className='nav-right'>
             <span className='nav-user'>{user?.access}</span>
