@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import Column, Integer, Float, Boolean, String, Table, ForeignKey, create_engine, DateTime
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -9,7 +10,7 @@ from datetime import datetime
 Base = declarative_base()
 
 # PostgreSQL connection URL
-DATABASE_URL = 'postgresql://brandonbakus:password123@localhost:5432/relay_db'
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://brandonbakus:password123@localhost:5432/relay_db')
 
 
 # Company Model - Multi-tenant parent entity
