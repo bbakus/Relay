@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import { formatDateForHeader } from '../utils/dateUtils'
@@ -90,7 +91,7 @@ export const Events = () => {
     
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/events')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (response.ok) {
                 const data = await response.json()
                 console.log('Events page: Fetched events:', data.length, 'events')
@@ -104,7 +105,7 @@ export const Events = () => {
     
     const fetchProjects = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/projects')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
             if (response.ok) {
                 const data = await response.json()
                 console.log('Events page: Fetched projects:', data.length, 'projects')
@@ -118,7 +119,7 @@ export const Events = () => {
     
     const fetchOrganizations = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/organizations')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/organizations`)
             if (response.ok) {
                 const data = await response.json()
                 setOrganizations(data)
@@ -424,7 +425,7 @@ export const Events = () => {
     
     const handleProcessPointChange = async (eventId, newProcessPoint) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ process_point: newProcessPoint })
@@ -462,7 +463,7 @@ export const Events = () => {
 
         
         try {
-            const response = await fetch('http://localhost:5001/api/events', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(eventData)
@@ -516,7 +517,7 @@ export const Events = () => {
         }
         
         try {
-            const response = await fetch('http://localhost:5001/api/shot-requests', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

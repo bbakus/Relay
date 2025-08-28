@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { Nav } from './Nav'
 import { useAuth } from '../context/AuthContext'
 import { formatDateForHeader } from '../utils/dateUtils'
@@ -39,15 +40,15 @@ export const Personnel = () => {
       try {
         setLoading(true)
         // Filter personnel by company for company admins
-        let personnelUrl = 'http://localhost:5001/api/personnel'
+        let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
         if (user?.company_id) {
-          personnelUrl = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+          personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
         }
         
         const [pplRes, projRes, evtRes] = await Promise.all([
           fetch(personnelUrl),
-          fetch('http://localhost:5001/api/projects'),
-          fetch('http://localhost:5001/api/events'),
+          fetch(`${API_CONFIG.baseUrl}/api/projects`),
+          fetch(`${API_CONFIG.baseUrl}/api/events`),
         ])
 
         const ppl = pplRes.ok ? await pplRes.json() : []
@@ -337,7 +338,7 @@ export const Personnel = () => {
 
   const handleAssignPersonnelToEvent = async (personnelId, eventIds) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/personnel/${personnelId}`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event_ids: eventIds })
@@ -345,7 +346,7 @@ export const Personnel = () => {
 
       if (response.ok) {
         // Refresh personnel data to get updated assignments
-        const pplRes = await fetch('http://localhost:5001/api/personnel')
+        const pplRes = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
         if (pplRes.ok) {
           const updatedPersonnel = await pplRes.json()
           setPersonnel(Array.isArray(updatedPersonnel) ? updatedPersonnel : [])

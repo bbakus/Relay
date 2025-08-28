@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import { formatDateForHeader } from '../utils/dateUtils'
@@ -25,10 +26,10 @@ export const Deliver = () => {
       try {
         setLoading(true)
         const responses = await Promise.all([
-          fetch('http://localhost:5001/api/projects'),
-          fetch('http://localhost:5001/api/events'),
-          fetch('http://localhost:5001/api/shot-requests'),
-          fetch('http://localhost:5001/api/images')
+          fetch(`${API_CONFIG.baseUrl}/api/projects`),
+          fetch(`${API_CONFIG.baseUrl}/api/events`),
+          fetch(`${API_CONFIG.baseUrl}/api/shot-requests`),
+          fetch(`${API_CONFIG.baseUrl}/api/images`)
         ])
 
         const [projectsRes, eventsRes, shotRequestsRes, imagesRes] = responses
@@ -126,7 +127,7 @@ export const Deliver = () => {
   // Handle favorite toggle
   const toggleFavorite = async (imageId, currentFavorite) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/images/${imageId}`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/images/${imageId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ favorite: !currentFavorite })
@@ -229,7 +230,7 @@ export const Deliver = () => {
       }
       formData.append('user_id', user.id)
 
-      const response = await fetch('http://localhost:5001/api/upload-images', {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/upload-images`, {
         method: 'POST',
         body: formData
       })
@@ -242,7 +243,7 @@ export const Deliver = () => {
         setUploadTarget({ mode: 'events', type: 'existing', eventId: '', shotRequestId: '' })
         
         // Force re-fetch of images to ensure we get the latest data
-        const imageResponse = await fetch('http://localhost:5001/api/images')
+        const imageResponse = await fetch(`${API_CONFIG.baseUrl}/api/images`)
         if (imageResponse.ok) {
           const allImages = await imageResponse.json()
           setImages(allImages)

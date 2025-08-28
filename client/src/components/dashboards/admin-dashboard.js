@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader, formatTime12Hour } from '../../utils/dateUtils'
 import { useNavigate } from 'react-router-dom'
@@ -75,19 +76,19 @@ export const AdminDashboardView = () => {
       try {
         setLoading(true)
         // Filter personnel by company for company admins (same logic as Personnel component)
-        let personnelUrl = 'http://localhost:5001/api/personnel'
+        let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
         if (user?.company_id) {
-          personnelUrl = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+          personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
         }
         
         const [projectsRes, eventsRes, shotRequestsRes, personnelRes, imagesRes, usersRes, accessRequestsRes] = await Promise.all([
-          fetch('http://localhost:5001/api/projects'),
-          fetch('http://localhost:5001/api/events'),
-          fetch('http://localhost:5001/api/shot-requests'),
+          fetch(`${API_CONFIG.baseUrl}/api/projects`),
+          fetch(`${API_CONFIG.baseUrl}/api/events`),
+          fetch(`${API_CONFIG.baseUrl}/api/shot-requests`),
           fetch(personnelUrl),
-          fetch('http://localhost:5001/api/images'),
-          fetch('http://localhost:5001/api/users'),
-          fetch('http://localhost:5001/api/access-requests')
+          fetch(`${API_CONFIG.baseUrl}/api/images`),
+          fetch(`${API_CONFIG.baseUrl}/api/users`),
+          fetch(`${API_CONFIG.baseUrl}/api/access-requests`)
         ])
 
         const projectsData = projectsRes.ok ? await projectsRes.json() : []
@@ -662,7 +663,7 @@ export const AdminDashboardView = () => {
   // Helper functions for staff assignment and event creation
   const handleAssignStaffToEvent = async (staffId, eventIds) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/personnel/${staffId}`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${staffId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event_ids: eventIds })
@@ -670,7 +671,7 @@ export const AdminDashboardView = () => {
       
       if (response.ok) {
         // Refresh personnel data to update the UI
-        const personnelRes = await fetch('http://localhost:5001/api/personnel')
+        const personnelRes = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
         if (personnelRes.ok) {
           const personnelData = await personnelRes.json()
           setPersonnel(personnelData)
@@ -683,7 +684,7 @@ export const AdminDashboardView = () => {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      const response = await fetch('http://localhost:5001/api/events', {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -714,7 +715,7 @@ export const AdminDashboardView = () => {
 
   const handleCreateShotRequest = async (shotRequestData) => {
     try {
-      const response = await fetch('http://localhost:5001/api/shot-requests', {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

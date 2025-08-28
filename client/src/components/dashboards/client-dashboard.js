@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js'
 import { Line, Pie } from 'react-chartjs-2'
@@ -59,7 +60,7 @@ export const ClientDashboardView = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/events')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (response.ok) {
                 const data = await response.json()
                 setEvents(data)
@@ -71,7 +72,7 @@ export const ClientDashboardView = () => {
 
     const fetchShotRequests = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/shot-requests')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`)
             if (response.ok) {
                 const data = await response.json()
                 setShotRequests(data)
@@ -83,7 +84,7 @@ export const ClientDashboardView = () => {
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/projects')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
             if (response.ok) {
                 const data = await response.json()
                 setProjects(data)
@@ -357,7 +358,7 @@ export const ClientDashboardView = () => {
         if (!currentProject) return
         
         try {
-            const response = await fetch('http://localhost:5001/api/events', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -384,7 +385,7 @@ export const ClientDashboardView = () => {
         if (!currentProject) return
         
         try {
-            const response = await fetch('http://localhost:5001/api/shot-requests', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

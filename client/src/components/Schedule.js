@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import { formatDateForHeader } from '../utils/dateUtils'
@@ -54,7 +55,7 @@ export const Schedule = () => {
 
     const fetchOrganizations = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/organizations')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/organizations`)
             if (response.ok) {
                 const data = await response.json()
                 setOrganizations(Array.isArray(data) ? data : [])
@@ -69,7 +70,7 @@ export const Schedule = () => {
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/projects')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
             if (response.ok) {
                 const data = await response.json()
                 setProjects(Array.isArray(data) ? data : [])
@@ -85,9 +86,9 @@ export const Schedule = () => {
     const fetchPersonnel = async () => {
         try {
             // Filter personnel by company for company admins (same logic as Personnel component)
-            let personnelUrl = 'http://localhost:5001/api/personnel'
+            let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
             if (user?.company_id) {
-                personnelUrl = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+                personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
             }
             
             const response = await fetch(personnelUrl)
@@ -106,7 +107,7 @@ export const Schedule = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true)
-            const response = await fetch('http://localhost:5001/api/events')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (response.ok) {
                 const allEvents = await response.json()
                 // Filter events for selected date
@@ -170,7 +171,7 @@ export const Schedule = () => {
     // Handle process point change in modal
     const handleProcessPointChange = async (eventId, newProcessPoint) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -202,7 +203,7 @@ export const Schedule = () => {
 
     const handleQuickTurnChange = async (eventId, newQuickTurn) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -238,7 +239,7 @@ export const Schedule = () => {
         }
         
         try {
-            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'DELETE'
             })
             
@@ -260,7 +261,7 @@ export const Schedule = () => {
     // Handle personnel assignment to event
     const handleAssignPersonnelToEvent = async (personnelId, eventIds) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/personnel/${personnelId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ event_ids: eventIds })
@@ -283,7 +284,7 @@ export const Schedule = () => {
             // Store current scroll position
             const scrollPosition = window.pageYOffset || document.documentElement.scrollTop
 
-            const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

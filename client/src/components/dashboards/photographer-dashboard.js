@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader } from '../../utils/dateUtils'
 import '../../styles/photographer-dashboard.css'
@@ -62,17 +63,17 @@ export const PhotographerDashboardView = () => {
             setLoading(true)
             
             // Fetch events for the current project
-            const eventsResponse = await fetch(`http://localhost:5001/api/events?project_id=${selectedProjectId}`)
+            const eventsResponse = await fetch(`${API_CONFIG.baseUrl}/api/events?project_id=${selectedProjectId}`)
             const eventsData = await eventsResponse.json()
             setEvents(eventsData)
 
             // Fetch shot requests for the current project
-            const shotRequestsResponse = await fetch(`http://localhost:5001/api/shot-requests?project_id=${selectedProjectId}`)
+            const shotRequestsResponse = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests?project_id=${selectedProjectId}`)
             const shotRequestsData = await shotRequestsResponse.json()
             setShotRequests(shotRequestsData)
 
             // Fetch personnel data
-            const personnelResponse = await fetch(`http://localhost:5001/api/personnel?organization_id=${selectedOrganizationId}`)
+            const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel?organization_id=${selectedOrganizationId}`)
             const personnelData = await personnelResponse.json()
             setPersonnel(personnelData)
         } catch (error) {

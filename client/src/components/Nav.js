@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { API_CONFIG } from '../utils/apiConfig'
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuth } from '../context/AuthContext'
 import { formatDateDisplay } from '../utils/dateUtils'
@@ -82,7 +83,7 @@ export const Nav = () => {
         updateData.password = profileForm.newPassword
       }
 
-      const response = await fetch(`http://localhost:5001/api/users/${user.id}`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -107,11 +108,11 @@ export const Nav = () => {
   const fetchOrganizations = async () => {
     try {
       // For super admin, filter by selected company. For regular users, get all their company's orgs.
-      let url = 'http://localhost:5001/api/organizations'
+      let url = `${API_CONFIG.baseUrl}/api/organizations`
       if (user?.is_super_admin && selectedCompanyId) {
-        url = `http://localhost:5001/api/organizations?company_id=${selectedCompanyId}`
+        url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`
       } else if (user?.company_id && !user?.is_super_admin) {
-        url = `http://localhost:5001/api/organizations?company_id=${user.company_id}`
+        url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`
       }
       
       const response = await fetch(url)
@@ -127,25 +128,25 @@ export const Nav = () => {
   const fetchProjects = async () => {
     try {
       // For super admin, filter by selected company's organizations. For regular users, get their company's projects.
-      let url = 'http://localhost:5001/api/projects'
+      let url = `${API_CONFIG.baseUrl}/api/projects`
       if (user?.is_super_admin && selectedCompanyId) {
         // First get organizations for the selected company, then filter projects
-        const orgResponse = await fetch(`http://localhost:5001/api/organizations?company_id=${selectedCompanyId}`)
+        const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`)
         if (orgResponse.ok) {
           const companyOrgs = await orgResponse.json()
           if (companyOrgs.length > 0) {
             const orgIds = companyOrgs.map(org => org.id).join(',')
-            url = `http://localhost:5001/api/projects?organization_ids=${orgIds}`
+            url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
           }
         }
       } else if (user?.company_id && !user?.is_super_admin) {
         // For regular users, get projects for their company's organizations
-        const orgResponse = await fetch(`http://localhost:5001/api/organizations?company_id=${user.company_id}`)
+        const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
         if (orgResponse.ok) {
           const companyOrgs = await orgResponse.json()
           if (companyOrgs.length > 0) {
             const orgIds = companyOrgs.map(org => org.id).join(',')
-            url = `http://localhost:5001/api/projects?organization_ids=${orgIds}`
+            url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
           }
         }
       }
@@ -162,7 +163,7 @@ export const Nav = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/events')
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
       if (response.ok) {
         const data = await response.json()
         setEvents(data)
@@ -174,7 +175,7 @@ export const Nav = () => {
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/companies')
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/companies`)
       if (response.ok) {
         const data = await response.json()
         setCompanies(data)
@@ -188,7 +189,7 @@ export const Nav = () => {
     try {
       if (!user?.company_id) return
       
-      const response = await fetch(`http://localhost:5001/api/companies/${user.company_id}`)
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/companies/${user.company_id}`)
       if (response.ok) {
         const company = await response.json()
         setCurrentCompanyName(company.name)

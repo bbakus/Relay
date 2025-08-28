@@ -122,7 +122,7 @@ export const Login = ({liftUserId}) => {
         
         try {
             setIsLoading(true)
-            const response = await fetch('http://localhost:5001/api/access-requests', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/access-requests`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

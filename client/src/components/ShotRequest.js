@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import '../styles/shot_request.css'
@@ -86,7 +87,7 @@ export const ShotRequest = () => {
     const fetchShotRequests = async () => {
         try {
             setLoading(true)
-            const response = await fetch('http://localhost:5001/api/shot-requests')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`)
             if (response.ok) {
                 const data = await response.json()
                 setShotRequests(data)
@@ -100,7 +101,7 @@ export const ShotRequest = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/events')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (response.ok) {
                 const data = await response.json()
                 setEvents(data)
@@ -112,7 +113,7 @@ export const ShotRequest = () => {
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/projects')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
             if (response.ok) {
                 const data = await response.json()
                 setProjects(data)
@@ -306,7 +307,7 @@ export const ShotRequest = () => {
     const handleCreateShotRequest = async (e) => {
         e.preventDefault()
         try {
-            const response = await fetch('http://localhost:5001/api/shot-requests', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -340,7 +341,7 @@ export const ShotRequest = () => {
 
     const handleUpdateProcessPoint = async (shotRequestId, newProcessPoint) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/shot-requests/${shotRequestId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -374,7 +375,7 @@ export const ShotRequest = () => {
 
     const handleSaveEdit = async (shotRequestId) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/shot-requests/${shotRequestId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -396,7 +397,7 @@ export const ShotRequest = () => {
 
     const handleDeleteShotRequest = async (shotRequestId) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/shot-requests/${shotRequestId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
                 method: 'DELETE'
             })
 

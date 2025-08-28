@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { API_CONFIG } from '../utils/apiConfig'
 import { useParams } from "react-router-dom";
 import { Nav } from "./Nav";
 import { useAuth } from '../context/AuthContext'
@@ -44,7 +45,7 @@ export const Dashboard = () => {
     // If user missing (refresh), fetch it
     if (!user && userId && userId !== 'undefined') {
       console.log('Fetching user data for userId:', userId)
-      fetch(`http://localhost:5001/api/users/${userId}`)
+      fetch(`${API_CONFIG.baseUrl}/api/users/${userId}`)
         .then(res => {
           if (!res.ok) throw new Error('Failed to fetch user')
           return res.json()

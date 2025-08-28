@@ -1,5 +1,6 @@
 import '../styles/settings.css'
 import { useState, useEffect } from 'react'
+import { API_CONFIG } from '../utils/apiConfig'
 import { Nav } from './Nav'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -33,7 +34,7 @@ export const Settings = () => {
     const fetchCompanies = async () => {
         if (user?.is_super_admin) {
             try {
-                const response = await fetch('http://localhost:5001/api/companies')
+                const response = await fetch(`${API_CONFIG.baseUrl}/api/companies`)
                 if (response.ok) {
                     const data = await response.json()
                     setCompanies(data)
@@ -60,7 +61,7 @@ export const Settings = () => {
             }
             
             console.log('Fetching organizations for company:', companyId, company?.name)
-            const response = await fetch(`http://localhost:5001/api/organizations?company_id=${companyId}`)
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${companyId}`)
             if (response.ok) {
                 const data = await response.json()
                 console.log('Organizations fetched:', data)
@@ -80,7 +81,7 @@ export const Settings = () => {
         if (!user?.company_id) return
         
         try {
-            const response = await fetch(`http://localhost:5001/api/companies/${user.company_id}`)
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/companies/${user.company_id}`)
             if (response.ok) {
                 const companyData = await response.json()
                 setUserCompany(companyData)
@@ -100,7 +101,7 @@ export const Settings = () => {
 
             
             // Fetch users for the selected company using backend filtering
-            const usersResponse = await fetch(`http://localhost:5001/api/users?company_id=${companyId}`)
+            const usersResponse = await fetch(`${API_CONFIG.baseUrl}/api/users?company_id=${companyId}`)
             if (usersResponse.ok) {
                 const companyUsers = await usersResponse.json()
                 setUsers(companyUsers)
@@ -115,7 +116,7 @@ export const Settings = () => {
                 setEvents([])
                 
                 // Fetch Relay personnel
-                const personnelResponse = await fetch(`http://localhost:5001/api/personnel?company_id=${companyId}`)
+                const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel?company_id=${companyId}`)
                 if (personnelResponse.ok) {
                     const relayPersonnel = await personnelResponse.json()
                     setPersonnel(relayPersonnel)
@@ -123,8 +124,8 @@ export const Settings = () => {
             } else {
                 // For other companies: fetch their data using backend filtering
                 const [orgsResponse, personnelResponse] = await Promise.all([
-                    fetch(`http://localhost:5001/api/organizations?company_id=${companyId}`),
-                    fetch(`http://localhost:5001/api/personnel?company_id=${companyId}`)
+                    fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${companyId}`),
+                    fetch(`${API_CONFIG.baseUrl}/api/personnel?company_id=${companyId}`)
                 ])
                 
                 let companyOrgs = []
@@ -142,8 +143,8 @@ export const Settings = () => {
                 if (companyOrgs.length > 0) {
                     const orgIds = companyOrgs.map(org => org.id).join(',')
                     const [projectsResponse, eventsResponse] = await Promise.all([
-                        fetch(`http://localhost:5001/api/projects?organization_ids=${orgIds}`),
-                        fetch(`http://localhost:5001/api/events`)
+                        fetch(`${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`),
+                        fetch(`${API_CONFIG.baseUrl}/api/events`)
                     ])
                     
                     let companyProjects = []
@@ -337,24 +338,24 @@ export const Settings = () => {
 
     const fetchEvents = async () => {
         try {
-            let url = 'http://localhost:5001/api/events'
+            let url = `${API_CONFIG.baseUrl}/api/events`
             
             // For company admins, we need to get their projects first, then filter events
             if (user?.is_company_admin && user?.company_id) {
                 // First get organizations for this company
-                const orgResponse = await fetch(`http://localhost:5001/api/organizations?company_id=${user.company_id}`)
+                const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
                 if (orgResponse.ok) {
                     const companyOrgs = await orgResponse.json()
                     if (companyOrgs.length > 0) {
                         const orgIds = companyOrgs.map(org => org.id).join(',')
                         // Then get projects for these organizations
-                        const projectsResponse = await fetch(`http://localhost:5001/api/projects?organization_ids=${orgIds}`)
+                        const projectsResponse = await fetch(`${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`)
                         if (projectsResponse.ok) {
                             const companyProjects = await projectsResponse.json()
                             if (companyProjects.length > 0) {
                                 // For now, we'll fetch all events and filter client-side since events API doesn't support project filtering yet
                                 // TODO: Add project_ids parameter to events API
-                                url = 'http://localhost:5001/api/events'
+                                url = `${API_CONFIG.baseUrl}/api/events`
                             }
                         }
                     }
@@ -367,12 +368,12 @@ export const Settings = () => {
                 // For non-super admins, filter events by their projects
                 if (!user?.is_super_admin && user?.company_id) {
                     // Get the projects for this company to filter events
-                    const orgResponse = await fetch(`http://localhost:5001/api/organizations?company_id=${user.company_id}`)
+                    const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
                     if (orgResponse.ok) {
                         const companyOrgs = await orgResponse.json()
                         if (companyOrgs.length > 0) {
                             const orgIds = companyOrgs.map(org => org.id).join(',')
-                            const projectsResponse = await fetch(`http://localhost:5001/api/projects?organization_ids=${orgIds}`)
+                            const projectsResponse = await fetch(`${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`)
                             if (projectsResponse.ok) {
                                 const companyProjects = await projectsResponse.json()
                                 const projectIds = companyProjects.map(p => p.id)
@@ -395,17 +396,17 @@ export const Settings = () => {
 
     const fetchProjects = async () => {
         try {
-            let url = 'http://localhost:5001/api/projects'
+            let url = `${API_CONFIG.baseUrl}/api/projects`
             
             // For non-super admins, we need to get their organizations first, then filter projects
             if (!user?.is_super_admin && user?.company_id) {
                 // First get organizations for this company
-                const orgResponse = await fetch(`http://localhost:5001/api/organizations?company_id=${user.company_id}`)
+                const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
                 if (orgResponse.ok) {
                     const companyOrgs = await orgResponse.json()
                     if (companyOrgs.length > 0) {
                         const orgIds = companyOrgs.map(org => org.id).join(',')
-                        url = `http://localhost:5001/api/projects?organization_ids=${orgIds}`
+                        url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
                     }
                 }
             }
@@ -425,14 +426,14 @@ export const Settings = () => {
 
     const fetchOrganizations = async () => {
         try {
-            let url = 'http://localhost:5001/api/organizations'
+            let url = `${API_CONFIG.baseUrl}/api/organizations`
             
             if (user?.company_id) {
                 // For company admins, filter by their company
-                url = `http://localhost:5001/api/organizations?company_id=${user.company_id}`
+                url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`
             } else if (user?.is_super_admin && selectedCompanyId) {
                 // For super admins with a company selected, filter by that company
-                url = `http://localhost:5001/api/organizations?company_id=${selectedCompanyId}`
+                url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`
             }
             // For super admins with no company selected, get all organizations
             
@@ -451,14 +452,14 @@ export const Settings = () => {
 
     const fetchPersonnel = async () => {
         try {
-            let url = 'http://localhost:5001/api/personnel'
+            let url = `${API_CONFIG.baseUrl}/api/personnel`
             
             if (user?.company_id !== null && user?.company_id !== undefined) {
                 // For company admins, filter by their company
-                url = `http://localhost:5001/api/personnel?company_id=${user.company_id}`
+                url = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
             } else if (user?.is_super_admin && selectedCompanyId) {
                 // For super admins with a company selected, filter by that company
-                url = `http://localhost:5001/api/personnel?company_id=${selectedCompanyId}`
+                url = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
             }
             
             const response = await fetch(url)
@@ -476,7 +477,7 @@ export const Settings = () => {
 
     const fetchAccessRequests = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/access-requests')
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/access-requests`)
             if (response.ok) {
                 const data = await response.json()
                 setAccessRequests(Array.isArray(data) ? data : [])
@@ -491,14 +492,14 @@ export const Settings = () => {
 
     const fetchUsers = async () => {
         try {
-            let url = 'http://localhost:5001/api/users'
+            let url = `${API_CONFIG.baseUrl}/api/users`
             
             if (user?.company_id !== null && user?.company_id !== undefined) {
                 // For company admins, filter by their company
-                url = `http://localhost:5001/api/users?company_id=${user.company_id}`
+                url = `${API_CONFIG.baseUrl}/api/users?company_id=${user.company_id}`
             } else if (user?.is_super_admin && selectedCompanyId) {
                 // For super admins with a company selected, filter by that company
-                url = `http://localhost:5001/api/users?company_id=${selectedCompanyId}`
+                url = `${API_CONFIG.baseUrl}/api/users?company_id=${selectedCompanyId}`
             }
             
             const response = await fetch(url)
@@ -519,7 +520,7 @@ export const Settings = () => {
         e.preventDefault()
         try {
             const method = editingItem ? 'PUT' : 'POST'
-            const url = editingItem ? `http://localhost:5001/api/events/${editingItem.id}` : 'http://localhost:5001/api/events'
+            const url = editingItem ? `${API_CONFIG.baseUrl}/api/events/${editingItem.id}` : `${API_CONFIG.baseUrl}/api/events`
             
             const response = await fetch(url, {
                 method,
@@ -549,7 +550,7 @@ export const Settings = () => {
         e.preventDefault()
         try {
             const method = editingItem ? 'PUT' : 'POST'
-            const url = editingItem ? `http://localhost:5001/api/projects/${editingItem.id}` : 'http://localhost:5001/api/projects'
+            const url = editingItem ? `${API_CONFIG.baseUrl}/api/projects/${editingItem.id}` : `${API_CONFIG.baseUrl}/api/projects`
             
             const response = await fetch(url, {
                 method,
@@ -570,7 +571,7 @@ export const Settings = () => {
         e.preventDefault()
         try {
             const method = editingItem ? 'PUT' : 'POST'
-            const url = editingItem ? `http://localhost:5001/api/organizations/${editingItem.id}` : 'http://localhost:5001/api/organizations'
+            const url = editingItem ? `${API_CONFIG.baseUrl}/api/organizations/${editingItem.id}` : `${API_CONFIG.baseUrl}/api/organizations`
             
             // Include company_id when creating organizations
             const submitData = { ...orgForm }
@@ -611,7 +612,7 @@ export const Settings = () => {
         e.preventDefault()
         try {
             const method = editingItem ? 'PUT' : 'POST'
-            const url = editingItem ? `http://localhost:5001/api/personnel/${editingItem.id}` : 'http://localhost:5001/api/personnel'
+            const url = editingItem ? `${API_CONFIG.baseUrl}/api/personnel/${editingItem.id}` : `${API_CONFIG.baseUrl}/api/personnel`
             
             // Prepare the data to send, including company_id for company admins
             const submitData = { ...personnelForm }
@@ -753,9 +754,9 @@ export const Settings = () => {
         
         try {
             // Fix personnel endpoint - it's singular 'personnel' not 'personnels'
-            let endpoint = `http://localhost:5001/api/${type}s/${id}`
+            let endpoint = `${API_CONFIG.baseUrl}/api/${type}s/${id}`
             if (type === 'personnel') {
-                endpoint = `http://localhost:5001/api/personnel/${id}`
+                endpoint = `${API_CONFIG.baseUrl}/api/personnel/${id}`
             }
             
             const response = await fetch(endpoint, {
@@ -837,7 +838,7 @@ export const Settings = () => {
     const handleCompanySubmit = async (e) => {
         e.preventDefault()
         try {
-            const response = await fetch('http://localhost:5001/api/companies', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/companies`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -868,7 +869,7 @@ export const Settings = () => {
         }
         
         try {
-            const response = await fetch(`http://localhost:5001/api/companies/${companyId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/companies/${companyId}`, {
                 method: 'DELETE'
             })
             
@@ -920,7 +921,7 @@ export const Settings = () => {
         if (!editingCompany) return
 
         try {
-            const response = await fetch(`http://localhost:5001/api/companies/${editingCompany.id}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/companies/${editingCompany.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -961,9 +962,9 @@ export const Settings = () => {
         try {
             // Fetch company details
             const [usersResponse, orgsResponse, projectsResponse] = await Promise.all([
-                fetch(`http://localhost:5001/api/users?company_id=${company.id}`),
-                fetch(`http://localhost:5001/api/organizations?company_id=${company.id}`),
-                fetch(`http://localhost:5001/api/projects?company_id=${company.id}`)
+                fetch(`${API_CONFIG.baseUrl}/api/users?company_id=${company.id}`),
+                fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${company.id}`),
+                fetch(`${API_CONFIG.baseUrl}/api/projects?company_id=${company.id}`)
             ])
             
             if (usersResponse.ok && orgsResponse.ok && projectsResponse.ok) {
@@ -990,7 +991,7 @@ export const Settings = () => {
         if (!selectedCompanyForDetails || selectedCompanyForDetails.is_super_admin) return
         
         try {
-            const response = await fetch(`http://localhost:5001/api/companies/${selectedCompanyForDetails.id}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/companies/${selectedCompanyForDetails.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1042,7 +1043,7 @@ export const Settings = () => {
             // Send project_id (single project) instead of project_ids array
             const projectId = assignForm.selectedProjectIds.length > 0 ? assignForm.selectedProjectIds[0] : ''
             
-            const response = await fetch(`http://localhost:5001/api/personnel/${selectedPersonnel.id}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${selectedPersonnel.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1068,7 +1069,7 @@ export const Settings = () => {
 
     const assignPersonnelToEvent = async (personnelId, eventIds) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/personnel/${personnelId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ event_ids: eventIds })
@@ -1154,7 +1155,7 @@ export const Settings = () => {
 
     const handleUserUpdate = async (userId) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/users/${userId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/users/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userEditForm)
@@ -1186,7 +1187,7 @@ export const Settings = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:5001/api/users/${userId}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/users/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_super_admin: true })
@@ -1332,7 +1333,7 @@ export const Settings = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:5001/api/access-requests/${selectedRequest.id}`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/access-requests/${selectedRequest.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1375,7 +1376,7 @@ export const Settings = () => {
             
             
             try {
-                const response = await fetch(`http://localhost:5001/api/access-requests/${requestId}`, {
+                const response = await fetch(`${API_CONFIG.baseUrl}/api/access-requests/${requestId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

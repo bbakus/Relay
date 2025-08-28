@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 
+import { API_CONFIG } from '../utils/apiConfig'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
@@ -95,7 +96,7 @@ export function AuthProvider({ children }) {
     const autoSelectProjectForNonAdmin = async () => {
       if (user && user.access !== 'Admin' && !selectedProjectId) {
         try {
-          const response = await fetch('http://localhost:5001/api/projects')
+          const response = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
           if (response.ok) {
             const projects = await response.json()
             // Find current project or the first available project
