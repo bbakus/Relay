@@ -2,23 +2,15 @@
 // This centralizes all API endpoint configuration for easy deployment management
 
 const getApiConfig = () => {
-  // Development environment
-  if (process.env.NODE_ENV === 'development') {
+  // Check if REACT_APP_API_URL is set (production deployment)
+  if (process.env.REACT_APP_API_URL) {
     return {
-      baseUrl: 'http://localhost:5001',
-      port: 5001
-    }
-  }
-  
-  // Production environment
-  if (process.env.NODE_ENV === 'production') {
-    return {
-      baseUrl: process.env.REACT_APP_API_URL || 'https://your-backend-domain.com',
+      baseUrl: process.env.REACT_APP_API_URL,
       port: process.env.REACT_APP_API_PORT || 5000
     }
   }
   
-  // Fallback to development
+  // Fallback to development (localhost)
   return {
     baseUrl: 'http://localhost:5001',
     port: 5001
