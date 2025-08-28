@@ -2100,6 +2100,18 @@ def upload_images():
         session.close()
 
 
+# Temporary setup endpoint for deployment
+@app.route('/api/setup', methods=['POST'])
+def setup_database():
+    try:
+        # Import here to avoid circular imports
+        from reset_database import reset_database
+        reset_database()
+        return jsonify({"message": "Database setup completed successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 def check_database_health():
     """Check database health and clean up any obvious orphaned records"""
     session = Session()
