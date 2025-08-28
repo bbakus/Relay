@@ -33,15 +33,22 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+
+# CORS configuration from environment variables
+cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
+CORS(app, origins=cors_origins)  # Enable CORS for specified origins
 api = Api(app)
 
-# Upload configuration
-UPLOAD_FOLDER = 'uploads'
-THUMBNAIL_FOLDER = 'uploads/thumbnails'
+# Upload configuration from environment variables
+UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
+THUMBNAIL_FOLDER = os.path.join(UPLOAD_FOLDER, 'thumbnails')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 * 1024  # 5GB max file size
+app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 5 * 1024 * 1024 * 1024))  # Configurable max file size
 
 # Create upload directories if they don't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -64,7 +71,8 @@ def create_thumbnail(image_path, thumbnail_path, size=(300, 300)):
         print(f"Error creating thumbnail: {e}")
         return False
 
-DATABASE_URL = 'postgresql://brandonbakus:password123@localhost:5432/relay_db'
+# Database configuration from environment variables
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://brandonbakus:password123@localhost:5432/relay_db')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
@@ -2136,5 +2144,13 @@ if __name__ == '__main__':
     # Run database health check on startup
     check_database_health()
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # Get configuration from environment variables
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    port = int(os.getenv('PORT', 5001))
+    
+    print(f"🚀 Starting Relay server on port {port}")
+    print(f"🔧 Debug mode: {debug_mode}")
+    print(f"🌐 CORS origins: {cors_origins}")
+    
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)
 
