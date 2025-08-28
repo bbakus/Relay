@@ -2104,62 +2104,30 @@ def upload_images():
 @app.route('/api/setup', methods=['POST'])
 def setup_database():
     try:
-        # Import here to avoid circular imports
-        from models import init_db
-        from sqlalchemy import text
+        # Just run the existing reset script
+        import subprocess
+        import sys
         
-        print("Starting database setup...")
+        result = subprocess.run([sys.executable, 'reset_database.py'], 
+                              capture_output=True, text=True, input='YES\n')
         
-        # Step 1: Drop all tables using current engine
-        print("Dropping existing tables...")
-        try:
-            with engine.connect() as conn:
-                # Get all table names
-                result = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'"))
-                tables = [row[0] for row in result]
-                
-                if tables:
-                    print(f"Dropping {len(tables)} tables...")
-                    # Drop all tables
-                    for table in tables:
-                        conn.execute(text(f'DROP TABLE IF EXISTS "{table}" CASCADE'))
-                    conn.commit()
-                    print("All tables dropped successfully!")
-                else:
-                    print("No tables found to drop.")
-        except Exception as e:
-            print(f"Error dropping tables: {e}")
-            return jsonify({"error": f"Failed to drop tables: {str(e)}"}), 500
-        
-        # Step 2: Create all tables
-        print("Creating all tables from models...")
-        try:
-            init_db()
-            print("All tables created successfully!")
-        except Exception as e:
-            print(f"Error creating tables: {e}")
-            return jsonify({"error": f"Failed to create tables: {str(e)}"}), 500
-        
-        # Step 3: Create Relay super admin
-        print("Creating super admin...")
-        try:
-            from reset_database import create_relay_super_admin
-            if not create_relay_super_admin():
-                return jsonify({"error": "Failed to create super admin"}), 500
-        except Exception as e:
-            print(f"Error creating super admin: {e}")
-            return jsonify({"error": f"Failed to create super admin: {str(e)}"}), 500
-        
-        return jsonify({
-            "message": "Database setup completed successfully",
-            "super_admin": {
-                "email": "admin@relay.com",
-                "password": "password123"
-            }
-        }), 200
-        
+        if result.returncode == 0:
+            return jsonify({
+                "message": "Database setup completed successfully",
+                "output": result.stdout,
+                "super_admin": {
+                    "email": "admin@relay.com",
+                    "password": "password123"
+                }
+            }), 200
+        else:
+            return jsonify({
+                "error": "Setup failed",
+                "stdout": result.stdout,
+                "stderr": result.stderr
+            }), 500
+            
     except Exception as e:
-        print(f"Setup error: {e}")
         return jsonify({"error": str(e)}), 500
 
 
