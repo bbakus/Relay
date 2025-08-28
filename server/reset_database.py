@@ -8,6 +8,12 @@ This script will:
 4. Create the super admin user linked to Relay
 """
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 from models import *
 from sqlalchemy import text
 import sys
