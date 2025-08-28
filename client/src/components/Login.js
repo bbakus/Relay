@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext'
+import { API_CONFIG } from '../utils/apiConfig'
 import '../styles/login.css'
 
 
@@ -49,7 +50,7 @@ export const Login = ({liftUserId}) => {
             return
         }
 
-        fetch('http://localhost:5001/api/login', {
+        fetch(`${API_CONFIG.baseUrl}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
