@@ -78,10 +78,10 @@ Session = sessionmaker(bind=engine)
 
 # Email configuration
 EMAIL_CONFIG = {
-    'smtp_server': 'smtp.gmail.com',  # Change this to your SMTP server
+    'smtp_server': 'smtp-relay.gmail.com',  # Use Gmail relay for better cloud compatibility
     'smtp_port': 587,
-    'email': os.getenv('RELAY_EMAIL', 'relay.system@gmail.com'),  # Change to your email
-    'password': os.getenv('RELAY_EMAIL_PASSWORD', '')  # Use environment variable for security
+    'email': os.getenv('RELAY_EMAIL', 'brandonbakus@gmail.com'),
+    'password': os.getenv('RELAY_EMAIL_PASSWORD', '')
 }
 
 def send_approval_email(recipient_email, recipient_name, login_email, temporary_password, organization_name):
