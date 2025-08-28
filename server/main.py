@@ -2105,9 +2105,32 @@ def upload_images():
 def setup_database():
     try:
         # Import here to avoid circular imports
-        from reset_database import reset_database
-        reset_database()
-        return jsonify({"message": "Database setup completed successfully"}), 200
+        from models import init_db
+        from reset_database import create_relay_super_admin, drop_all_tables
+        
+        print("Starting database setup...")
+        
+        # Step 1: Drop all tables
+        if not drop_all_tables():
+            return jsonify({"error": "Failed to drop tables"}), 500
+        
+        # Step 2: Create all tables
+        print("Creating all tables from models...")
+        init_db()
+        print("All tables created successfully!")
+        
+        # Step 3: Create Relay super admin
+        if not create_relay_super_admin():
+            return jsonify({"error": "Failed to create super admin"}), 500
+        
+        return jsonify({
+            "message": "Database setup completed successfully",
+            "super_admin": {
+                "email": "admin@relay.com",
+                "password": "password123"
+            }
+        }), 200
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
