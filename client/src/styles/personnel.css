@@ -183,10 +183,16 @@
   font-weight: 700;
 }
 
-/* Make event titles orange in assignments by event section */
-.personnel-list-row .name {
+/* Make event titles orange ONLY in assignments by event section */
+.assignments-by-event-panel .personnel-list-row .name {
   color: #ff7a18;
   font-weight: 700;
+}
+
+/* Keep personnel names white in other sections */
+.personnel-list-row .name {
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .personnel-chevron {

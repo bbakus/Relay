@@ -546,7 +546,7 @@ export const Personnel = () => {
               </div>
 
               {/* BOTTOM RIGHT: Panel: Assignments by Event */}
-              <div className='personnel-panel'>
+              <div className='personnel-panel assignments-by-event-panel'>
                 <div className='personnel-panel-header'>
                   <h2>Assignments by Event</h2>
                   <div className='personnel-panel-controls'>

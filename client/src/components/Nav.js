@@ -380,7 +380,7 @@ export const Nav = () => {
     <>
       <header className='app-header'>
         <div className='app-header-left'>
-          <img className='app-header-logo' src='/images/logo/logo5.png' alt='Relay logo'/>
+          {/* <img className='app-header-logo' src='/images/logo/logo5.png' alt='Relay logo'/> */}
           <h1>{currentCompanyName}</h1>
         </div>
         
