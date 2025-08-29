@@ -18,12 +18,14 @@ export const Settings = () => {
        - Can edit personnel/users in any company
        - Can view all companies' data
        - Default view is Relay company
+       - When viewing a specific company, can create organizations/projects/personnel for THAT company
     
     2. REGULAR ADMIN (Non-Relay company users):
        - Only see their own company's data
        - Cannot switch company view
        - Can edit personnel/users in their company only
        - Cannot see Relay company or other companies
+       - Can only create organizations/projects/personnel for their own company
     */
     
 
@@ -593,18 +595,30 @@ export const Settings = () => {
             const method = editingItem ? 'PUT' : 'POST'
             const url = editingItem ? `${API_CONFIG.baseUrl}/api/projects/${editingItem.id}` : `${API_CONFIG.baseUrl}/api/projects`
             
+            // Projects are linked to organizations, which are linked to companies
+            // No need to set company_id directly on projects
+            const submitData = { ...projectForm }
+            
             const response = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(projectForm)
+                body: JSON.stringify(submitData)
             })
             
             if (response.ok) {
+                const result = await response.json()
+                alert(editingItem ? 'Project updated successfully!' : 'Project created successfully!')
                 fetchProjects()
                 resetProjectForm()
+                setShowProjectForm(false)
+                setEditingItem(null)
+            } else {
+                const errorData = await response.json()
+                alert(errorData.error || 'Failed to save project')
             }
         } catch (error) {
             console.error('Error saving project:', error)
+            alert('Failed to save project')
         }
     }
 
@@ -666,6 +680,9 @@ export const Settings = () => {
             // For company admins, ensure company_id is set
             if (user?.company_id && !editingItem) {
                 submitData.company_id = user.company_id
+            } else if (user?.is_super_admin && selectedCompanyId && !editingItem) {
+                // For super admins, use the currently selected company
+                submitData.company_id = parseInt(selectedCompanyId)
             }
             
             const response = await fetch(url, {
@@ -1905,6 +1922,26 @@ export const Settings = () => {
                                                         value={personnelForm.phone}
                                                         onChange={(e) => setPersonnelForm({...personnelForm, phone: e.target.value})}
                                                     />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field full-width'>
+                                                    <label>Project Assignment (Optional)</label>
+                                                    <select
+                                                        value={personnelForm.project_id}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, project_id: e.target.value})}
+                                                    >
+                                                        <option value=''>No Project Assignment</option>
+                                                        {projects.map(project => {
+                                                            const org = organizations.find(o => o.id === project.organization_id)
+                                                            return (
+                                                                <option key={project.id} value={project.id}>
+                                                                    {project.name} - {org?.name || 'Unknown Org'}
+                                                                </option>
+                                                            )
+                                                        })}
+                                                    </select>
                                                 </div>
                                             </div>
                                             
