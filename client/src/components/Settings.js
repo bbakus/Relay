@@ -690,14 +690,15 @@ export const Settings = () => {
                 submitData.project_id = null
             }
             
-            // For company admins, ensure company_id is set
-            if (user?.company_id && !editingItem) {
-                submitData.company_id = user.company_id
-                console.log('🔍 Setting company_id for regular admin:', user.company_id)
-            } else if (user?.is_super_admin && selectedCompanyId && !editingItem) {
+            // SUPER ADMIN LOGIC: Always use selectedCompanyId, never their own company_id
+            if (user?.is_super_admin && selectedCompanyId && !editingItem) {
                 // For super admins, use the currently selected company
                 submitData.company_id = parseInt(selectedCompanyId)
                 console.log('🔍 Setting company_id for super admin:', selectedCompanyId, '->', parseInt(selectedCompanyId))
+            } else if (user?.company_id && !user?.is_super_admin && !editingItem) {
+                // For regular company admins, use their company_id
+                submitData.company_id = user.company_id
+                console.log('🔍 Setting company_id for regular admin:', user.company_id)
             } else {
                 console.log('🔍 No company_id set. User:', user?.is_super_admin, 'selectedCompanyId:', selectedCompanyId, 'editingItem:', editingItem)
             }
