@@ -158,20 +158,33 @@ export const Settings = () => {
                 }
             } else {
                 // For other companies: fetch their data using backend filtering
-                const [orgsResponse, personnelResponse] = await Promise.all([
+                const [usersResponse, orgsResponse, personnelResponse] = await Promise.all([
+                    fetch(`${API_CONFIG.baseUrl}/api/users?company_id=${companyId}`),
                     fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${companyId}`),
                     fetch(`${API_CONFIG.baseUrl}/api/personnel?company_id=${companyId}`)
                 ])
                 
+                // Set users
+                if (usersResponse.ok) {
+                    const companyUsers = await usersResponse.json()
+                    console.log('🔍 Company users response:', companyUsers)
+                    setUsers(companyUsers)
+                    console.log('🔍 Set company users:', companyUsers.length)
+                }
+                
                 let companyOrgs = []
                 if (orgsResponse.ok) {
                     companyOrgs = await orgsResponse.json()
+                    console.log('🔍 Company orgs response:', companyOrgs)
                     setOrganizations(companyOrgs)
+                    console.log('🔍 Set company organizations:', companyOrgs.length)
                 }
                 
                 if (personnelResponse.ok) {
                     const companyPersonnel = await personnelResponse.json()
+                    console.log('🔍 Company personnel response:', companyPersonnel)
                     setPersonnel(companyPersonnel)
+                    console.log('🔍 Set company personnel:', companyPersonnel.length)
                 }
                 
                 // Fetch projects and events (these are linked through organizations)
@@ -226,17 +239,7 @@ export const Settings = () => {
         }
     }, [user?.is_super_admin, selectedCompanyId, companies.length, setGlobalCompany])
 
-    // Initial data loading for super admin when Relay is auto-selected
-    useEffect(() => {
-        if (user?.is_super_admin && selectedCompanyId && companies.length > 0) {
-            const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
-            if (selectedCompany?.is_super_admin) {
-                // For Relay company, load users and personnel without clearing other data
-                fetchUsers()
-                fetchPersonnel()
-            }
-        }
-    }, [user?.is_super_admin, selectedCompanyId, companies.length])
+
 
 
     
