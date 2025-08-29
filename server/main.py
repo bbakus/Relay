@@ -175,20 +175,20 @@ def send_approval_email(recipient_email, recipient_name, login_email, temporary_
                     }}
                 </style>
             </head>
-            <body style="margin: 0; padding: 0; background-color: #0f0f23; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+            <body style="margin: 0; padding: 0; background-color: #0b0f17; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
                 <!-- Email Container -->
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0f0f23;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0b0f17;">
                     <tr>
                         <td align="center" style="padding: 40px 20px;">
                             <!-- Main Content Card -->
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="background: linear-gradient(135deg, #0f1522 0%, #0b0f17 100%); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden;">
                                 
                                 <!-- Header with Relay Logo -->
                                 <tr>
-                                    <td style="background: linear-gradient(135deg, #ff7a18 0%, #ff6b35 100%); padding: 40px 30px; text-align: center;">
+                                    <td style="background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); padding: 40px 30px; text-align: center;">
                                         <!-- Logo Image -->
                                         <img src="https://relay-taupe.vercel.app/images/logo/logo5.png" alt="Relay Logo" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 12px;">
-                                        <h1 style="margin: 0; color: white; font-size: 42px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); letter-spacing: 2px; font-family: 'Gummi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
+                                        <h1 style="margin: 0; color: #ff7a18; font-size: 42px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); letter-spacing: 2px; font-family: 'Gummi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
                                             RELAY
                                         </h1>
                                         <p style="margin: 15px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px;">
@@ -244,7 +244,7 @@ def send_approval_email(recipient_email, recipient_name, login_email, temporary_
                                 <!-- Action Section -->
                                 <tr>
                                     <td style="padding: 0 30px 30px 30px; text-align: center;">
-                                        <div style="background: rgba(255,122,24,0.1); border: 2px solid rgba(255,122,24,0.3); border-radius: 15px; padding: 25px;">
+                                        <div style="background: rgba(255,122,24,0.06); border: 2px solid rgba(255,122,24,0.2); border-radius: 15px; padding: 30px;">
                                             <h3 style="margin: 0 0 20px 0; color: #ff7a18; font-size: 20px; font-weight: 600; letter-spacing: 0.5px; font-family: 'Gummi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
                                                 Next Steps
                                             </h3>
@@ -264,7 +264,7 @@ def send_approval_email(recipient_email, recipient_name, login_email, temporary_
                                 
                                 <!-- Footer -->
                                 <tr>
-                                    <td style="background: rgba(0,0,0,0.3); padding: 30px; text-align: center;">
+                                    <td style="background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); padding: 30px; text-align: center;">
                                         <p style="margin: 0 0 15px 0; color: #b8b8b8; font-size: 14px;">
                                             Need help? Contact our support team anytime.
                                         </p>
