@@ -10,6 +10,22 @@ export const Settings = () => {
     const { userId } = useParams()
     const navigate = useNavigate()
     
+    /*
+    ACCESS CONTROL LOGIC:
+    
+    1. SUPER ADMIN (Relay company users):
+       - Can see company dropdown to switch between companies
+       - Can edit personnel/users in any company
+       - Can view all companies' data
+       - Default view is Relay company
+    
+    2. REGULAR ADMIN (Non-Relay company users):
+       - Only see their own company's data
+       - Cannot switch company view
+       - Can edit personnel/users in their company only
+       - Cannot see Relay company or other companies
+    */
+    
 
 
     // Available avatars list 
@@ -233,13 +249,21 @@ export const Settings = () => {
         }
     }, [selectedCompanyId, user?.is_super_admin])
     
+    // For regular admins, always load their company's data
+    useEffect(() => {
+        if (!user?.is_super_admin && user?.company_id) {
+            // Regular admin - only see their company's data
+            fetchCompanyData(user.company_id.toString())
+        }
+    }, [user?.company_id, user?.is_super_admin])
+    
     // Get current company info for conditional rendering
     const currentCompanyId = user?.is_super_admin ? selectedCompanyId : user?.company_id?.toString()
     const currentCompany = companies.find(c => c.id === parseInt(currentCompanyId || '0'))
     
-    // For super admin, if no company is selected, default to viewing Relay
+    // For super admin, determine if currently viewing Relay company
     const isViewingRelay = user?.is_super_admin && (
-        currentCompany?.is_super_admin || 
+        (selectedCompanyId && currentCompany?.is_super_admin) || 
         (!selectedCompanyId && companies.some(c => c.is_super_admin))
     )
     
@@ -1485,25 +1509,36 @@ export const Settings = () => {
                                         </button>
                                     </div>
                                     
-                                    {/* Company Selection Dropdown */}
-                                    <div className='company-selector'>
-                                        <label htmlFor='company-select'>Company View:</label>
-                                        <select 
-                                            id='company-select'
-                                            value={selectedCompanyId || (companies.find(c => c.is_super_admin)?.id || '')}
-                                            onChange={(e) => setGlobalCompany(e.target.value)}
-                                            className='company-dropdown'
-                                        >
-                                            {companies.map(company => (
-                                                <option key={company.id} value={company.id}>
-                                                    {company.name} {company.is_super_admin ? '(Super Admin)' : ''}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className='company-info'>
-                                        <p>You are viewing data for: <strong>{companies.find(c => c.id === parseInt(selectedCompanyId || companies.find(c => c.is_super_admin)?.id))?.name || 'Relay'}</strong></p>
-                                    </div>
+                                    {/* Company Selection Dropdown - Only for Relay Super Admins */}
+                                    {user?.is_super_admin && (
+                                        <>
+                                            <div className='company-selector'>
+                                                <label htmlFor='company-select'>Company View:</label>
+                                                <select 
+                                                    id='company-select'
+                                                    value={selectedCompanyId || (companies.find(c => c.is_super_admin)?.id || '')}
+                                                    onChange={(e) => setGlobalCompany(e.target.value)}
+                                                    className='company-dropdown'
+                                                >
+                                                    {companies.map(company => (
+                                                        <option key={company.id} value={company.id}>
+                                                            {company.name} {company.is_super_admin ? '(Super Admin)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className='company-info'>
+                                                <p>You are viewing data for: <strong>{companies.find(c => c.id === parseInt(selectedCompanyId || companies.find(c => c.is_super_admin)?.id))?.name || 'Relay'}</strong></p>
+                                            </div>
+                                        </>
+                                    )}
+                                    
+                                    {/* Company Info for Regular Admins */}
+                                    {!user?.is_super_admin && userCompany && (
+                                        <div className='company-info'>
+                                            <p>You are viewing data for: <strong>{userCompany.name}</strong></p>
+                                        </div>
+                                    )}
                                     
                                     <div className='settings-items-list'>
                                         {companies.length === 0 ? (
