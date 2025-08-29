@@ -104,33 +104,117 @@ def send_approval_email(recipient_email, recipient_name, login_email, temporary_
             to_emails=recipient_email,
             subject='Access Request Approved - Welcome to Relay!',
             html_content=f"""
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #ff7a18;">Welcome to Relay! 🎉</h2>
-                
-                <p>Dear {recipient_name},</p>
-                
-                <p><strong>Great news!</strong> Your access request to join the Relay platform has been approved.</p>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #333;">Your Login Credentials:</h3>
-                    <ul style="color: #555;">
-                        <li><strong>Email:</strong> {login_email}</li>
-                        <li><strong>Temporary Password:</strong> {temporary_password}</li>
-                        <li><strong>Organization:</strong> {organization_name}</li>
-                    </ul>
-                </div>
-                
-                <p>Please log in at your earliest convenience and change your password in the settings.</p>
-                
-                <p>If you have any questions or need assistance, please don't hesitate to reach out.</p>
-                
-                <p>Welcome to the team!</p>
-                
-                <p style="margin-top: 30px;">
-                    <strong>Best regards,</strong><br>
-                    The Relay Team
-                </p>
-            </div>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Welcome to Relay</title>
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #0f0f23; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <!-- Email Container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #0f0f23;">
+                    <tr>
+                        <td align="center" style="padding: 40px 20px;">
+                            <!-- Main Content Card -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); overflow: hidden;">
+                                
+                                <!-- Header with Relay Logo -->
+                                <tr>
+                                    <td style="background: linear-gradient(135deg, #ff7a18 0%, #ff6b35 100%); padding: 40px 30px; text-align: center;">
+                                        <h1 style="margin: 0; color: white; font-size: 36px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                            🚀 RELAY
+                                        </h1>
+                                        <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 18px; font-weight: 300;">
+                                            Professional Event Management Platform
+                                        </p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Welcome Message -->
+                                <tr>
+                                    <td style="padding: 40px 30px; text-align: center;">
+                                        <h2 style="margin: 0 0 20px 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                                            Welcome to the Team! 🎉
+                                        </h2>
+                                        <p style="margin: 0 0 30px 0; color: #b8b8b8; font-size: 16px; line-height: 1.6;">
+                                            Dear <strong style="color: #ff7a18;">{recipient_name}</strong>,<br>
+                                            Your access request has been approved and you're now part of the Relay family!
+                                        </p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Credentials Card -->
+                                <tr>
+                                    <td style="padding: 0 30px 30px 30px;">
+                                        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; backdrop-filter: blur(10px);">
+                                            <h3 style="margin: 0 0 20px 0; color: #ff7a18; font-size: 20px; font-weight: 600; text-align: center;">
+                                                🔐 Your Login Credentials
+                                            </h3>
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                                <tr>
+                                                    <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                                        <span style="color: #b8b8b8; font-size: 14px;">Email Address:</span>
+                                                        <span style="color: #ffffff; font-size: 14px; font-weight: 600; float: right;">{login_email}</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                                        <span style="color: #b8b8b8; font-size: 14px;">Temporary Password:</span>
+                                                        <span style="color: #ff7a18; font-size: 14px; font-weight: 600; float: right;">{temporary_password}</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 8px 0;">
+                                                        <span style="color: #b8b8b8; font-size: 14px;">Organization:</span>
+                                                        <span style="color: #ffffff; font-size: 14px; font-weight: 600; float: right;">{organization_name}</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Action Section -->
+                                <tr>
+                                    <td style="padding: 0 30px 30px 30px; text-align: center;">
+                                        <div style="background: rgba(255,122,24,0.1); border: 2px solid rgba(255,122,24,0.3); border-radius: 15px; padding: 25px;">
+                                            <h3 style="margin: 0 0 15px 0; color: #ff7a18; font-size: 18px; font-weight: 600;">
+                                                🚀 Next Steps
+                                            </h3>
+                                            <p style="margin: 0 0 20px 0; color: #b8b8b8; font-size: 14px; line-height: 1.5;">
+                                                1. Log in to your Relay account<br>
+                                                2. Change your temporary password<br>
+                                                3. Explore your dashboard and projects
+                                            </p>
+                                            <div style="background: linear-gradient(135deg, #ff7a18 0%, #ff6b35 100%); border-radius: 25px; padding: 12px 30px; display: inline-block;">
+                                                <span style="color: white; font-size: 14px; font-weight: 600; text-decoration: none;">
+                                                    Get Started Now →
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="background: rgba(0,0,0,0.3); padding: 30px; text-align: center;">
+                                        <p style="margin: 0 0 15px 0; color: #b8b8b8; font-size: 14px;">
+                                            Need help? Contact our support team anytime.
+                                        </p>
+                                        <p style="margin: 0; color: #666; font-size: 12px;">
+                                            <strong>Best regards,</strong><br>
+                                            The Relay Team
+                                        </p>
+                                    </td>
+                                </tr>
+                                
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
             """
         )
         
