@@ -128,15 +128,15 @@ The Relay Team
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Connect to server and send email
+        # Connect to server and send email with timeout
         print(f"Connecting to SMTP server: {EMAIL_CONFIG['smtp_server']}:{EMAIL_CONFIG['smtp_port']}")
         
         if EMAIL_CONFIG.get('use_ssl', False):
-            # Use SSL connection
-            server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
+            # Use SSL connection with timeout
+            server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'], timeout=10)
         else:
-            # Use TLS connection
-            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'])
+            # Use TLS connection with timeout
+            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'], timeout=10)
             server.starttls()  # Enable TLS encryption
         
         print("Attempting to login to email server...")
@@ -1931,25 +1931,32 @@ class AccessRequestDetail(Resource):
                 
                 session.commit()
                 
-                # Send approval email
-                email_sent = send_approval_email(
-                    recipient_email=req.email,
-                    recipient_name=req.name,
-                    login_email=req.email,
-                    temporary_password=temporary_password,
-                    organization_name=company_name
-                )
+                # Send approval email asynchronously (non-blocking)
+                import threading
+                def send_email_async():
+                    try:
+                        email_sent = send_approval_email(
+                            recipient_email=req.email,
+                            recipient_name=req.name,
+                            login_email=req.email,
+                            temporary_password=temporary_password,
+                            organization_name=company_name
+                        )
+                        print(f"Email sending completed: {'Success' if email_sent else 'Failed'}")
+                    except Exception as e:
+                        print(f"Email sending error: {e}")
                 
-                response_message = 'Access request approved and user created'
-                if email_sent:
-                    response_message += '. Approval email sent successfully.'
-                else:
-                    response_message += '. Note: Failed to send approval email.'
+                # Start email sending in background thread
+                email_thread = threading.Thread(target=send_email_async)
+                email_thread.daemon = True
+                email_thread.start()
+                
+                response_message = 'Access request approved and user created. Approval email will be sent shortly.'
                 
                 return {
                     'message': response_message,
                     'user_id': new_user.id,
-                    'email_sent': email_sent
+                    'email_sent': 'pending'
                 }, 200
                 
             elif action == 'deny':
