@@ -80,6 +80,15 @@ Session = sessionmaker(bind=engine)
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 SENDGRID_FROM_EMAIL = os.getenv('SENDGRID_FROM_EMAIL', 'brandonbakus@gmail.com')
 
+# Debug: Print environment variables to help troubleshoot
+print(f"DEBUG: SENDGRID_API_KEY exists: {bool(SENDGRID_API_KEY)}")
+print(f"DEBUG: SENDGRID_FROM_EMAIL: {SENDGRID_FROM_EMAIL}")
+if SENDGRID_API_KEY:
+    print(f"DEBUG: API Key length: {len(SENDGRID_API_KEY)}")
+    print(f"DEBUG: API Key starts with: {SENDGRID_API_KEY[:10]}...")
+else:
+    print("DEBUG: SENDGRID_API_KEY is None or empty")
+
 def send_approval_email(recipient_email, recipient_name, login_email, temporary_password, organization_name):
     """Send approval email to the requestee with login information using SendGrid"""
     try:
