@@ -269,6 +269,16 @@ export const Settings = () => {
         (!selectedCompanyId && companies.some(c => c.is_super_admin))
     )
     
+    // Debug logging for company view logic
+    console.log('🔍 Company View Debug:', {
+        userIsSuperAdmin: user?.is_super_admin,
+        selectedCompanyId,
+        currentCompany: currentCompany?.name,
+        currentCompanyIsRelay: currentCompany?.is_super_admin,
+        isViewingRelay,
+        companies: companies.map(c => ({ id: c.id, name: c.name, isRelay: c.is_super_admin }))
+    })
+    
 
     
     // State for forms
@@ -680,10 +690,16 @@ export const Settings = () => {
             // For company admins, ensure company_id is set
             if (user?.company_id && !editingItem) {
                 submitData.company_id = user.company_id
+                console.log('🔍 Setting company_id for regular admin:', user.company_id)
             } else if (user?.is_super_admin && selectedCompanyId && !editingItem) {
                 // For super admins, use the currently selected company
                 submitData.company_id = parseInt(selectedCompanyId)
+                console.log('🔍 Setting company_id for super admin:', selectedCompanyId, '->', parseInt(selectedCompanyId))
+            } else {
+                console.log('🔍 No company_id set. User:', user?.is_super_admin, 'selectedCompanyId:', selectedCompanyId, 'editingItem:', editingItem)
             }
+            
+            console.log('🔍 Final submitData:', submitData)
             
             const response = await fetch(url, {
                 method,
@@ -2015,6 +2031,15 @@ export const Settings = () => {
                                                         }}
                                                     >
                                                         Assign
+                                                    </button>
+                                                    <button 
+                                                        className='delete-btn'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            deleteItem('personnel', person.id)
+                                                        }}
+                                                    >
+                                                        Delete
                                                     </button>
                                                 </div>
                                             </div>
