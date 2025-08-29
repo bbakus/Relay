@@ -166,7 +166,9 @@ def send_approval_email(recipient_email, recipient_name, login_email, temporary_
                 <style>
                     @font-face {{
                         font-family: 'Gummi';
-                        src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                        src: url('https://relay-taupe.vercel.app/images/fonts/KHGummi.otf') format('opentype');
+                        font-weight: normal;
+                        font-style: normal;
                     }}
                     .gummi-font {{
                         font-family: 'Gummi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -185,7 +187,7 @@ def send_approval_email(recipient_email, recipient_name, login_email, temporary_
                                 <tr>
                                     <td style="background: linear-gradient(135deg, #ff7a18 0%, #ff6b35 100%); padding: 40px 30px; text-align: center;">
                                         <!-- Logo Image -->
-                                        <img src="https://your-frontend-domain.com/images/logo/logo5.png" alt="Relay Logo" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 12px;">
+                                        <img src="https://relay-taupe.vercel.app/images/logo/logo5.png" alt="Relay Logo" style="width: 80px; height: 80px; margin-bottom: 20px; border-radius: 12px;">
                                         <h1 style="margin: 0; color: white; font-size: 42px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); letter-spacing: 2px; font-family: 'Gummi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;">
                                             RELAY
                                         </h1>
