@@ -35,7 +35,19 @@ from email import encoders
 
 # Load environment variables
 from dotenv import load_dotenv
-load_dotenv()
+import os
+
+# Get the directory where main.py is located
+current_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(current_dir, '.env')
+
+print(f"🔍 LOOKING FOR .env FILE AT: {env_path}")
+print(f"🔍 FILE EXISTS: {os.path.exists(env_path)}")
+
+# Load .env file with explicit path
+load_dotenv(env_path)
+
+print(f"🔍 AFTER LOAD_DOTENV - SENDGRID_API_KEY: {os.getenv('SENDGRID_API_KEY')}")
 
 app = Flask(__name__)
 
