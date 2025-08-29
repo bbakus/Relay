@@ -1854,6 +1854,84 @@ export const Settings = () => {
                                     </select>
                                 </div>
 
+                                {/* Personnel Edit Form - Show when editing */}
+                                {showPersonnelForm && (
+                                    <form className='settings-item-form' onSubmit={handlePersonnelSubmit}>
+                                        <div className='personnel-form-grid'>
+                                            <div className='form-row'>
+                                                <div className='form-field'>
+                                                    <label>Full Name *</label>
+                                                    <input
+                                                        type='text'
+                                                        placeholder='Enter full name'
+                                                        value={personnelForm.name}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, name: e.target.value})}
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className='form-field'>
+                                                    <label>Role *</label>
+                                                    <select
+                                                        value={personnelForm.role}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, role: e.target.value})}
+                                                        required
+                                                    >
+                                                        <option value=''>Select a role</option>
+                                                        <option value='Client'>Client</option>
+                                                        <option value='Coordinator'>Coordinator</option>
+                                                        <option value='Photographer'>Photographer</option>
+                                                        <option value='Videographer'>Videographer</option>
+                                                        <option value='Editor'>Editor</option>
+                                                        <option value='Admin'>Admin</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field'>
+                                                    <label>Email</label>
+                                                    <input
+                                                        type='email'
+                                                        placeholder='Enter email address'
+                                                        value={personnelForm.email}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, email: e.target.value})}
+                                                    />
+                                                </div>
+                                                <div className='form-field'>
+                                                    <label>Phone</label>
+                                                    <input
+                                                        type='tel'
+                                                        placeholder='Enter phone number'
+                                                        value={personnelForm.phone}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, phone: e.target.value})}
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field full-width'>
+                                                    <label>Availability Notes</label>
+                                                    <textarea
+                                                        placeholder='Enter availability information, schedule preferences, or any other relevant notes'
+                                                        value={personnelForm.availability}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, availability: e.target.value})}
+                                                        rows='3'
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='form-actions'>
+                                                <button type='submit' className='save-btn'>
+                                                    {editingItem ? 'Update' : 'Create'} Personnel
+                                                </button>
+                                                <button type='button' className='cancel-btn' onClick={resetPersonnelForm}>
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                )}
+
                                 <div className='settings-items-list'>
                                     {filteredPersonnel.length === 0 ? (
                                         <div className='settings-empty-state'>
