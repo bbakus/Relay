@@ -251,6 +251,7 @@ export const Settings = () => {
     const [showOrgForm, setShowOrgForm] = useState(false)
     const [showPersonnelForm, setShowPersonnelForm] = useState(false)
     const [showApprovalModal, setShowApprovalModal] = useState(false)
+    const [approvalLoading, setApprovalLoading] = useState(false)
     const [showAvatarModal, setShowAvatarModal] = useState(false)
     const [showAssignModal, setShowAssignModal] = useState(false)
     const [editingItem, setEditingItem] = useState(null)
@@ -1359,6 +1360,7 @@ export const Settings = () => {
             return
         }
 
+        setApprovalLoading(true)
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/access-requests/${selectedRequest.id}`, {
                 method: 'PUT',
@@ -1380,6 +1382,8 @@ export const Settings = () => {
             if (response.ok) {
                 const data = await response.json()
                 fetchAccessRequests()
+                // Always refresh users list since a new user was created
+                fetchUsers()
                 // Refresh personnel list if personnel was created
                 if (approvalForm.create_personnel) {
                     fetchPersonnel()
@@ -1396,6 +1400,8 @@ export const Settings = () => {
         } catch (error) {
             console.error('Error approving request:', error)
             alert('Failed to approve request')
+        } finally {
+            setApprovalLoading(false)
         }
     }
 
@@ -2506,8 +2512,12 @@ export const Settings = () => {
 
                         <form onSubmit={handleApprovalSubmit}>
                             <div className='modal-actions'>
-                                <button type='submit' className='approve-btn'>
-                                    Approve & Create User
+                                <button 
+                                    type='submit' 
+                                    className='approve-btn'
+                                    disabled={approvalLoading}
+                                >
+                                    {approvalLoading ? 'Creating User...' : 'Approve & Create User'}
                                 </button>
                                 <button 
                                     type='button' 
