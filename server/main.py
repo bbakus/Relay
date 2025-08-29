@@ -49,6 +49,38 @@ load_dotenv(env_path)
 
 print(f"🔍 AFTER LOAD_DOTENV - SENDGRID_API_KEY: {os.getenv('SENDGRID_API_KEY')}")
 
+# RAILWAY SPECIFIC: Try to force load from Railway environment
+print("🔍 CHECKING RAILWAY ENVIRONMENT...")
+railway_env_vars = ['SENDGRID_API_KEY', 'SENDGRID_FROM_EMAIL', 'DATABASE_URL', 'PORT']
+for var in railway_env_vars:
+    value = os.getenv(var)
+    print(f"🔍 {var}: '{value}'")
+    
+# If still not working, try alternative loading methods
+if not os.getenv('SENDGRID_API_KEY'):
+    print("🚨 RAILWAY ENV VARS NOT LOADING - TRYING ALTERNATIVE METHODS")
+    
+    # Check if we're running in Railway
+    print(f"🔍 RAILWAY_ENVIRONMENT: {os.getenv('RAILWAY_ENVIRONMENT', 'NOT_SET')}")
+    print(f"🔍 RAILWAY_PROJECT_ID: {os.getenv('RAILWAY_PROJECT_ID', 'NOT_SET')}")
+    print(f"🔍 RAILWAY_SERVICE_ID: {os.getenv('RAILWAY_SERVICE_ID', 'NOT_SET')}")
+    
+    # Try loading from system environment
+    import sys
+    print(f"🔍 Python executable: {sys.executable}")
+    print(f"🔍 Current working directory: {os.getcwd()}")
+    print(f"🔍 Environment file path: {env_path}")
+    print(f"🔍 Environment file exists: {os.path.exists(env_path)}")
+    
+    # Check if we're in a container
+    print(f"🔍 Running in container: {os.path.exists('/.dockerenv')}")
+    
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            print(f"🔍 .env file contents: {f.read()}")
+else:
+    print("✅ RAILWAY ENV VARS ARE LOADING CORRECTLY!")
+
 app = Flask(__name__)
 
 # CORS configuration from environment variables
@@ -90,11 +122,12 @@ Session = sessionmaker(bind=engine)
 
 # Email configuration - SendGrid
 print("=== ENVIRONMENT VARIABLE DEBUGGING ===")
-print(f"All environment variables: {dict(os.environ)}")
-print(f"DEBUG: SENDGRID_API_KEY = {os.getenv('SENDGRID_API_KEY')}")
-print(f"DEBUG: SENDGRID_FROM_EMAIL = {os.getenv('SENDGRID_FROM_EMAIL')}")
-print(f"DEBUG: DATABASE_URL = {os.getenv('DATABASE_URL', 'NOT_SET')[:50]}...")
-print(f"DEBUG: FLASK_ENV = {os.getenv('FLASK_ENV', 'NOT_SET')}")
+print(f"🔍 ALL ENV VARS: {list(os.environ.keys())}")
+print(f"🔍 SENDGRID_API_KEY = '{os.getenv('SENDGRID_API_KEY')}'")
+print(f"🔍 SENDGRID_FROM_EMAIL = '{os.getenv('SENDGRID_FROM_EMAIL')}'")
+print(f"🔍 DATABASE_URL = '{os.getenv('DATABASE_URL', 'NOT_SET')[:50]}...'")
+print(f"🔍 FLASK_ENV = '{os.getenv('FLASK_ENV', 'NOT_SET')}'")
+print(f"🔍 PORT = '{os.getenv('PORT', 'NOT_SET')}'")
 print("=== END DEBUGGING ===")
 
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
