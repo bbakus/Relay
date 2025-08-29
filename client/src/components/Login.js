@@ -215,6 +215,9 @@ export const Login = ({liftUserId}) => {
                             <div className='confirmation-icon'>✓</div>
                             <h2>Request Submitted Successfully!</h2>
                             <p>You will receive an email once the Admin approves your request.</p>
+                            <p style={{color: '#ff7a18', fontSize: '14px', marginTop: '10px', fontStyle: 'italic'}}>
+                                Please check your spam folder if you don't see the approval email in your inbox.
+                            </p>
                             <button 
                                 className='confirmation-button' 
                                 onClick={() => setConfirmationModal(false)}
