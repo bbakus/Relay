@@ -27,9 +27,9 @@ from models import (
 from flask_restful import Api, Resource
 from werkzeug.security import check_password_hash
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+# import smtplib  # No longer needed with SendGrid
+# from email.mime.text import MIMEText  # No longer needed with SendGrid
+# from email.mime.multipart import MIMEMultipart  # No longer needed with SendGrid
 from email.mime.base import MIMEBase
 from email import encoders
 
@@ -76,89 +76,81 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://brandonbakus:password123@
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
-# Email configuration
-EMAIL_CONFIG = {
-    'smtp_server': 'smtp.gmail.com',  # Use standard Gmail SMTP
-    'smtp_port': 465,  # Use SSL port instead of TLS
-    'email': os.getenv('RELAY_EMAIL', 'brandonbakus@gmail.com'),
-    'password': os.getenv('RELAY_EMAIL_PASSWORD', ''),
-    'use_ssl': True  # Use SSL instead of TLS
-}
+# Email configuration - SendGrid
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+SENDGRID_FROM_EMAIL = os.getenv('SENDGRID_FROM_EMAIL', 'brandonbakus@gmail.com')
 
 def send_approval_email(recipient_email, recipient_name, login_email, temporary_password, organization_name):
-    """Send approval email to the requestee with login information"""
+    """Send approval email to the requestee with login information using SendGrid"""
     try:
-        # Check if email configuration is set up
-        if not EMAIL_CONFIG['email'] or EMAIL_CONFIG['email'] == 'relay.system@gmail.com':
-            print("Email not configured: RELAY_EMAIL environment variable not set")
+        # Check if SendGrid is configured
+        if not SENDGRID_API_KEY:
+            print("SendGrid not configured: SENDGRID_API_KEY environment variable not set")
             return False
             
-        if not EMAIL_CONFIG['password']:
-            print("Email not configured: RELAY_EMAIL_PASSWORD environment variable not set")
+        if not SENDGRID_FROM_EMAIL:
+            print("SendGrid not configured: SENDGRID_FROM_EMAIL environment variable not set")
             return False
         
-        print(f"Attempting to send email to {recipient_email} using {EMAIL_CONFIG['email']}")
+        print(f"Attempting to send email to {recipient_email} using SendGrid")
         
-        # Create message
-        msg = MIMEMultipart()
-        msg['From'] = EMAIL_CONFIG['email']
-        msg['To'] = recipient_email
-        msg['Subject'] = f"Access Request Approved - Welcome to Relay!"
+        # Import SendGrid
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
         
-        # Email body
-        body = f"""
-Dear {recipient_name},
-
-Great news! Your access request to join the Relay platform has been approved.
-
-Your login credentials:
-• Email: {login_email}
-• Temporary Password: {temporary_password}
-• Organization: {organization_name}
-
-Please log in at your earliest convenience and change your password in the settings.
-
-If you have any questions or need assistance, please don't hesitate to reach out.
-
-Welcome to the team!
-
-Best regards,
-The Relay Team
-        """
+        # Create email message
+        message = Mail(
+            from_email=SENDGRID_FROM_EMAIL,
+            to_emails=recipient_email,
+            subject='Access Request Approved - Welcome to Relay!',
+            html_content=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #ff7a18;">Welcome to Relay! 🎉</h2>
+                
+                <p>Dear {recipient_name},</p>
+                
+                <p><strong>Great news!</strong> Your access request to join the Relay platform has been approved.</p>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #333;">Your Login Credentials:</h3>
+                    <ul style="color: #555;">
+                        <li><strong>Email:</strong> {login_email}</li>
+                        <li><strong>Temporary Password:</strong> {temporary_password}</li>
+                        <li><strong>Organization:</strong> {organization_name}</li>
+                    </ul>
+                </div>
+                
+                <p>Please log in at your earliest convenience and change your password in the settings.</p>
+                
+                <p>If you have any questions or need assistance, please don't hesitate to reach out.</p>
+                
+                <p>Welcome to the team!</p>
+                
+                <p style="margin-top: 30px;">
+                    <strong>Best regards,</strong><br>
+                    The Relay Team
+                </p>
+            </div>
+            """
+        )
         
-        msg.attach(MIMEText(body, 'plain'))
+        # Send email using SendGrid
+        print("Sending email via SendGrid...")
+        sg = SendGridAPIClient(api_key=SENDGRID_API_KEY)
+        response = sg.send(message)
         
-        # Connect to server and send email with timeout
-        print(f"Connecting to SMTP server: {EMAIL_CONFIG['smtp_server']}:{EMAIL_CONFIG['smtp_port']}")
-        
-        if EMAIL_CONFIG.get('use_ssl', False):
-            # Use SSL connection with timeout
-            server = smtplib.SMTP_SSL(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'], timeout=10)
+        if response.status_code in [200, 201, 202]:
+            print(f"Email sent successfully to {recipient_email} via SendGrid")
+            return True
         else:
-            # Use TLS connection with timeout
-            server = smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port'], timeout=10)
-            server.starttls()  # Enable TLS encryption
+            print(f"SendGrid error: Status {response.status_code}")
+            return False
         
-        print("Attempting to login to email server...")
-        server.login(EMAIL_CONFIG['email'], EMAIL_CONFIG['password'])
-        
-        print("Sending email...")
-        text = msg.as_string()
-        server.sendmail(EMAIL_CONFIG['email'], recipient_email, text)
-        server.quit()
-        
-        print(f"Email sent successfully to {recipient_email}")
-        return True
-        
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"SMTP Authentication failed: {str(e)}")
-        print("This usually means your email/password is incorrect or you need an app password")
-        return False
-    except smtplib.SMTPException as e:
-        print(f"SMTP error occurred: {str(e)}")
+    except ImportError:
+        print("SendGrid not installed. Run: pip install sendgrid")
         return False
     except Exception as e:
-        print(f"Failed to send email: {str(e)}")
+        print(f"Failed to send email via SendGrid: {str(e)}")
         return False
 
 
