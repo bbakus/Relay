@@ -109,12 +109,29 @@ export const Settings = () => {
         }
     }
 
-    // Fetch data based on selected company
+    // Fetch data based on selected company - SIMPLE AND CLEAN
     const fetchCompanyData = async (companyId) => {
         if (!companyId) return
         
+        console.log('🔍 fetchCompanyData called for company ID:', companyId)
+        
         try {
-            const isRelay = companies.find(c => c.id === parseInt(companyId))?.is_super_admin
+            const selectedCompany = companies.find(c => c.id === parseInt(companyId))
+            if (!selectedCompany) {
+                console.log('🔍 Company not found, aborting')
+                return
+            }
+            
+            console.log('🔍 Loading data for company:', selectedCompany.name, 'IsRelay:', selectedCompany.is_super_admin)
+            
+            // ALWAYS clear all data first to prevent mixing between companies
+            setUsers([])
+            setPersonnel([])
+            setOrganizations([])
+            setProjects([])
+            setEvents([])
+            
+            const isRelay = selectedCompany.is_super_admin
             
 
             
@@ -185,8 +202,10 @@ export const Settings = () => {
                 }
             }
             
+            console.log('🔍 fetchCompanyData completed for company:', selectedCompany.name)
+            
         } catch (error) {
-            console.error('Error fetching company data:', error)
+            console.error('❌ Error fetching company data:', error)
         }
     }
 
@@ -221,40 +240,32 @@ export const Settings = () => {
 
 
     
-    // Fetch company-specific data when company selection changes
+    // SIMPLE COMPANY FILTERING LOGIC:
+    // When viewing Company X, ONLY show data for Company X
+    
+    // Effect for super admin company switching
     useEffect(() => {
-        // Only run this if we actually have a company selected and companies are loaded
         if (user?.is_super_admin && selectedCompanyId && companies.length > 0) {
             const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
-            if (selectedCompany && !selectedCompany.is_super_admin) {
-                // Only call fetchCompanyData for non-Relay companies
-                fetchCompanyData(selectedCompanyId)
-            }
-        }
-        // Company admins should NOT call fetchCompanyData - they use individual fetch functions
-        // Don't handle the no-company case here - let the initial useEffect handle it
-    }, [selectedCompanyId, companies, user])
-    
-    // Additional effect to refresh data when company changes for super admin
-    useEffect(() => {
-        if (user?.is_super_admin && selectedCompanyId) {
-            // Always refresh data when company changes
-            const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
             if (selectedCompany) {
+                console.log('🔍 Super admin switching to company:', selectedCompany.name, 'ID:', selectedCompanyId)
+                
                 if (selectedCompany.is_super_admin) {
+                    // Relay company - load Relay users and personnel
                     fetchUsers()
                     fetchPersonnel()
                 } else {
+                    // Other company - load ONLY that company's data
                     fetchCompanyData(selectedCompanyId)
                 }
             }
         }
-    }, [selectedCompanyId, user?.is_super_admin])
+    }, [selectedCompanyId, companies, user?.is_super_admin])
     
-    // For regular admins, always load their company's data
+    // Effect for regular admin - always load their company's data
     useEffect(() => {
         if (!user?.is_super_admin && user?.company_id) {
-            // Regular admin - only see their company's data
+            console.log('🔍 Regular admin loading company data for:', user.company_id)
             fetchCompanyData(user.company_id.toString())
         }
     }, [user?.company_id, user?.is_super_admin])
@@ -269,15 +280,7 @@ export const Settings = () => {
         (!selectedCompanyId && companies.some(c => c.is_super_admin))
     )
     
-    // Debug logging for company view logic
-    console.log('🔍 Company View Debug:', {
-        userIsSuperAdmin: user?.is_super_admin,
-        selectedCompanyId,
-        currentCompany: currentCompany?.name,
-        currentCompanyIsRelay: currentCompany?.is_super_admin,
-        isViewingRelay,
-        companies: companies.map(c => ({ id: c.id, name: c.name, isRelay: c.is_super_admin }))
-    })
+
     
 
     
