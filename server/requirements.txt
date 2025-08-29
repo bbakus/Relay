@@ -5,7 +5,7 @@ SQLAlchemy==2.0.21
 psycopg2-binary==2.9.7
 python-dotenv==1.0.0
 Pillow==10.0.0
-Werkzeug==2.6.3
+Werkzeug==2.3.7
 gunicorn==21.2.0
 sqlalchemy-serializer==1.4.1
 sendgrid==6.10.0
