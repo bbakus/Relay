@@ -10,10 +10,31 @@ import { Personnel } from './components/Personnel';
 import { Events } from './components/Events';
 import { ShotRequest } from './components/ShotRequest';
 import { Deliver } from './components/Deliver';
+import { useEffect } from 'react';
 
 
 
 function App() {
+  // Fix Safari viewport height issues
+  useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    // Set initial value
+    setVH();
+
+    // Update on resize
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+    };
+  }, []);
+
   return (
     <div className="App">
       <AuthProvider>

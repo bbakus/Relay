@@ -6,6 +6,12 @@ html, body, #root, .App {
               radial-gradient(900px 500px at 110% 10%, rgba(255, 184, 77, 0.2), transparent 55%),
               linear-gradient(160deg, var(--bg-1), var(--bg-2));
   color: var(--text);
+  /* Ensure proper scrolling in Safari */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Fix Safari viewport height issues */
+  height: 100%;
+  position: relative;
 }
 
 :root {
@@ -17,6 +23,21 @@ html, body, #root, .App {
   --muted: #9aa4b2;
   --accent: #ff7a18; /* orange highlight */
   --accent-2: #ffb84d;
+  /* Safari viewport height fix */
+  --vh: 1vh;
+}
+
+/* Safari-specific viewport height fix */
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --vh: 1vh;
+  }
+  
+  html, body, #root, .App {
+    /* Use dynamic viewport height for Safari */
+    height: calc(var(--vh, 1vh) * 100);
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
 }
 
 @font-face {
@@ -293,7 +314,16 @@ html, body, #root, .App {
 }
 
 /* Page content offset */
-.page-container { margin: 180px 0 0 150px; }
+.page-container { 
+  margin: 180px 0 0 150px; 
+  /* Ensure proper scrolling in Safari - use dynamic viewport height */
+  min-height: calc(var(--vh, 1vh) * 100 - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Fix Safari viewport height calculation */
+  height: auto;
+  position: relative;
+}
 
 /* Profile Modal Styles */
 .profile-modal-content {

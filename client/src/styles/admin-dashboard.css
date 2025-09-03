@@ -2,7 +2,13 @@
   padding: 20px 40px;
   max-width: 1600px;
   margin: 0 auto;
-  min-height: 100vh;
+  /* Fix Safari scrolling issues - use dynamic viewport height */
+  min-height: calc(var(--vh, 1vh) * 100 - 200px);
+  /* Ensure content can expand beyond viewport */
+  height: auto;
+  /* Allow proper scrolling */
+  overflow-y: visible;
+  overflow-x: hidden;
 }
 
 /* Header */
