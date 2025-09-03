@@ -495,7 +495,7 @@ export const Nav = () => {
                 return (
                   <a 
                     key={item.label} 
-                    href="https://www.shootproof.com" 
+                    href="https://damionhamiltonphotographer.shootproof.com/gallery/AutoDeskAU2025" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className='nav-link'
