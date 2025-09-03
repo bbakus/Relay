@@ -6,7 +6,7 @@ import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/personnel.css'
 
 export const Personnel = () => {
-  const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
+  const { user, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId } = useAuth()
 
   const [personnel, setPersonnel] = useState([])
   const [projects, setProjects] = useState([])
@@ -40,9 +40,11 @@ export const Personnel = () => {
     const fetchAll = async () => {
       try {
         setLoading(true)
-        // Filter personnel by company for company admins
+        // Filter personnel by company - use selectedCompanyId for super admin, user.company_id for regular users
         let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
-        if (user?.company_id) {
+        if (user?.is_super_admin && selectedCompanyId) {
+          personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+        } else if (user?.company_id) {
           personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
         }
         
@@ -66,7 +68,7 @@ export const Personnel = () => {
       }
     }
     fetchAll()
-  }, [])
+  }, [user?.is_super_admin, selectedCompanyId, user?.company_id])
 
   // Live tick to refresh event statuses
   useEffect(() => {
@@ -347,7 +349,14 @@ export const Personnel = () => {
 
       if (response.ok) {
         // Refresh personnel data to get updated assignments
-        const pplRes = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
+        let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
+        if (user?.is_super_admin && selectedCompanyId) {
+          personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+        } else if (user?.company_id) {
+          personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
+        }
+        
+        const pplRes = await fetch(personnelUrl)
         if (pplRes.ok) {
           const updatedPersonnel = await pplRes.json()
           setPersonnel(Array.isArray(updatedPersonnel) ? updatedPersonnel : [])
