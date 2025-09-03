@@ -143,6 +143,7 @@
 
 /* Role text color styling - only the role name is colored */
 .personnel-list-row.role-photographer .meta { color: #1e90ff; font-weight: 700; }
+.personnel-list-row.role-lead-photographer .meta { color: #20c997; font-weight: 700; }
 .personnel-list-row.role-editor .meta { color: #ff7a18; font-weight: 700; }
 .personnel-list-row.role-coordinator .meta { color: #ffd700; font-weight: 700; }
 .personnel-list-row.role-admin .meta { color: #dc3545; font-weight: 700; }
@@ -456,6 +457,10 @@
   background: linear-gradient(90deg, rgba(0, 123, 255, 0.8), rgba(0, 123, 255, 0.6));
 }
 
+.bar.role-lead-photographer {
+  background: linear-gradient(90deg, rgba(32, 201, 151, 0.8), rgba(32, 201, 151, 0.6));
+}
+
 .bar.role-editor {
   background: linear-gradient(90deg, rgba(255, 122, 24, 0.8), rgba(255, 122, 24, 0.6));
 }
@@ -520,6 +525,10 @@
 
 .role-dot.role-photographer {
   background: rgba(0, 123, 255, 0.9);
+}
+
+.role-dot.role-lead-photographer {
+  background: rgba(32, 201, 151, 0.9);
 }
 
 .role-dot.role-editor {

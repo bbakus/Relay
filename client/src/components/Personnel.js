@@ -25,6 +25,7 @@ export const Personnel = () => {
 
   const getRoleClass = (role) => {
     const r = (role || '').toLowerCase()
+    if (r.includes('lead photographer')) return 'role-lead-photographer'
     if (r.includes('photographer')) return 'role-photographer'
     if (r.includes('editor')) return 'role-editor'
     if (r.includes('coordinator')) return 'role-coordinator'

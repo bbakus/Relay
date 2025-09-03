@@ -1733,6 +1733,7 @@ export const Settings = () => {
                                                         <option value='Client'>Client</option>
                                                         <option value='Coordinator'>Coordinator</option>
                                                         <option value='Photographer'>Photographer</option>
+                                                        <option value='Lead Photographer'>Lead Photographer</option>
                                                         <option value='Videographer'>Videographer</option>
                                                         <option value='Editor'>Editor</option>
                                                         <option value='Admin'>Admin</option>
@@ -1920,6 +1921,7 @@ export const Settings = () => {
                                                         <option value='Client'>Client</option>
                                                         <option value='Coordinator'>Coordinator</option>
                                                         <option value='Photographer'>Photographer</option>
+                                                        <option value='Lead Photographer'>Lead Photographer</option>
                                                         <option value='Videographer'>Videographer</option>
                                                         <option value='Editor'>Editor</option>
                                                         <option value='Admin'>Admin</option>
