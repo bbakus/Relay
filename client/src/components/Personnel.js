@@ -7,6 +7,9 @@ import '../styles/personnel.css'
 
 export const Personnel = () => {
   const { user, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId } = useAuth()
+  
+  // Debug logging
+  console.log('🔍 Personnel component render - selectedCompanyId:', selectedCompanyId, 'user.is_super_admin:', user?.is_super_admin)
 
   const [personnel, setPersonnel] = useState([])
   const [projects, setProjects] = useState([])
@@ -44,9 +47,15 @@ export const Personnel = () => {
         let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
         if (user?.is_super_admin && selectedCompanyId) {
           personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+          console.log('🔍 Personnel: Fetching for selected company ID:', selectedCompanyId)
         } else if (user?.company_id) {
           personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
+          console.log('🔍 Personnel: Fetching for user company ID:', user.company_id)
+        } else {
+          console.log('🔍 Personnel: No company filter - fetching all personnel')
         }
+        
+        console.log('🔍 Personnel: Fetching from URL:', personnelUrl)
         
         const [pplRes, projRes, evtRes] = await Promise.all([
           fetch(personnelUrl),
@@ -57,6 +66,9 @@ export const Personnel = () => {
         const ppl = pplRes.ok ? await pplRes.json() : []
         const projs = projRes.ok ? await projRes.json() : []
         const evts = evtRes.ok ? await evtRes.json() : []
+
+        console.log('🔍 Personnel: Received personnel data:', ppl.length, 'items')
+        console.log('🔍 Personnel: Personnel companies:', [...new Set(ppl.map(p => p.company_id))])
 
         setPersonnel(Array.isArray(ppl) ? ppl : [])
         setProjects(Array.isArray(projs) ? projs : [])
