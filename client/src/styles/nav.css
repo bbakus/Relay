@@ -62,6 +62,60 @@ html, body, #root, .App {
   z-index: 150;
 }
 
+/* Mobile header adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    height: 80px;
+    padding: 0 16px;
+    grid-template-columns: auto 1fr auto;
+  }
+}
+
+/* Hamburger menu button */
+.hamburger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 200;
+}
+
+.hamburger-menu span {
+  width: 100%;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+@media (max-width: 768px) {
+  .hamburger-menu {
+    display: flex;
+  }
+  
+  .hamburger-menu.active {
+    /* Active state styles if needed */
+  }
+}
+
 .app-header-left {
   display: flex;
   align-items: center;
@@ -90,6 +144,14 @@ html, body, #root, .App {
   padding: 0 10px;
   white-space: nowrap;
   overflow: visible;
+}
+
+/* Mobile header title */
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: 24px;
+    padding: 0 5px;
+  }
 }
 
 .app-header-right {
@@ -219,6 +281,25 @@ html, body, #root, .App {
   pointer-events: none;
 }
 
+/* Mobile navigation */
+@media (max-width: 768px) {
+  .nav {
+    top: 80px; /* below mobile header */
+    width: 100%;
+    height: auto;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: var(--card);
+    border-bottom: 1px solid var(--card-border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  
+  .nav.mobile-open {
+    max-height: 400px;
+  }
+}
+
 .nav-inner {
   pointer-events: auto;
   height: 100%;
@@ -237,12 +318,35 @@ html, body, #root, .App {
 
 .nav-inner:hover { width: 300px; }
 
+/* Mobile navigation inner */
+@media (max-width: 768px) {
+  .nav-inner {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--card-border);
+    box-shadow: none;
+  }
+  
+  .nav-inner:hover {
+    width: 100%;
+  }
+}
+
 /* Links */
 .nav-links {
   display: flex;
   flex-direction: column;
   padding: 14px 10px;
   gap: 14px;
+}
+
+/* Mobile navigation links */
+@media (max-width: 768px) {
+  .nav-links {
+    padding: 20px;
+    gap: 8px;
+  }
 }
 
 /* Orange divider lines between nav icons */
@@ -323,6 +427,15 @@ html, body, #root, .App {
   /* Fix Safari viewport height calculation */
   height: auto;
   position: relative;
+}
+
+/* Mobile page container */
+@media (max-width: 768px) {
+  .page-container {
+    margin: 80px 0 0 0;
+    min-height: calc(var(--vh, 1vh) * 100 - 80px);
+    padding: 0 16px;
+  }
 }
 
 /* Profile Modal Styles */

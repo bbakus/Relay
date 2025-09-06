@@ -29,6 +29,9 @@ export const Nav = () => {
     avatar: user?.avatar || 'avatar1.png'
   })
 
+  // Mobile navigation state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   // Available avatars list (same as Settings)
   const availableAvatars = [
     'avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png', 'avatar5.png',
@@ -51,6 +54,11 @@ export const Nav = () => {
   const handleLogout = () => {
     setUser(null) // Clear user from context
     navigate('/') // Redirect to login page
+  }
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
   // Handle profile form submission
@@ -381,6 +389,12 @@ export const Nav = () => {
     <>
       <header className='app-header'>
         <div className='app-header-left'>
+          {/* Hamburger menu button for mobile */}
+          <button className={`hamburger-menu ${isMobileMenuOpen ? 'active' : ''}`} onClick={toggleMobileMenu}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
           {/* <img className='app-header-logo' src='/images/logo/logo5.png' alt='Relay logo'/> */}
           <h1>{currentCompanyName}</h1>
         </div>
@@ -486,7 +500,7 @@ export const Nav = () => {
           </button>
         </div>
       </header>
-      <nav className='nav'>
+      <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className='nav-inner'>
           <div className='nav-links'>
             {itemsWithIcons.map((item) => {
