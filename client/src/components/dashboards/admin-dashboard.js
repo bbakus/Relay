@@ -75,9 +75,11 @@ export const AdminDashboardView = () => {
 
       try {
         setLoading(true)
-        // Filter personnel by company for company admins (same logic as Personnel component)
+        // Filter personnel by selected company (for Super Admin) or user's company
         let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
-        if (user?.company_id) {
+        if (selectedCompanyId) {
+          personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+        } else if (user?.company_id) {
           personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
         }
         
