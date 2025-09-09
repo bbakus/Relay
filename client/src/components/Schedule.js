@@ -94,8 +94,10 @@ export const Schedule = () => {
             const response = await fetch(personnelUrl)
             if (response.ok) {
                 const data = await response.json()
+                console.log('Fetched personnel:', data.length, 'personnel')
                 setPersonnel(Array.isArray(data) ? data : [])
             } else {
+                console.error('Error fetching personnel:', response.statusText)
                 setPersonnel([])
             }
         } catch (error) {
@@ -507,23 +509,23 @@ export const Schedule = () => {
         }))
     }
 
-    // Get available personnel (not assigned to this event AND assigned to the current project)
+    // Get available personnel (not assigned to this event)
     const getAvailablePersonnel = () => {
         if (!selectedEvent) return []
         
         // Get currently assigned personnel IDs
         const assignedIds = (selectedEvent.assigned_personnel || []).map(p => p.personnel_id)
         
-        // First filter by project - only show personnel assigned to the current project
-        const projectPersonnel = personnel.filter(person => {
-            if (!selectedProjectId) return true // If no project selected, show all
-            return (person.project_ids || []).includes(Number(selectedProjectId))
-        })
-        
-        // Then filter out personnel already assigned to this event
-        return projectPersonnel.filter(person => 
+        // Filter out personnel already assigned to this event
+        // Don't filter by project - show all personnel for assignment
+        const availablePersonnel = personnel.filter(person => 
             !assignedIds.includes(person.id)
         )
+        
+        console.log('Available personnel:', availablePersonnel.length, 'out of', personnel.length, 'total personnel')
+        console.log('Assigned IDs:', assignedIds)
+        
+        return availablePersonnel
     }
 
     // Get role class for styling
