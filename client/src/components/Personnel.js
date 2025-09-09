@@ -415,9 +415,8 @@ export const Personnel = () => {
                   <div className='chart-section'>
                     <h4>Crew Utilization</h4>
                     <div className='utilization-chart'>
-                      {projectTeam.map(member => {
-                        const eventCount = (member.event_ids || []).filter(id => eventsById.has(id)).length
-                        const maxEvents = Math.max(...projectTeam.map(m => (m.event_ids || []).filter(id => eventsById.has(id)).length), 1)
+                      {personnelAssignmentSummary.map(({ member, eventCount }) => {
+                        const maxEvents = Math.max(...personnelAssignmentSummary.map(({ eventCount }) => eventCount), 1)
                         const utilization = (eventCount / maxEvents) * 100
                         return (
                           <div key={member.id} className='utilization-bar'>
