@@ -91,7 +91,15 @@ export const Events = () => {
     
     const fetchEvents = async () => {
         try {
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
+            // Build events URL with company filtering
+            let eventsUrl = `${API_CONFIG.baseUrl}/api/events`
+            if (user?.is_super_admin && selectedCompanyId) {
+                eventsUrl = `${API_CONFIG.baseUrl}/api/events?company_id=${selectedCompanyId}`
+            } else if (user?.company_id && !user?.is_super_admin) {
+                eventsUrl = `${API_CONFIG.baseUrl}/api/events?company_id=${user.company_id}`
+            }
+            
+            const response = await fetch(eventsUrl)
             if (response.ok) {
                 const data = await response.json()
                 console.log('Events page: Fetched events:', data.length, 'events')

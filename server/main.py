@@ -855,10 +855,32 @@ class ProjectDetail(Resource):
 # Event endpoints
 class EventsResource(Resource):
     def get(self):
-        """Get all events"""
+        """Get events filtered by company (for company admins) or all events (for super admin)"""
         session = Session()
         try:
-            events = session.query(EventModel).all()
+            # Get company_id from query parameter (for super admin company filtering)
+            company_id = request.args.get('company_id')
+            
+            if company_id:
+                # Filter events by company through projects
+                # First get organizations for this company
+                company_orgs = session.query(Organization).filter_by(company_id=int(company_id)).all()
+                if company_orgs:
+                    org_ids = [org.id for org in company_orgs]
+                    # Get projects for these organizations
+                    company_projects = session.query(ProjectModel).filter(ProjectModel.organization_id.in_(org_ids)).all()
+                    if company_projects:
+                        project_ids = [proj.id for proj in company_projects]
+                        # Filter events by these projects
+                        events = session.query(EventModel).filter(EventModel.project_id.in_(project_ids)).all()
+                    else:
+                        events = []
+                else:
+                    events = []
+            else:
+                # Return all events (only super admin should access this without company_id)
+                events = session.query(EventModel).all()
+            
             return [{
                 'id': event.id,
                 'name': event.name,

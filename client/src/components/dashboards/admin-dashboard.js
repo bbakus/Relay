@@ -83,9 +83,17 @@ export const AdminDashboardView = () => {
           personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
         }
         
+        // Build events URL with company filtering
+        let eventsUrl = `${API_CONFIG.baseUrl}/api/events`
+        if (selectedCompanyId) {
+          eventsUrl = `${API_CONFIG.baseUrl}/api/events?company_id=${selectedCompanyId}`
+        } else if (user?.company_id) {
+          eventsUrl = `${API_CONFIG.baseUrl}/api/events?company_id=${user.company_id}`
+        }
+        
         const [projectsRes, eventsRes, shotRequestsRes, personnelRes, imagesRes, usersRes, accessRequestsRes] = await Promise.all([
           fetch(`${API_CONFIG.baseUrl}/api/projects`),
-          fetch(`${API_CONFIG.baseUrl}/api/events`),
+          fetch(eventsUrl),
           fetch(`${API_CONFIG.baseUrl}/api/shot-requests`),
           fetch(personnelUrl),
           fetch(`${API_CONFIG.baseUrl}/api/images`),
