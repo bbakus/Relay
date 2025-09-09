@@ -928,6 +928,22 @@
     box-shadow: 0 4px 12px rgba(255, 122, 24, 0.4);
 }
 
+.events-edit-btn {
+    background: linear-gradient(45deg, #4a90e2, #6bb6ff);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.events-edit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
 .events-status-badge {
     padding: 4px 8px;
     border-radius: 4px;

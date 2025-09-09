@@ -14,6 +14,8 @@ export const Events = () => {
     const [organizations, setOrganizations] = useState([])
     const [loading, setLoading] = useState(true)
     const [showAddEventModal, setShowAddEventModal] = useState(false)
+    const [showEditEventModal, setShowEditEventModal] = useState(false)
+    const [editingEvent, setEditingEvent] = useState(null)
     const [showShotRequestModal, setShowShotRequestModal] = useState(false)
     const [addShotRequest, setAddShotRequest] = useState(false)
     const [lastCreatedEventId, setLastCreatedEventId] = useState(null)
@@ -509,6 +511,59 @@ export const Events = () => {
             alert('Failed to create event')
         }
     }
+
+    const handleEditEvent = async (e) => {
+        e.preventDefault()
+        
+        if (!editingEvent) return
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${editingEvent.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(eventForm)
+            })
+            
+            if (response.ok) {
+                fetchEvents()
+                setShowEditEventModal(false)
+                setEditingEvent(null)
+                setEventForm({
+                    name: '',
+                    date: '',
+                    start_time: '',
+                    end_time: '',
+                    location: '',
+                    notes: '',
+                    quick_turn: false,
+                    deadline: '',
+                    project_id: ''
+                })
+            } else {
+                const data = await response.json()
+                alert(data.error || 'Failed to update event')
+            }
+        } catch (error) {
+            console.error('Error updating event:', error)
+            alert('Failed to update event')
+        }
+    }
+
+    const openEditModal = (event) => {
+        setEditingEvent(event)
+        setEventForm({
+            name: event.name || '',
+            date: event.date || '',
+            start_time: event.start_time || '',
+            end_time: event.end_time || '',
+            location: event.location || '',
+            notes: event.notes || '',
+            quick_turn: event.quick_turn || false,
+            deadline: event.deadline || '',
+            project_id: event.project_id || ''
+        })
+        setShowEditEventModal(true)
+    }
     
     const handleAddShotRequest = async (e) => {
         e.preventDefault()
@@ -670,6 +725,15 @@ export const Events = () => {
                         )}
 
                         <div className="events-card-actions">
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    openEditModal(event)
+                                }}
+                                className="events-edit-btn"
+                            >
+                                Edit Event
+                            </button>
                             <button 
                                 onClick={(e) => {
                                     e.stopPropagation()
@@ -983,6 +1047,114 @@ export const Events = () => {
                     </div>
                 )}
                 
+                {/* Edit Event Modal */}
+                {showEditEventModal && (
+                    <div className="events-modal-overlay" onClick={() => setShowEditEventModal(false)}>
+                        <div className="events-modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="events-modal-header">
+                                <h2>Edit Event</h2>
+                                <button 
+                                    className="events-close-btn"
+                                    onClick={() => setShowEditEventModal(false)}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            
+                            <form onSubmit={handleEditEvent} className="events-form">
+                                <div className="events-form-group">
+                                    <label>Event Name:</label>
+                                    <input
+                                        type="text"
+                                        value={eventForm.name}
+                                        onChange={(e) => setEventForm({...eventForm, name: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="events-form-row">
+                                    <div className="events-form-group">
+                                        <label>Date:</label>
+                                        <input
+                                            type="date"
+                                            value={eventForm.date}
+                                            onChange={(e) => setEventForm({...eventForm, date: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div className="events-form-group">
+                                        <label>Start Time:</label>
+                                        <input
+                                            type="time"
+                                            value={eventForm.start_time}
+                                            onChange={(e) => setEventForm({...eventForm, start_time: e.target.value})}
+                                        />
+                                    </div>
+                                    
+                                    <div className="events-form-group">
+                                        <label>End Time:</label>
+                                        <input
+                                            type="time"
+                                            value={eventForm.end_time}
+                                            onChange={(e) => setEventForm({...eventForm, end_time: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="events-form-group">
+                                    <label>Location:</label>
+                                    <input
+                                        type="text"
+                                        value={eventForm.location}
+                                        onChange={(e) => setEventForm({...eventForm, location: e.target.value})}
+                                    />
+                                </div>
+                                
+                                <div className="events-form-group">
+                                    <label>Notes:</label>
+                                    <textarea
+                                        value={eventForm.notes}
+                                        onChange={(e) => setEventForm({...eventForm, notes: e.target.value})}
+                                        rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="events-form-row">
+                                    <div className="events-form-group">
+                                        <label>Deadline:</label>
+                                        <input
+                                            type="text"
+                                            value={eventForm.deadline}
+                                            onChange={(e) => setEventForm({...eventForm, deadline: e.target.value})}
+                                            placeholder="e.g. End of day, Next Friday, etc."
+                                        />
+                                    </div>
+                                    
+                                    <div className="form-group events-checkbox-group">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={eventForm.quick_turn}
+                                                onChange={(e) => setEventForm({...eventForm, quick_turn: e.target.checked})}
+                                            />
+                                            Quick Turn
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div className="events-form-actions">
+                                    <button type="button" onClick={() => setShowEditEventModal(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit">
+                                        Update Event
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
                 
                 {/* Shot Request Modal */}
