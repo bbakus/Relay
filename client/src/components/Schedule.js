@@ -259,17 +259,46 @@ export const Schedule = () => {
     }
 
     // Handle personnel assignment to event
-    const handleAssignPersonnelToEvent = async (personnelId, eventIds) => {
+    const handleAssignPersonnelToEvent = async (personnelId, action = 'add') => {
         try {
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
+            if (!selectedEvent) return
+            
+            // Get current assigned personnel
+            const currentAssigned = selectedEvent.assigned_personnel || []
+            
+            let newAssigned
+            if (action === 'add') {
+                // Add personnel to event
+                const person = personnel.find(p => p.id === personnelId)
+                if (person) {
+                    newAssigned = [...currentAssigned, {
+                        personnel_id: personnelId,
+                        name: person.name,
+                        role: person.role
+                    }]
+                }
+            } else {
+                // Remove personnel from event
+                newAssigned = currentAssigned.filter(p => p.personnel_id !== personnelId)
+            }
+            
+            // Update the event
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${selectedEvent.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ event_ids: eventIds })
+                body: JSON.stringify({ 
+                    assigned_photographers: newAssigned.map(p => p.personnel_id)
+                })
             })
 
             if (response.ok) {
-                // Refresh personnel data to get updated assignments
-                fetchPersonnel()
+                // Refresh events data to get updated assignments
+                fetchEvents()
+                // Update the selected event locally
+                setSelectedEvent({
+                    ...selectedEvent,
+                    assigned_personnel: newAssigned
+                })
             } else {
                 console.error('Failed to assign personnel to event')
             }
@@ -466,25 +495,24 @@ export const Schedule = () => {
         setSelectedEvent(null)
     }
 
-    // Get personnel assigned to the selected event (and assigned to the current project)
+    // Get personnel assigned to the selected event
     const getAssignedPersonnel = () => {
-        if (!selectedEvent) return []
+        if (!selectedEvent || !selectedEvent.assigned_personnel) return []
         
-        // First filter by project - only show personnel assigned to the current project
-        const projectPersonnel = personnel.filter(person => {
-            if (!selectedProjectId) return true // If no project selected, show all
-            return (person.project_ids || []).includes(Number(selectedProjectId))
-        })
-        
-        // Then filter to only show personnel assigned to this event
-        return projectPersonnel.filter(person => 
-            (person.event_ids || []).includes(selectedEvent.id)
-        )
+        // Return the assigned personnel from the event's assigned_personnel field
+        return selectedEvent.assigned_personnel.map(assignment => ({
+            id: assignment.personnel_id,
+            name: assignment.name,
+            role: assignment.role
+        }))
     }
 
     // Get available personnel (not assigned to this event AND assigned to the current project)
     const getAvailablePersonnel = () => {
         if (!selectedEvent) return []
+        
+        // Get currently assigned personnel IDs
+        const assignedIds = (selectedEvent.assigned_personnel || []).map(p => p.personnel_id)
         
         // First filter by project - only show personnel assigned to the current project
         const projectPersonnel = personnel.filter(person => {
@@ -494,7 +522,7 @@ export const Schedule = () => {
         
         // Then filter out personnel already assigned to this event
         return projectPersonnel.filter(person => 
-            !(person.event_ids || []).includes(selectedEvent.id)
+            !assignedIds.includes(person.id)
         )
     }
 
@@ -706,9 +734,7 @@ export const Schedule = () => {
                                                 <button 
                                                     className="unassign-personnel-btn"
                                                     onClick={() => {
-                                                        const currentEventIds = person.event_ids || []
-                                                        const newEventIds = currentEventIds.filter(id => id !== selectedEvent.id)
-                                                        handleAssignPersonnelToEvent(person.id, newEventIds)
+                                                        handleAssignPersonnelToEvent(person.id, 'remove')
                                                     }}
                                                     title="Remove from event"
                                                 >
@@ -729,12 +755,7 @@ export const Schedule = () => {
                                             onChange={(e) => {
                                                 if (e.target.value) {
                                                     const personnelId = parseInt(e.target.value)
-                                                    const person = personnel.find(p => p.id === personnelId)
-                                                    if (person) {
-                                                        const currentEventIds = person.event_ids || []
-                                                        const newEventIds = [...currentEventIds, selectedEvent.id]
-                                                        handleAssignPersonnelToEvent(person.id, newEventIds)
-                                                    }
+                                                    handleAssignPersonnelToEvent(personnelId, 'add')
                                                     // Reset dropdown
                                                     e.target.value = ''
                                                 }
