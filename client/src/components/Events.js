@@ -6,7 +6,7 @@ import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/events.css'
 
 export const Events = () => {
-    const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
+    const { user, selectedCompanyId, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
     
     // State management
     const [events, setEvents] = useState([])
