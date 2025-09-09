@@ -1005,11 +1005,8 @@ class EventsResource(Resource):
                             'role': personnel.role
                         })
                         
-                        # Add event to personnel's event_ids
-                        if not personnel.event_ids:
-                            personnel.event_ids = []
-                        if new_event.id not in personnel.event_ids:
-                            personnel.event_ids.append(new_event.id)
+                        # Add to the many-to-many relationship
+                        new_event.personnels.append(personnel)
             
             session.commit()
             
@@ -1085,14 +1082,7 @@ class EventDetail(Resource):
                 assigned_photographers = data.get('assigned_photographers', [])
                 
                 # Clear existing assignments
-                if hasattr(event, 'assigned_personnel') and event.assigned_personnel:
-                    # Remove event from personnel's event_ids
-                    for assignment in event.assigned_personnel:
-                        personnel = session.query(PersonnelModel).filter_by(id=assignment['personnel_id']).first()
-                        if personnel and personnel.event_ids:
-                            personnel.event_ids = [eid for eid in personnel.event_ids if eid != event_id]
-                
-                # Set new assignments
+                event.personnels.clear()
                 event.assigned_personnel = []
                 
                 # Add new assignments
@@ -1107,11 +1097,8 @@ class EventDetail(Resource):
                             'role': personnel.role
                         })
                         
-                        # Add event to personnel's event_ids
-                        if not personnel.event_ids:
-                            personnel.event_ids = []
-                        if event_id not in personnel.event_ids:
-                            personnel.event_ids.append(event_id)
+                        # Add to the many-to-many relationship
+                        event.personnels.append(personnel)
 
             # Update other fields
             for key, value in data.items():

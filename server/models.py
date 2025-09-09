@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import Column, Integer, Float, Boolean, String, Table, ForeignKey, create_engine, DateTime
+from sqlalchemy import Column, Integer, Float, Boolean, String, Table, ForeignKey, create_engine, DateTime, JSON
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy.ext.declarative import declarative_base
@@ -132,6 +132,7 @@ class Events(Base, SerializerMixin):
     # Column assignment for schedule (0-3 for the 4 columns)
     column_number = Column(Integer, default=0)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'))
+    assigned_personnel = Column(JSON, default=list)  # Array of assigned personnel with their details
 
     # Relationships
     shot_requests = relationship('ShotRequest', secondary=event_request_association_table, back_populates='events')
