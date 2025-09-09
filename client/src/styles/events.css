@@ -944,6 +944,80 @@
     box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
 }
 
+/* Photographer Selection */
+.photographer-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.photographer-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.photographer-checkbox:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.photographer-checkbox input[type="checkbox"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: #ff7a18;
+}
+
+.photographer-name {
+    color: #ffffff;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.photographer-role {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    font-style: italic;
+}
+
+.no-photographers {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Assigned Photographers Display */
+.assigned-photographers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.photographer-tag {
+    background: linear-gradient(45deg, #ff7a18, #ff9a4d);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .events-status-badge {
     padding: 4px 8px;
     border-radius: 4px;

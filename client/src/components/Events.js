@@ -12,6 +12,7 @@ export const Events = () => {
     const [events, setEvents] = useState([])
     const [projects, setProjects] = useState([])
     const [organizations, setOrganizations] = useState([])
+    const [personnel, setPersonnel] = useState([])
     const [loading, setLoading] = useState(true)
     const [showAddEventModal, setShowAddEventModal] = useState(false)
     const [showEditEventModal, setShowEditEventModal] = useState(false)
@@ -65,7 +66,8 @@ export const Events = () => {
         notes: '',
         quick_turn: false,
         deadline: '',
-        project_id: ''
+        project_id: '',
+        assigned_photographers: []
     })
     
     // Shot request form state
@@ -84,7 +86,8 @@ export const Events = () => {
         Promise.all([
             fetchEvents(),
             fetchProjects(),
-            fetchOrganizations()
+            fetchOrganizations(),
+            fetchPersonnel()
         ]).finally(() => {
             console.log('Events page: Data fetch completed')
             setLoading(false)
@@ -136,6 +139,27 @@ export const Events = () => {
             }
         } catch (error) {
             console.error('Error fetching organizations:', error)
+        }
+    }
+
+    const fetchPersonnel = async () => {
+        try {
+            // Build personnel URL with company filtering
+            let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
+            if (user?.is_super_admin && selectedCompanyId) {
+                personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+            } else if (user?.company_id && !user?.is_super_admin) {
+                personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
+            }
+            
+            const response = await fetch(personnelUrl)
+            if (response.ok) {
+                const data = await response.json()
+                console.log('Events page: Fetched personnel:', data.length, 'personnel')
+                setPersonnel(data)
+            }
+        } catch (error) {
+            console.error('Error fetching personnel:', error)
         }
     }
     
@@ -493,7 +517,8 @@ export const Events = () => {
                     notes: '',
                     quick_turn: false,
                     deadline: '',
-                    project_id: ''
+                    project_id: '',
+                    assigned_photographers: []
                 })
                 setShowAddEventModal(false)
                 
@@ -537,7 +562,8 @@ export const Events = () => {
                     notes: '',
                     quick_turn: false,
                     deadline: '',
-                    project_id: ''
+                    project_id: '',
+                    assigned_photographers: []
                 })
             } else {
                 const data = await response.json()
@@ -560,7 +586,8 @@ export const Events = () => {
             notes: event.notes || '',
             quick_turn: event.quick_turn || false,
             deadline: event.deadline || '',
-            project_id: event.project_id || ''
+            project_id: event.project_id || '',
+            assigned_photographers: event.assigned_personnel ? event.assigned_personnel.map(p => p.personnel_id) : []
         })
         setShowEditEventModal(true)
     }
@@ -695,6 +722,19 @@ export const Events = () => {
                             <div className="events-detail-row">
                                 <strong>Deadline:</strong>
                                 <span>{event.deadline}</span>
+                            </div>
+                        )}
+
+                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                            <div className="events-detail-row">
+                                <strong>Assigned Photographers:</strong>
+                                <div className="assigned-photographers">
+                                    {event.assigned_personnel.map((person, index) => (
+                                        <span key={person.personnel_id} className="photographer-tag">
+                                            {person.name} ({person.role})
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
@@ -1000,6 +1040,51 @@ export const Events = () => {
                                     />
                                 </div>
                                 
+                                <div className="events-form-group">
+                                    <label>Assign Photographers:</label>
+                                    <div className="photographer-selection">
+                                        {personnel
+                                            .filter(person => 
+                                                person.role === 'Photographer' || 
+                                                person.role === 'Lead Photographer' || 
+                                                person.role === 'Videographer'
+                                            )
+                                            .map(person => (
+                                                <label key={person.id} className="photographer-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={eventForm.assigned_photographers.includes(person.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setEventForm({
+                                                                    ...eventForm,
+                                                                    assigned_photographers: [...eventForm.assigned_photographers, person.id]
+                                                                })
+                                                            } else {
+                                                                setEventForm({
+                                                                    ...eventForm,
+                                                                    assigned_photographers: eventForm.assigned_photographers.filter(id => id !== person.id)
+                                                                })
+                                                            }
+                                                        }}
+                                                    />
+                                                    <span className="photographer-name">
+                                                        {person.name} 
+                                                        <span className="photographer-role">({person.role})</span>
+                                                    </span>
+                                                </label>
+                                            ))
+                                        }
+                                        {personnel.filter(person => 
+                                            person.role === 'Photographer' || 
+                                            person.role === 'Lead Photographer' || 
+                                            person.role === 'Videographer'
+                                        ).length === 0 && (
+                                            <p className="no-photographers">No photographers available</p>
+                                        )}
+                                    </div>
+                                </div>
+                                
                                 <div className="events-form-row">
                                     <div className="events-form-group">
                                         <label>Deadline:</label>
@@ -1118,6 +1203,51 @@ export const Events = () => {
                                         onChange={(e) => setEventForm({...eventForm, notes: e.target.value})}
                                         rows="3"
                                     />
+                                </div>
+                                
+                                <div className="events-form-group">
+                                    <label>Assign Photographers:</label>
+                                    <div className="photographer-selection">
+                                        {personnel
+                                            .filter(person => 
+                                                person.role === 'Photographer' || 
+                                                person.role === 'Lead Photographer' || 
+                                                person.role === 'Videographer'
+                                            )
+                                            .map(person => (
+                                                <label key={person.id} className="photographer-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={eventForm.assigned_photographers.includes(person.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setEventForm({
+                                                                    ...eventForm,
+                                                                    assigned_photographers: [...eventForm.assigned_photographers, person.id]
+                                                                })
+                                                            } else {
+                                                                setEventForm({
+                                                                    ...eventForm,
+                                                                    assigned_photographers: eventForm.assigned_photographers.filter(id => id !== person.id)
+                                                                })
+                                                            }
+                                                        }}
+                                                    />
+                                                    <span className="photographer-name">
+                                                        {person.name} 
+                                                        <span className="photographer-role">({person.role})</span>
+                                                    </span>
+                                                </label>
+                                            ))
+                                        }
+                                        {personnel.filter(person => 
+                                            person.role === 'Photographer' || 
+                                            person.role === 'Lead Photographer' || 
+                                            person.role === 'Videographer'
+                                        ).length === 0 && (
+                                            <p className="no-photographers">No photographers available</p>
+                                        )}
+                                    </div>
                                 </div>
                                 
                                 <div className="events-form-row">

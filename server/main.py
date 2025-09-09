@@ -987,6 +987,30 @@ class EventsResource(Resource):
             )
             
             session.add(new_event)
+            session.flush()  # Get the event ID
+            
+            # Handle photographer assignments
+            assigned_photographers = data.get('assigned_photographers', [])
+            if assigned_photographers:
+                for personnel_id in assigned_photographers:
+                    # Verify the personnel exists and is a photographer/videographer
+                    personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
+                    if personnel and personnel.role in ['Photographer', 'Lead Photographer', 'Videographer']:
+                        # Add to event's assigned_personnel
+                        if not hasattr(new_event, 'assigned_personnel') or new_event.assigned_personnel is None:
+                            new_event.assigned_personnel = []
+                        new_event.assigned_personnel.append({
+                            'personnel_id': personnel_id,
+                            'name': personnel.name,
+                            'role': personnel.role
+                        })
+                        
+                        # Add event to personnel's event_ids
+                        if not personnel.event_ids:
+                            personnel.event_ids = []
+                        if new_event.id not in personnel.event_ids:
+                            personnel.event_ids.append(new_event.id)
+            
             session.commit()
             
             return {
@@ -1001,7 +1025,8 @@ class EventsResource(Resource):
                 'deadline': new_event.deadline,
                 'process_point': getattr(new_event, 'process_point', 'idle'),
                 'column_number': getattr(new_event, 'column_number', 0),
-                'project_id': new_event.project_id
+                'project_id': new_event.project_id,
+                'assigned_personnel': getattr(new_event, 'assigned_personnel', [])
             }, 201
         except Exception as e:
             session.rollback()
@@ -1055,8 +1080,42 @@ class EventDetail(Resource):
                     except (TypeError, ValueError):
                         return {'error': 'Invalid project_id'}, 400
 
+            # Handle photographer assignments if provided
+            if 'assigned_photographers' in data:
+                assigned_photographers = data.get('assigned_photographers', [])
+                
+                # Clear existing assignments
+                if hasattr(event, 'assigned_personnel') and event.assigned_personnel:
+                    # Remove event from personnel's event_ids
+                    for assignment in event.assigned_personnel:
+                        personnel = session.query(PersonnelModel).filter_by(id=assignment['personnel_id']).first()
+                        if personnel and personnel.event_ids:
+                            personnel.event_ids = [eid for eid in personnel.event_ids if eid != event_id]
+                
+                # Set new assignments
+                event.assigned_personnel = []
+                
+                # Add new assignments
+                for personnel_id in assigned_photographers:
+                    # Verify the personnel exists and is a photographer/videographer
+                    personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
+                    if personnel and personnel.role in ['Photographer', 'Lead Photographer', 'Videographer']:
+                        # Add to event's assigned_personnel
+                        event.assigned_personnel.append({
+                            'personnel_id': personnel_id,
+                            'name': personnel.name,
+                            'role': personnel.role
+                        })
+                        
+                        # Add event to personnel's event_ids
+                        if not personnel.event_ids:
+                            personnel.event_ids = []
+                        if event_id not in personnel.event_ids:
+                            personnel.event_ids.append(event_id)
+
+            # Update other fields
             for key, value in data.items():
-                if key == 'project_id':
+                if key in ['project_id', 'assigned_photographers']:
                     continue
                 if hasattr(event, key):
                     setattr(event, key, value)
@@ -1074,7 +1133,8 @@ class EventDetail(Resource):
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
                 'column_number': getattr(event, 'column_number', 0),
-                'project_id': event.project_id
+                'project_id': event.project_id,
+                'assigned_personnel': getattr(event, 'assigned_personnel', [])
             }, 200
         except Exception as e:
             session.rollback()
