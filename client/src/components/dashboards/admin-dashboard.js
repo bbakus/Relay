@@ -366,7 +366,7 @@ export const AdminDashboardView = () => {
     void currentTimeTick // Force recalculation
     
     const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Videographer', 'Admin'].includes(p.role)
+      ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
     )
 
     const staffStatus = []
@@ -441,7 +441,7 @@ export const AdminDashboardView = () => {
   // Exhaustion level calculation
   const exhaustionLevel = useMemo(() => {
     const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Videographer', 'Admin'].includes(p.role)
+      ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
     )
     
     // ALWAYS use global date filter for staff assignments
