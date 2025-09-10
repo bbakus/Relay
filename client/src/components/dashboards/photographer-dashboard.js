@@ -105,26 +105,27 @@ export const PhotographerDashboardView = () => {
         })
     }, [events, currentPhotographer, activeDate])
 
-    // Calculate event positions for the schedule grid (same logic as Schedule.js)
+    // Calculate event positions for the schedule grid
     const eventsWithPositions = useMemo(() => {
         return photographerEvents.map(event => {
             if (!event.start_time || !event.end_time) {
-                return { ...event, position: { top: 0, height: 60 } }
+                return { ...event, position: { top: 0, height: 24 } }
             }
 
             const [startHour, startMinute] = event.start_time.split(':').map(Number)
             const [endHour, endMinute] = event.end_time.split(':').map(Number)
 
-            // Calculate exact slot positions (same as Schedule.js)
+            // Calculate exact slot positions
             const exactStartSlot = ((startHour - 6) * 4) + (startMinute / 15)
             const exactEndSlot = ((endHour - 6) * 4) + (endMinute / 15)
             const exactDurationSlots = exactEndSlot - exactStartSlot
 
-            // Use taller pixel calculation for better spacing
-            const PIXELS_PER_15MIN_SLOT = 24 // Match CSS grid-template-rows: repeat(72, 24px)
-            // Add 24px offset because first slot (6:00 AM) should be at position 24px, not 0px
-            const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + PIXELS_PER_15MIN_SLOT
-            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 60) // Minimum 60px height
+            // Use CSS grid slot height (24px per 15min slot)
+            const PIXELS_PER_15MIN_SLOT = 24
+            // Start from 60px to account for header height
+            const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60
+            // Calculate height based on actual duration, minimum 24px (one slot)
+            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
 
             return {
                 ...event,
@@ -290,7 +291,6 @@ export const PhotographerDashboardView = () => {
                                                         height: `${event.position.height}px`,
                                                         left: '8px',
                                                         right: '8px',
-                                                        minHeight: '120px', /* Taller to fit all details */
                                                         backgroundColor: 'rgba(0, 123, 255, 0.15)', /* Blue background */
                                                         border: `2px solid rgba(0, 123, 255, 0.8)`, /* Blue border */
                                                         cursor: 'pointer'

@@ -208,9 +208,9 @@
 /* Event cards in schedule */
 .photographer-dashboard-event-card {
     border-radius: 8px;
-    padding: 12px;
+    padding: 8px;
     color: #ffffff;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
     transition: all 0.2s ease;
@@ -221,8 +221,9 @@
     justify-content: flex-start;
     z-index: 10;
     background-color: #007bff;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
 .photographer-dashboard-event-card:hover {
@@ -235,12 +236,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .photographer-dashboard-event-title {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: #ffffff;
     overflow: hidden;
@@ -634,40 +635,40 @@
 }
 
 .photographer-dashboard-event-time {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     font-weight: 500;
 }
 
 .photographer-dashboard-event-location {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .photographer-dashboard-event-notes {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .photographer-dashboard-event-deadline {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .photographer-dashboard-event-personnel {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.6);
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 2px;
 }
