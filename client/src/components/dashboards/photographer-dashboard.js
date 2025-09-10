@@ -115,17 +115,19 @@ export const PhotographerDashboardView = () => {
             const [startHour, startMinute] = event.start_time.split(':').map(Number)
             const [endHour, endMinute] = event.end_time.split(':').map(Number)
 
-            // Calculate exact slot positions
+            // Calculate exact slot positions (0-based index) - same as timeSlots
             const exactStartSlot = ((startHour - 6) * 4) + (startMinute / 15)
             const exactEndSlot = ((endHour - 6) * 4) + (endMinute / 15)
             const exactDurationSlots = exactEndSlot - exactStartSlot
 
             // Use CSS grid slot height (24px per 15min slot)
             const PIXELS_PER_15MIN_SLOT = 24
-            // Start from 60px to account for header height
+            // Position events relative to the grid lines (which start at 60px)
+            // Each slot is 24px, so multiply by slot index
             const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60
             // Calculate height based on actual duration, minimum 24px (one slot)
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
+
 
             return {
                 ...event,

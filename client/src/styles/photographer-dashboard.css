@@ -111,8 +111,8 @@
 
 /* Time column */
 .photographer-time-column {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: 60px repeat(72, 24px); /* Header + 72 time slots */
     background: rgba(0, 0, 0, 0.2);
     border-right: 2px solid rgba(255, 122, 24, 0.3);
     z-index: 2;
@@ -132,13 +132,11 @@
 }
 
 .photographer-time-slot {
-    height: 24px; /* Match grid slot height - TALLER */
     display: flex;
     align-items: center; /* Center the text vertically */
     justify-content: center;
     padding: 0; /* Remove padding to align perfectly */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    flex-shrink: 0;
 }
 
 .photographer-time-text {
