@@ -1430,6 +1430,49 @@ class PersonnelDetail(Resource):
         finally:
             session.close()
 
+    def put(self, personnel_id):
+        """Attach personnel to a user"""
+        session = Session()
+        try:
+            personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
+            if not personnel:
+                return {'error': 'Personnel not found'}, 404
+            
+            data = request.get_json()
+            user_id = data.get('user_id')
+            
+            if not user_id:
+                return {'error': 'user_id is required'}, 400
+            
+            # Check if user exists
+            user = session.query(User).filter_by(id=user_id).first()
+            if not user:
+                return {'error': 'User not found'}, 404
+            
+            # Check if personnel and user belong to same company
+            if personnel.company_id != user.company_id:
+                return {'error': 'Personnel and user must belong to the same company'}, 400
+            
+            # Check if personnel is already attached to another user
+            if personnel.user_id and personnel.user_id != user_id:
+                return {'error': 'Personnel is already attached to another user'}, 400
+            
+            # Attach personnel to user
+            personnel.user_id = user_id
+            session.commit()
+            
+            return {
+                'message': 'Personnel attached to user successfully',
+                'personnel_id': personnel.id,
+                'user_id': user_id
+            }, 200
+            
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
 
 # Shot Request endpoints
 class ShotRequests(Resource):

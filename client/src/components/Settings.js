@@ -338,7 +338,7 @@ export const Settings = () => {
     const [eventForm, setEventForm] = useState({ name: '', date: '', start_time: '', end_time: '', location: '', notes: '', quick_turn: false, deadline: '', project_id: null })
     const [projectForm, setProjectForm] = useState({ name: '', location: '', start_date: '', end_date: '', deliver_date: '', organization_id: null })
     const [orgForm, setOrgForm] = useState({ name: '', details: '' })
-    const [personnelForm, setPersonnelForm] = useState({ name: '', role: '', email: '', phone: '', availability: '', project_id: null })
+    const [personnelForm, setPersonnelForm] = useState({ name: '', role: '', email: '', phone: '', availability: '', project_id: null, user_id: null })
     const [approvalForm, setApprovalForm] = useState({ role: 'Client', company_id: '', organization_id: null, create_personnel: false, temporary_password: 'temp123', phone: '', avatar: 'avatar1.png' })
     const [assignForm, setAssignForm] = useState({ selectedProjectIds: [] })
     
@@ -715,7 +715,29 @@ export const Settings = () => {
             })
             
             if (response.ok) {
+                const personnelData = await response.json()
+                
+                // If user_id is provided, attach the personnel to the user
+                if (submitData.user_id && personnelData.id) {
+                    try {
+                        const attachResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelData.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: submitData.user_id })
+                        })
+                        
+                        if (!attachResponse.ok) {
+                            const attachData = await attachResponse.json()
+                            alert(`Personnel created but failed to attach to user: ${attachData.error}`)
+                        }
+                    } catch (attachError) {
+                        console.error('Error attaching personnel to user:', attachError)
+                        alert('Personnel created but failed to attach to user')
+                    }
+                }
+                
                 await fetchPersonnel() // Make sure fetch completes
+                await fetchUsers() // Refresh users list
                 resetPersonnelForm()
                 setEditingItem(null) // Clear editing state
                 
@@ -902,7 +924,8 @@ export const Settings = () => {
                 email: item.email || '',
                 phone: item.phone || '',
                 availability: item.availability || '',
-                project_id: item.project_ids && item.project_ids.length > 0 ? item.project_ids[0] : null
+                project_id: item.project_ids && item.project_ids.length > 0 ? item.project_ids[0] : null,
+                user_id: item.user_id || null
             })
             setShowPersonnelForm(true)
         }
@@ -1446,13 +1469,42 @@ export const Settings = () => {
 
             if (response.ok) {
                 const data = await response.json()
+                
+                // Check if we should auto-link to existing personnel with same name
+                if (data.user_id && !approvalForm.create_personnel) {
+                    try {
+                        // Fetch personnel to find matching name
+                        const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel?company_id=${companyId}`)
+                        if (personnelResponse.ok) {
+                            const personnelList = await personnelResponse.json()
+                            const matchingPersonnel = personnelList.find(p => 
+                                p.name.toLowerCase() === selectedRequest.name.toLowerCase() && 
+                                !p.user_id
+                            )
+                            
+                            if (matchingPersonnel) {
+                                // Auto-link the personnel to the new user
+                                const linkResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${matchingPersonnel.id}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ user_id: data.user_id })
+                                })
+                                
+                                if (linkResponse.ok) {
+                                    console.log(`Auto-linked personnel "${matchingPersonnel.name}" to new user`)
+                                }
+                            }
+                        }
+                    } catch (linkError) {
+                        console.error('Error auto-linking personnel:', linkError)
+                    }
+                }
+                
                 fetchAccessRequests()
                 // Always refresh users list since a new user was created
                 fetchUsers()
-                // Refresh personnel list if personnel was created
-                if (approvalForm.create_personnel) {
-                    fetchPersonnel()
-                }
+                // Refresh personnel list if personnel was created or auto-linked
+                fetchPersonnel()
                 setShowApprovalModal(false)
                 setSelectedRequest(null)
                 // Reset approval form
@@ -1518,7 +1570,7 @@ export const Settings = () => {
     }
 
     const resetPersonnelForm = () => {
-        setPersonnelForm({ name: '', role: '', email: '', phone: '', availability: '', project_id: null })
+        setPersonnelForm({ name: '', role: '', email: '', phone: '', availability: '', project_id: null, user_id: null })
         setShowPersonnelForm(false)
         setEditingItem(null)
     }
@@ -1980,6 +2032,23 @@ export const Settings = () => {
                                                         onChange={(e) => setPersonnelForm({...personnelForm, availability: e.target.value})}
                                                         rows='3'
                                                     />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='form-row'>
+                                                <div className='form-field full-width'>
+                                                    <label>Attach to User (Optional)</label>
+                                                    <select
+                                                        value={personnelForm.user_id || ''}
+                                                        onChange={(e) => setPersonnelForm({...personnelForm, user_id: e.target.value || null})}
+                                                    >
+                                                        <option value=''>No User Attachment</option>
+                                                        {users.filter(u => !u.personnel).map(user => (
+                                                            <option key={user.id} value={user.id}>
+                                                                {user.name} ({user.email})
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                 </div>
                                             </div>
                                             
