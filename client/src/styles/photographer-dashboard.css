@@ -91,12 +91,12 @@
 /* Global grid lines */
 .photographer-global-grid-lines {
     position: absolute;
-    top: 60px; /* Account for header height */
+    top: 0; /* Start at header level - 6AM aligns with header */
     left: 0;
     right: 0;
-    height: 1566px; /* 72 slots × 21.75px = 1566px */
+    height: 1626px; /* 60px header + 72 slots × 21.75px = 1626px */
     display: grid;
-    grid-template-rows: repeat(72, 21.75px); /* 21.75px per slot for accurate alignment */
+    grid-template-rows: 60px repeat(72, 21.75px); /* Header + 72 time slots at 21.75px each */
     z-index: 1;
     pointer-events: none;
 }
@@ -177,8 +177,8 @@
 .photographer-events-container {
     position: relative;
     flex: 1;
-    min-height: 1566px; /* 72 slots × 21.75px = 1566px */
-    height: 1566px; /* Fixed height for consistency */
+    min-height: 1626px; /* 60px header + 72 slots × 21.75px = 1626px */
+    height: 1626px; /* Fixed height for consistency */
 }
 
 .photographer-event-column {
