@@ -338,7 +338,7 @@ export const Settings = () => {
     const [eventForm, setEventForm] = useState({ name: '', date: '', start_time: '', end_time: '', location: '', notes: '', quick_turn: false, deadline: '', project_id: null })
     const [projectForm, setProjectForm] = useState({ name: '', location: '', start_date: '', end_date: '', deliver_date: '', organization_id: null })
     const [orgForm, setOrgForm] = useState({ name: '', details: '' })
-    const [personnelForm, setPersonnelForm] = useState({ name: '', role: '', email: '', phone: '', availability: '', project_id: null, user_id: null })
+    const [personnelForm, setPersonnelForm] = useState({ name: '', role: '', email: '', phone: '', availability: '', project_id: null })
     const [approvalForm, setApprovalForm] = useState({ role: 'Client', company_id: '', organization_id: null, create_personnel: false, temporary_password: 'temp123', phone: '', avatar: 'avatar1.png' })
     const [assignForm, setAssignForm] = useState({ selectedProjectIds: [] })
     
@@ -693,6 +693,11 @@ export const Settings = () => {
                 submitData.project_id = null
             }
             
+            // Remove user_id if it's null or empty - personnel don't require user_id
+            if (!submitData.user_id || submitData.user_id === '') {
+                delete submitData.user_id
+            }
+            
             // SUPER ADMIN LOGIC: Always use selectedCompanyId, never their own company_id
             if (user?.is_super_admin && selectedCompanyId && !editingItem) {
                 // For super admins, use the currently selected company
@@ -717,13 +722,13 @@ export const Settings = () => {
             if (response.ok) {
                 const personnelData = await response.json()
                 
-                // If user_id is provided, attach the personnel to the user
-                if (submitData.user_id && personnelData.id) {
+                // If user_id was provided in the original form, attach the personnel to the user
+                if (personnelForm.user_id && personnelData.id) {
                     try {
                         const attachResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelData.id}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ user_id: submitData.user_id })
+                            body: JSON.stringify({ user_id: personnelForm.user_id })
                         })
                         
                         if (!attachResponse.ok) {
@@ -918,15 +923,21 @@ export const Settings = () => {
             })
             setShowOrgForm(true)
         } else if (type === 'personnel') {
-            setPersonnelForm({
+            const formData = {
                 name: item.name,
                 role: item.role || '',
                 email: item.email || '',
                 phone: item.phone || '',
                 availability: item.availability || '',
-                project_id: item.project_ids && item.project_ids.length > 0 ? item.project_ids[0] : null,
-                user_id: item.user_id || null
-            })
+                project_id: item.project_ids && item.project_ids.length > 0 ? item.project_ids[0] : null
+            }
+            
+            // Only include user_id if it exists
+            if (item.user_id) {
+                formData.user_id = item.user_id
+            }
+            
+            setPersonnelForm(formData)
             setShowPersonnelForm(true)
         }
     }
@@ -1570,7 +1581,7 @@ export const Settings = () => {
     }
 
     const resetPersonnelForm = () => {
-        setPersonnelForm({ name: '', role: '', email: '', phone: '', availability: '', project_id: null, user_id: null })
+        setPersonnelForm({ name: '', role: '', email: '', phone: '', availability: '', project_id: null })
         setShowPersonnelForm(false)
         setEditingItem(null)
     }
