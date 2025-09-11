@@ -319,7 +319,7 @@ export const PhotographerDashboardView = () => {
                                                         top: `${event.position.top}px`,
                                                         height: `${event.position.height}px`,
                                                         left: '8px',
-                                                        zIndex: index + 1, // Shorter events (sorted first) get higher z-index
+                                                        zIndex: eventsWithPositions.length - index, // Shorter events (sorted first) get higher z-index
                                                         right: '8px',
                                                         backgroundColor: 'rgba(0, 123, 255, 0.15)', /* Blue background */
                                                         border: `2px solid rgba(0, 123, 255, 0.8)`, /* Blue border */
