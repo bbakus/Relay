@@ -327,11 +327,6 @@ export const PhotographerDashboardView = () => {
                                                         {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                     </div>
                                                     <div className='photographer-dashboard-event-location'>{event.location}</div>
-                                                    {event.assigned_personnel && event.assigned_personnel.length > 0 && (
-                                                        <div className='photographer-dashboard-event-personnel'>
-                                                            Team: {event.assigned_personnel.map(p => p.name || 'Unknown').join(', ')}
-                                                        </div>
-                                                    )}
                                                 </div>
                                             )
                                         })}
