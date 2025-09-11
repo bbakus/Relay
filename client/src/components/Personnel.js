@@ -22,6 +22,9 @@ export const Personnel = () => {
   const [assignModalOpen, setAssignModalOpen] = useState(false)
   const [selectedPersonnelForAssign, setSelectedPersonnelForAssign] = useState(null)
   const [modalSelectedDate, setModalSelectedDate] = useState('')
+  const [eventAssignModalOpen, setEventAssignModalOpen] = useState(false)
+  const [selectedEventForAssign, setSelectedEventForAssign] = useState(null)
+  const [selectedPersonnelForEvent, setSelectedPersonnelForEvent] = useState([])
 
   const getRoleClass = (role) => {
     const r = (role || '').toLowerCase()
@@ -369,6 +372,81 @@ export const Personnel = () => {
     }
   }
 
+  // Event assignment handlers
+  const openEventAssignModal = (event) => {
+    setSelectedEventForAssign(event)
+    // Pre-populate with currently assigned personnel
+    const assigned = projectTeam.filter(m => (m.event_ids || []).includes(event.id))
+    setSelectedPersonnelForEvent(assigned.map(m => m.id))
+    setEventAssignModalOpen(true)
+  }
+
+  const closeEventAssignModal = () => {
+    setEventAssignModalOpen(false)
+    setSelectedEventForAssign(null)
+    setSelectedPersonnelForEvent([])
+  }
+
+  const handleEventAssignment = async () => {
+    if (!selectedEventForAssign) return
+
+    try {
+      // Get all personnel IDs to assign to this event
+      const personnelIds = selectedPersonnelForEvent
+
+      // Update each personnel's event assignments
+      for (const personnelId of personnelIds) {
+        const personnel = projectTeam.find(p => p.id === personnelId)
+        if (!personnel) continue
+
+        // Get current event IDs for this personnel
+        const currentEventIds = personnel.event_ids || []
+        
+        // Add this event if not already assigned
+        if (!currentEventIds.includes(selectedEventForAssign.id)) {
+          const updatedEventIds = [...currentEventIds, selectedEventForAssign.id]
+          
+          const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_ids: updatedEventIds })
+          })
+
+          if (!response.ok) {
+            console.error(`Failed to assign personnel ${personnelId} to event`)
+          }
+        }
+      }
+
+      // Remove personnel who are no longer selected
+      const personnelToRemove = projectTeam
+        .filter(p => (p.event_ids || []).includes(selectedEventForAssign.id))
+        .filter(p => !selectedPersonnelForEvent.includes(p.id))
+
+      for (const personnel of personnelToRemove) {
+        const currentEventIds = personnel.event_ids || []
+        const updatedEventIds = currentEventIds.filter(id => id !== selectedEventForAssign.id)
+        
+        const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnel.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_ids: updatedEventIds })
+        })
+
+        if (!response.ok) {
+          console.error(`Failed to remove personnel ${personnel.id} from event`)
+        }
+      }
+
+      // Refresh data
+      await fetchAll()
+      closeEventAssignModal()
+    } catch (error) {
+      console.error('Error assigning personnel to event:', error)
+      alert('Failed to assign personnel to event. Please try again.')
+    }
+  }
+
   return (
     <div className='view-container'>
       <Nav />
@@ -608,15 +686,33 @@ export const Personnel = () => {
                           </div>
                           {isOpen && (
                             <div className='personnel-list-details'>
-                              {assigned.length === 0 ? (
-                                <div className='personnel-empty'>No personnel assigned</div>
-                              ) : (
-                                <ul className='personnel-inline-list'>
-                                  {assigned.map(m => (
-                                    <li key={m.id}>{m.name}</li>
-                                  ))}
-                                </ul>
-                              )}
+                              <div className='event-assignment-section'>
+                                <div className='event-assignment-header'>
+                                  <h4>Assigned Personnel</h4>
+                                  <button 
+                                    className='assign-personnel-btn'
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      openEventAssignModal(event)
+                                    }}
+                                  >
+                                    {assigned.length === 0 ? 'Assign Personnel' : 'Edit Assignments'}
+                                  </button>
+                                </div>
+                                
+                                {assigned.length === 0 ? (
+                                  <div className='personnel-empty'>No personnel assigned</div>
+                                ) : (
+                                  <ul className='personnel-inline-list'>
+                                    {assigned.map(m => (
+                                      <li key={m.id} className={`personnel-assigned-item ${getRoleClass(m.role)}`}>
+                                        <span className='personnel-name'>{m.name}</span>
+                                        <span className='personnel-role'>{m.role || 'No role'}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -750,6 +846,81 @@ export const Personnel = () => {
               </div>
             </div>
           )}
+
+          {/* Event Assignment Modal */}
+          {eventAssignModalOpen && selectedEventForAssign && (
+            <div className='personnel-assign-modal-overlay' onClick={closeEventAssignModal}>
+              <div className='personnel-assign-modal' onClick={(e) => e.stopPropagation()}>
+                <div className='personnel-assign-modal-header'>
+                  <h3>Assign Personnel to {selectedEventForAssign.name}</h3>
+                  <button 
+                    className='personnel-assign-modal-close'
+                    onClick={closeEventAssignModal}
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div className='personnel-assign-modal-body'>
+                  <div className='event-assign-info'>
+                    <p><strong>Event:</strong> {selectedEventForAssign.name}</p>
+                    <p><strong>Date:</strong> {formatDateMMDDYYYY(selectedEventForAssign.date)}</p>
+                    <p><strong>Time:</strong> {selectedEventForAssign.start_time ? `${formatTime12Hour(selectedEventForAssign.start_time)}-${formatTime12Hour(selectedEventForAssign.end_time)}` : 'No time specified'}</p>
+                    <p><strong>Location:</strong> {selectedEventForAssign.location || 'No location specified'}</p>
+                  </div>
+                  
+                  <div className='personnel-assign-personnel-grid'>
+                    <h4>Select Personnel to Assign:</h4>
+                    {projectTeam.length === 0 ? (
+                      <div className='personnel-empty'>No personnel available</div>
+                    ) : (
+                      <div className='personnel-checkbox-list'>
+                        {projectTeam.map(personnel => (
+                          <label key={personnel.id} className='personnel-assign-personnel-card'>
+                            <div className='personnel-card-header'>
+                              <input
+                                type='checkbox'
+                                checked={selectedPersonnelForEvent.includes(personnel.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedPersonnelForEvent(prev => [...prev, personnel.id])
+                                  } else {
+                                    setSelectedPersonnelForEvent(prev => prev.filter(id => id !== personnel.id))
+                                  }
+                                }}
+                              />
+                              <div className='personnel-info'>
+                                <span className={`personnel-name ${getRoleClass(personnel.role)}`}>
+                                  {personnel.name}
+                                </span>
+                                <span className='personnel-role'>{personnel.role || 'No role'}</span>
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className='personnel-assign-modal-footer'>
+                  <button 
+                    className='personnel-assign-modal-cancel'
+                    onClick={closeEventAssignModal}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className='personnel-assign-modal-save'
+                    onClick={handleEventAssignment}
+                  >
+                    Save Assignments
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

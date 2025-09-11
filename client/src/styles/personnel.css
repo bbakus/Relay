@@ -851,3 +851,178 @@
   box-shadow: 0 6px 20px rgba(255, 122, 24, 0.4);
 }
 
+/* Event Assignment Section */
+.event-assignment-section {
+  margin-top: 15px;
+}
+
+.event-assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.event-assignment-header h4 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.assign-personnel-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.assign-personnel-btn:hover {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-1px);
+}
+
+.personnel-assigned-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border-left: 3px solid transparent;
+}
+
+.personnel-assigned-item.role-photographer {
+  border-left-color: #007bff;
+}
+
+.personnel-assigned-item.role-lead-photographer {
+  border-left-color: #ff7a18;
+}
+
+.personnel-assigned-item.role-editor {
+  border-left-color: #6f42c1;
+}
+
+.personnel-assigned-item.role-coordinator {
+  border-left-color: #20c997;
+}
+
+.personnel-assigned-item.role-admin {
+  border-left-color: #dc3545;
+}
+
+.personnel-assigned-item.role-videographer {
+  border-left-color: #fd7e14;
+}
+
+.personnel-name {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.personnel-role {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+/* Event Assignment Modal Specific Styles */
+.event-assign-info {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-left: 4px solid #ff7a18;
+}
+
+.event-assign-info p {
+  margin: 5px 0;
+  color: #ffffff;
+}
+
+.event-assign-info strong {
+  color: #ff7a18;
+}
+
+.personnel-assign-personnel-grid h4 {
+  color: #ffffff;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.personnel-checkbox-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.personnel-assign-personnel-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+}
+
+.personnel-assign-personnel-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 122, 24, 0.3);
+}
+
+.personnel-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.personnel-card-header input[type="checkbox"] {
+  margin: 0;
+}
+
+.personnel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.personnel-assign-modal-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.personnel-assign-modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.personnel-assign-modal-save {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.personnel-assign-modal-save:hover {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-1px);
+}
+
