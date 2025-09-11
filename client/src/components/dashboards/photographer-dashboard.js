@@ -51,6 +51,15 @@ export const PhotographerDashboardView = () => {
 
     const timeSlots = generateTimeSlots()
 
+    // Format time to 12-hour format
+    const formatTimeTo12Hour = (time24) => {
+        if (!time24) return ''
+        const [hours, minutes] = time24.split(':').map(Number)
+        const period = hours >= 12 ? 'PM' : 'AM'
+        const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+    }
+
     // Fetch data on component mount and when dependencies change
     useEffect(() => {
         if (selectedOrganizationId && selectedProjectId) {
@@ -127,6 +136,14 @@ export const PhotographerDashboardView = () => {
             const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60
             // Calculate height based on actual duration, minimum 24px (one slot)
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
+
+            // Debug logging for alignment
+            console.log(`EVENT: ${event.name} (${event.start_time}-${event.end_time})`)
+            console.log(`  Start slot: ${exactStartSlot}, End slot: ${exactEndSlot}`)
+            console.log(`  Calculated top: ${top}px`)
+            console.log(`  Expected for 10:30: slot ${((10-6)*4) + (30/15)} = ${((10-6)*4) + (30/15)}`)
+            console.log(`  Expected for 14:00: slot ${((14-6)*4) + (0/15)} = ${((14-6)*4) + (0/15)}`)
+
 
 
 
@@ -313,7 +330,7 @@ export const PhotographerDashboardView = () => {
                                                         </div>
                                                     </div>
                                                     <div className='photographer-dashboard-event-time'>
-                                                        {event.start_time} - {event.end_time}
+                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                     </div>
                                                     <div className='photographer-dashboard-event-location'>{event.location}</div>
                                                     {event.assigned_personnel && event.assigned_personnel.length > 0 && (
