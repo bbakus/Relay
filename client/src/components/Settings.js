@@ -1633,7 +1633,7 @@ export const Settings = () => {
     }
 
     const handleDetachPersonnelFromUser = async (personnelId) => {
-        if (!confirm('Are you sure you want to detach this personnel from their user account?')) {
+        if (!window.confirm('Are you sure you want to detach this personnel from their user account?')) {
             return
         }
 
