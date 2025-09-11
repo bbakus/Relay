@@ -350,76 +350,6 @@ export const AdminDashboardView = () => {
     }
   }, [projectEvents, selectedDate, currentTimeTick, getEventStatus])
 
-  // Staff load calculations - live availability
-  const staffLoad = useMemo(() => {
-    // ONLY show data when a global date is explicitly selected
-    if (!selectedDate) {
-      return { 
-        loadPercentage: 0, 
-        totalStaff: 0, 
-        assignedStaff: 0,
-        freeStaff: 0,
-        staffStatus: []
-      }
-    }
-    
-    void currentTimeTick // Force recalculation
-    
-    const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
-    )
-
-    const staffStatus = []
-    const assignedStaffCount = { assigned: 0, free: 0 }
-    
-    photoVideoStaff.forEach(staff => {
-      // Get events this staff is assigned to from their event_ids array
-      const assignedEventIds = staff.event_ids || []
-      
-      // Filter to get events that this staff is assigned to - use projectEvents like working panels
-      let assignedEvents = projectEvents.filter(e => assignedEventIds.includes(e.id))
-      
-      // Only consider events on the selected date
-      assignedEvents = assignedEvents.filter(e => e.date === selectedDate)
-      
-      // Check if any of their assigned events are currently ongoing
-      const currentlyActiveEvent = assignedEvents.find(event => {
-        const status = getEventStatus(event)
-        return status === 'ongoing'
-      })
-      
-      const isAssigned = !!currentlyActiveEvent
-      
-      staffStatus.push({
-        name: staff.name,
-        role: staff.role,
-        isAssigned,
-        activeEvent: currentlyActiveEvent?.name || null
-      })
-      
-      if (isAssigned) {
-        assignedStaffCount.assigned++
-      } else {
-        assignedStaffCount.free++
-      }
-    })
-
-    const totalStaff = photoVideoStaff.length
-    const loadPercentage = totalStaff > 0 ? Math.round((assignedStaffCount.assigned / totalStaff) * 100) : 0
-
-    return { 
-      loadPercentage, 
-      totalStaff, 
-      assignedStaff: assignedStaffCount.assigned,
-      freeStaff: assignedStaffCount.free,
-      staffStatus: staffStatus.sort((a, b) => {
-        // Show free staff first, then assigned staff
-        if (!a.isAssigned && b.isAssigned) return -1
-        if (a.isAssigned && !b.isAssigned) return 1
-        return a.name.localeCompare(b.name)
-      })
-    }
-  }, [projectEvents, personnel, currentTimeTick, getEventStatus, selectedDate])
   
   // Client downloads calculation
   const clientDownloads = useMemo(() => {
@@ -1054,7 +984,6 @@ export const AdminDashboardView = () => {
                   ) : (
                     availablePhotographers.slice(0, 4).map((photographer) => (
                       <div key={photographer.id} className="available-photographer-item">
-                        <div className="photographer-icon">📸</div>
                         <div className="photographer-name-mini">{photographer.name}</div>
                       </div>
                     ))
@@ -1099,56 +1028,6 @@ export const AdminDashboardView = () => {
           </div>
         </div>
 
-        {/* Staff Load - Live Availability */}
-        <div className="dashboard-card">
-          <h3>Staff Availability (Live)</h3>
-          <div className="staff-load">
-            <div className="load-summary">
-              <div className="load-circle">
-                <span className="load-percent">{staffLoad.loadPercentage}%</span>
-                <span className="load-label">Busy</span>
-              </div>
-              <div className="load-details">
-                <p>{staffLoad.assignedStaff} busy, {staffLoad.freeStaff} free</p>
-                <p className="load-subtitle">({staffLoad.totalStaff} total photo/video staff)</p>
-              </div>
-            </div>
-            
-            <div className="staff-list">
-              <h4>Current Status:</h4>
-              {staffLoad.staffStatus.length > 0 ? (
-                staffLoad.staffStatus.map((staff) => (
-                  <div 
-                    key={staff.name} 
-                    className={`staff-row ${staff.isAssigned ? 'assigned' : 'free'} clickable`}
-                    onClick={() => {
-                      setSelectedStaffForAssignment(staff)
-                      setAssignmentModalOpen(true)
-                    }}
-                    title="Click to assign to events"
-                  >
-                    <div className="staff-info">
-                      <span className="staff-name">{staff.name}</span>
-                      <span className="staff-role">({staff.role})</span>
-                    </div>
-                    <div className="staff-status">
-                      {staff.isAssigned ? (
-                        <>
-                          <span className="status-indicator busy">BUSY</span>
-                          <span className="active-event">{staff.activeEvent}</span>
-                        </>
-                      ) : (
-                        <span className="status-indicator free">FREE</span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="no-data">No photo/video staff found</p>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* In Process Events */}
         <div className="dashboard-card">
