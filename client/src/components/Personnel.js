@@ -413,22 +413,22 @@ export const Personnel = () => {
 
       // Update each personnel's event assignments
       for (const personnelId of personnelIds) {
-        const personnel = projectTeam.find(p => p.id === personnelId)
-        if (!personnel) {
-          console.error(`Personnel with ID ${personnelId} not found in projectTeam`)
+        const personnelItem = personnel.find(p => p.id === personnelId)
+        if (!personnelItem) {
+          console.error(`Personnel with ID ${personnelId} not found in personnel array`)
           continue
         }
 
-        console.log(`Processing personnel: ${personnel.name} (ID: ${personnelId})`)
+        console.log(`Processing personnel: ${personnelItem.name} (ID: ${personnelId})`)
 
         // Get current event IDs for this personnel
-        const currentEventIds = personnel.event_ids || []
-        console.log(`Current event IDs for ${personnel.name}:`, currentEventIds)
+        const currentEventIds = personnelItem.event_ids || []
+        console.log(`Current event IDs for ${personnelItem.name}:`, currentEventIds)
         
         // Add this event if not already assigned
         if (!currentEventIds.includes(selectedEventForAssign.id)) {
           const updatedEventIds = [...currentEventIds, selectedEventForAssign.id]
-          console.log(`Adding event ${selectedEventForAssign.id} to ${personnel.name}. New event IDs:`, updatedEventIds)
+          console.log(`Adding event ${selectedEventForAssign.id} to ${personnelItem.name}. New event IDs:`, updatedEventIds)
           
           const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
             method: 'PUT',
@@ -437,18 +437,18 @@ export const Personnel = () => {
           })
 
           if (response.ok) {
-            console.log(`Successfully assigned ${personnel.name} to event ${selectedEventForAssign.name}`)
+            console.log(`Successfully assigned ${personnelItem.name} to event ${selectedEventForAssign.name}`)
           } else {
             const errorData = await response.json()
             console.error(`Failed to assign personnel ${personnelId} to event:`, errorData)
           }
         } else {
-          console.log(`${personnel.name} is already assigned to this event`)
+          console.log(`${personnelItem.name} is already assigned to this event`)
         }
       }
 
       // Remove personnel who are no longer selected
-      const personnelToRemove = projectTeam
+      const personnelToRemove = personnel
         .filter(p => (p.event_ids || []).includes(selectedEventForAssign.id))
         .filter(p => !selectedPersonnelForEvent.includes(p.id))
 
