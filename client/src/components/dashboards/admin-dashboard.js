@@ -495,21 +495,25 @@ export const AdminDashboardView = () => {
     return staffHours
   }, [personnel, projectEvents, selectedDate])
 
-  // Available photographers calculation
+  // Available photographers calculation - real-time
   const availablePhotographers = useMemo(() => {
     const photoVideoStaff = personnel.filter(p => 
       ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
     )
     
     const currentTime = new Date()
+    const currentDate = currentTime.toISOString().split('T')[0] // YYYY-MM-DD format
     const currentHour = currentTime.getHours()
     const currentMinute = currentTime.getMinutes()
     const currentTimeInMinutes = currentHour * 60 + currentMinute
     
     const availableStaff = photoVideoStaff.filter(staff => {
       const assignedEventIds = staff.event_ids || []
+      
+      // Check ALL events (not just project events) for today
+      const todayEvents = events.filter(e => e.date === currentDate)
       const assignedEvents = assignedEventIds
-        .map(eventId => projectEvents.find(e => e.id === eventId))
+        .map(eventId => todayEvents.find(e => e.id === eventId))
         .filter(Boolean)
       
       // Check if photographer is currently in an event
@@ -529,7 +533,7 @@ export const AdminDashboardView = () => {
     })
     
     return availableStaff
-  }, [personnel, projectEvents])
+  }, [personnel, events])
   
   // Image count for delivered events
   const deliveredEventImages = useMemo(() => {
@@ -1057,16 +1061,6 @@ export const AdminDashboardView = () => {
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-          <div className="progress-details">
-            <div className="detail-item">
-              <span className="detail-label">Client Favorites:</span>
-              <span className="detail-value">{clientDownloads.favoritedImages} of {clientDownloads.totalImages} images</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Photographer Hours:</span>
-              <span className="detail-value">See detailed breakdown below</span>
             </div>
           </div>
         </div>
