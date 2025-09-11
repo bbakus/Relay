@@ -21,6 +21,8 @@ export const Schedule = () => {
     const [loading, setLoading] = useState(true)
     const [selectedEvent, setSelectedEvent] = useState(null)
     const [showModal, setShowModal] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [editingEvent, setEditingEvent] = useState(null)
 
     // Generate time slots in 15-minute intervals from 6 AM to 11 PM
     const generateTimeSlots = () => {
@@ -270,13 +272,60 @@ export const Schedule = () => {
     }
 
     const handleEditEvent = (event) => {
-        // Close the modal first
+        // Close the details modal and open edit modal
         setShowModal(false)
         setSelectedEvent(null)
+        setEditingEvent(event)
+        setShowEditModal(true)
+    }
+
+    const closeEditModal = () => {
+        setShowEditModal(false)
+        setEditingEvent(null)
+    }
+
+    const handleUpdateEvent = async (e, eventId) => {
+        e.preventDefault()
         
-        // Navigate to the Events page with the event pre-selected for editing
-        // This assumes you have a way to pass the event ID to the Events page
-        window.location.href = `/events?edit=${event.id}`
+        const formData = new FormData(e.target)
+        const eventData = {
+            name: formData.get('name'),
+            start_time: formData.get('start_time'),
+            end_time: formData.get('end_time'),
+            location: formData.get('location'),
+            notes: formData.get('notes'),
+            quick_turn: formData.get('quick_turn') === 'on'
+        }
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(eventData)
+            })
+            
+            if (response.ok) {
+                // Update the event in local state
+                setEvents(prevEvents => 
+                    prevEvents.map(event => 
+                        event.id === eventId 
+                            ? { ...event, ...eventData }
+                            : event
+                    )
+                )
+                
+                // Close the edit modal
+                closeEditModal()
+            } else {
+                console.error('Failed to update event')
+                alert('Failed to update event. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error updating event:', error)
+            alert('Error updating event. Please try again.')
+        }
     }
 
     // Handle personnel assignment to event
@@ -809,6 +858,90 @@ export const Schedule = () => {
                                 Delete Event
                             </button>
                             <button className="modal-button" onClick={closeModal}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Event Modal */}
+            {showEditModal && editingEvent && (
+                <div className="modal-overlay" onClick={closeEditModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Edit Event</h2>
+                            <button className="modal-close" onClick={closeEditModal}>×</button>
+                        </div>
+                        
+                        <div className="modal-body">
+                            <form onSubmit={(e) => handleUpdateEvent(e, editingEvent.id)}>
+                                <div className="form-group">
+                                    <label>Event Name:</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        defaultValue={editingEvent.name}
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Start Time:</label>
+                                        <input
+                                            type="time"
+                                            name="start_time"
+                                            defaultValue={editingEvent.start_time}
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div className="form-group">
+                                        <label>End Time:</label>
+                                        <input
+                                            type="time"
+                                            name="end_time"
+                                            defaultValue={editingEvent.end_time}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Location:</label>
+                                    <input
+                                        type="text"
+                                        name="location"
+                                        defaultValue={editingEvent.location}
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Notes:</label>
+                                    <textarea
+                                        name="notes"
+                                        defaultValue={editingEvent.notes}
+                                        rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Quick Turn:</label>
+                                    <input
+                                        type="checkbox"
+                                        name="quick_turn"
+                                        defaultChecked={editingEvent.quick_turn || false}
+                                    />
+                                </div>
+                                
+                                <div className="modal-footer">
+                                    <button type="submit" className="modal-button edit-button">
+                                        Update Event
+                                    </button>
+                                    <button type="button" className="modal-button" onClick={closeEditModal}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
