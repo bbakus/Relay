@@ -160,6 +160,7 @@ export const PhotographerDashboardView = () => {
                 position: { top, height }
             }
         }).filter(event => event.position.top >= 0) // Only show events within time range
+        .sort((a, b) => a.position.height - b.position.height) // Sort by height - shorter events first for z-index priority
     }, [photographerEvents])
 
     // Filter shot requests for photographer's assigned events
@@ -307,7 +308,7 @@ export const PhotographerDashboardView = () => {
                                 ) : (
                                     <div className='photographer-event-column'>
                                         {/* Render photographer's events */}
-                                        {eventsWithPositions.map(event => {
+                                        {eventsWithPositions.map((event, index) => {
                                             const eventStatus = getEventStatus(event)
                                             return (
                                                 <div
@@ -318,6 +319,7 @@ export const PhotographerDashboardView = () => {
                                                         top: `${event.position.top}px`,
                                                         height: `${event.position.height}px`,
                                                         left: '8px',
+                                                        zIndex: index + 1, // Shorter events (sorted first) get higher z-index
                                                         right: '8px',
                                                         backgroundColor: 'rgba(0, 123, 255, 0.15)', /* Blue background */
                                                         border: `2px solid rgba(0, 123, 255, 0.8)`, /* Blue border */
