@@ -6,7 +6,7 @@ import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/schedule.css'
 
 export const Schedule = () => {
-    const { user, selectedDate, selectedProjectId } = useAuth()
+    const { user, selectedDate, selectedProjectId, selectedCompanyId } = useAuth()
     // Use global selectedDate from AuthContext, fallback to today if not set
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
     
@@ -104,9 +104,13 @@ export const Schedule = () => {
 
     const fetchPersonnel = async () => {
         try {
-            // Filter personnel by company for company admins (same logic as Personnel component)
+            // Filter personnel by company (same logic as Personnel component)
             let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
-            if (user?.company_id) {
+            if (user?.is_super_admin && selectedCompanyId) {
+                // For super admins, use the selected company
+                personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+            } else if (user?.company_id) {
+                // For regular company admins, use their company
                 personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
             }
             
@@ -151,7 +155,7 @@ export const Schedule = () => {
         fetchProjects()
         fetchPersonnel()
         fetchEvents()
-    }, [activeDate, selectedProjectId, isAdmin, user?.company_id])
+    }, [activeDate, selectedProjectId, isAdmin, user?.company_id, selectedCompanyId])
 
 
 
