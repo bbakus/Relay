@@ -139,10 +139,10 @@ export const PhotographerDashboardView = () => {
             const durationMinutes = endTotalMinutes - startTotalMinutes
             const exactDurationSlots = durationMinutes / 15
             
-            // USE SCHEDULE.JS LOGIC BUT SCALED TO 24px per slot for compact photographer view
-            const PIXELS_PER_15MIN_SLOT = 24 // Compact photographer view: 24px per 15-min slot
-            const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60 // ADD 60px offset to match grid lines
-            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
+            // CORRECT CALCULATION: Based on 6AM = 0, using 87px per hour = 21.75px per 15-min slot
+            const PIXELS_PER_15MIN_SLOT = 87 / 4 // 21.75px per 15-min slot
+            const top = exactStartSlot * PIXELS_PER_15MIN_SLOT // NO OFFSET - 6AM = 0, events container starts at grid
+            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 21.75)
 
             // Debug logging
             console.log(`EVENT: ${event.name} (${event.start_time}-${event.end_time})`)
