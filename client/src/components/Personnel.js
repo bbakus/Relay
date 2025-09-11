@@ -438,8 +438,20 @@ export const Personnel = () => {
         }
       }
 
-      // Refresh data
-      await fetchAll()
+      // Refresh personnel data to get updated assignments
+      let personnelUrl = `${API_CONFIG.baseUrl}/api/personnel`
+      if (user?.is_super_admin && selectedCompanyId) {
+        personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${selectedCompanyId}`
+      } else if (user?.company_id) {
+        personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
+      }
+      
+      const pplRes = await fetch(personnelUrl)
+      if (pplRes.ok) {
+        const updatedPersonnel = await pplRes.json()
+        setPersonnel(Array.isArray(updatedPersonnel) ? updatedPersonnel : [])
+      }
+      
       closeEventAssignModal()
     } catch (error) {
       console.error('Error assigning personnel to event:', error)
