@@ -388,23 +388,47 @@ export const Personnel = () => {
   }
 
   const handleEventAssignment = async () => {
-    if (!selectedEventForAssign) return
+    console.log('🔥 handleEventAssignment called!')
+    console.log('selectedEventForAssign:', selectedEventForAssign)
+    console.log('selectedPersonnelForEvent:', selectedPersonnelForEvent)
+    
+    // Simple test to see if function is called
+    alert('Assignment function called! Check console for details.')
+    
+    if (!selectedEventForAssign) {
+      console.error('No event selected for assignment')
+      return
+    }
+
+    console.log('Starting event assignment:', {
+      event: selectedEventForAssign.name,
+      selectedPersonnel: selectedPersonnelForEvent,
+      projectTeam: projectTeam.length
+    })
 
     try {
       // Get all personnel IDs to assign to this event
       const personnelIds = selectedPersonnelForEvent
+      console.log('Personnel IDs to assign:', personnelIds)
 
       // Update each personnel's event assignments
       for (const personnelId of personnelIds) {
         const personnel = projectTeam.find(p => p.id === personnelId)
-        if (!personnel) continue
+        if (!personnel) {
+          console.error(`Personnel with ID ${personnelId} not found in projectTeam`)
+          continue
+        }
+
+        console.log(`Processing personnel: ${personnel.name} (ID: ${personnelId})`)
 
         // Get current event IDs for this personnel
         const currentEventIds = personnel.event_ids || []
+        console.log(`Current event IDs for ${personnel.name}:`, currentEventIds)
         
         // Add this event if not already assigned
         if (!currentEventIds.includes(selectedEventForAssign.id)) {
           const updatedEventIds = [...currentEventIds, selectedEventForAssign.id]
+          console.log(`Adding event ${selectedEventForAssign.id} to ${personnel.name}. New event IDs:`, updatedEventIds)
           
           const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
             method: 'PUT',
@@ -412,9 +436,14 @@ export const Personnel = () => {
             body: JSON.stringify({ event_ids: updatedEventIds })
           })
 
-          if (!response.ok) {
-            console.error(`Failed to assign personnel ${personnelId} to event`)
+          if (response.ok) {
+            console.log(`Successfully assigned ${personnel.name} to event ${selectedEventForAssign.name}`)
+          } else {
+            const errorData = await response.json()
+            console.error(`Failed to assign personnel ${personnelId} to event:`, errorData)
           }
+        } else {
+          console.log(`${personnel.name} is already assigned to this event`)
         }
       }
 
@@ -423,9 +452,12 @@ export const Personnel = () => {
         .filter(p => (p.event_ids || []).includes(selectedEventForAssign.id))
         .filter(p => !selectedPersonnelForEvent.includes(p.id))
 
+      console.log('Personnel to remove from event:', personnelToRemove.map(p => p.name))
+
       for (const personnel of personnelToRemove) {
         const currentEventIds = personnel.event_ids || []
         const updatedEventIds = currentEventIds.filter(id => id !== selectedEventForAssign.id)
+        console.log(`Removing event ${selectedEventForAssign.id} from ${personnel.name}. New event IDs:`, updatedEventIds)
         
         const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnel.id}`, {
           method: 'PUT',
@@ -433,8 +465,11 @@ export const Personnel = () => {
           body: JSON.stringify({ event_ids: updatedEventIds })
         })
 
-        if (!response.ok) {
-          console.error(`Failed to remove personnel ${personnel.id} from event`)
+        if (response.ok) {
+          console.log(`Successfully removed ${personnel.name} from event ${selectedEventForAssign.name}`)
+        } else {
+          const errorData = await response.json()
+          console.error(`Failed to remove personnel ${personnel.id} from event:`, errorData)
         }
       }
 
@@ -446,13 +481,18 @@ export const Personnel = () => {
         personnelUrl = `${API_CONFIG.baseUrl}/api/personnel?company_id=${user.company_id}`
       }
       
+      console.log('Refreshing personnel data from:', personnelUrl)
       const pplRes = await fetch(personnelUrl)
       if (pplRes.ok) {
         const updatedPersonnel = await pplRes.json()
         setPersonnel(Array.isArray(updatedPersonnel) ? updatedPersonnel : [])
+        console.log('Personnel data refreshed successfully')
+      } else {
+        console.error('Failed to refresh personnel data')
       }
       
       closeEventAssignModal()
+      console.log('Event assignment completed successfully')
     } catch (error) {
       console.error('Error assigning personnel to event:', error)
       alert('Failed to assign personnel to event. Please try again.')
