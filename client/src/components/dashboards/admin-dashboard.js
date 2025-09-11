@@ -1034,8 +1034,8 @@ export const AdminDashboardView = () => {
               <span className="detail-value">{clientDownloads.favoritedImages} of {clientDownloads.totalImages} images</span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Most Assigned:</span>
-              <span className="detail-value">{exhaustionLevel.name} ({exhaustionLevel.assignments} events)</span>
+              <span className="detail-label">Photographer Hours:</span>
+              <span className="detail-value">See detailed breakdown below</span>
             </div>
           </div>
         </div>
