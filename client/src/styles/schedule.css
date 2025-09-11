@@ -606,6 +606,14 @@
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
+.modal-button.shot-request-button {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.modal-button.shot-request-button:hover {
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
 /* Edit Event Modal Form Styles */
 .form-group {
     margin-bottom: 20px;
@@ -648,6 +656,27 @@
 .form-group input[type="checkbox"] {
     width: auto;
     margin-right: 8px;
+}
+
+/* Shot Request Modal Styles */
+.event-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    border-left: 4px solid #ff7a18;
+}
+
+.event-info h3 {
+    margin: 0 0 8px 0;
+    color: #ff7a18;
+    font-size: 1.2rem;
+}
+
+.event-info p {
+    margin: 4px 0;
+    color: #ffffff;
+    font-size: 0.9rem;
 }
 
 /* Personnel Assignment Styles in Event Modal */

@@ -23,6 +23,14 @@ export const Schedule = () => {
     const [showModal, setShowModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [editingEvent, setEditingEvent] = useState(null)
+    const [showShotRequestModal, setShowShotRequestModal] = useState(false)
+    const [shotRequestEvent, setShotRequestEvent] = useState(null)
+    const [shotRequestForm, setShotRequestForm] = useState({
+        description: '',
+        priority: 'medium',
+        deadline: '',
+        special_instructions: ''
+    })
 
     // Generate time slots in 15-minute intervals from 6 AM to 11 PM
     const generateTimeSlots = () => {
@@ -325,6 +333,54 @@ export const Schedule = () => {
         } catch (error) {
             console.error('Error updating event:', error)
             alert('Error updating event. Please try again.')
+        }
+    }
+
+    const handleShotRequest = (event) => {
+        setShotRequestEvent(event)
+        setShowShotRequestModal(true)
+    }
+
+    const closeShotRequestModal = () => {
+        setShowShotRequestModal(false)
+        setShotRequestEvent(null)
+        setShotRequestForm({
+            description: '',
+            priority: 'medium',
+            deadline: '',
+            special_instructions: ''
+        })
+    }
+
+    const handleShotRequestSubmit = async (e) => {
+        e.preventDefault()
+        
+        if (!shotRequestEvent) return
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ...shotRequestForm,
+                    event_id: shotRequestEvent.id,
+                    requester_id: user.id,
+                    status: 'pending'
+                })
+            })
+            
+            if (response.ok) {
+                alert('Shot request submitted successfully!')
+                closeShotRequestModal()
+            } else {
+                console.error('Failed to submit shot request')
+                alert('Failed to submit shot request. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error submitting shot request:', error)
+            alert('Error submitting shot request. Please try again.')
         }
     }
 
@@ -788,75 +844,109 @@ export const Schedule = () => {
                                 </select>
                             </div>
 
-                            {/* Personnel Assignment Section */}
-                            <div className="event-personnel-section">
-                                <h3>Assigned Personnel</h3>
-                                <div className="assigned-personnel-list">
-                                    {getAssignedPersonnel().length === 0 ? (
-                                        <div className="no-personnel">No personnel assigned to this event</div>
-                                    ) : (
-                                        getAssignedPersonnel().map(person => (
-                                            <div key={person.id} className={`personnel-item ${getRoleClass(person.role)}`}>
-                                                <div className="personnel-info">
-                                                    <span className="personnel-name">{person.name}</span>
-                                                    <span className="personnel-role"> - {person.role || 'No role'}</span>
+                            {/* Personnel Assignment Section - Admin Only */}
+                            {isAdmin && (
+                                <div className="event-personnel-section">
+                                    <h3>Assigned Personnel</h3>
+                                    <div className="assigned-personnel-list">
+                                        {getAssignedPersonnel().length === 0 ? (
+                                            <div className="no-personnel">No personnel assigned to this event</div>
+                                        ) : (
+                                            getAssignedPersonnel().map(person => (
+                                                <div key={person.id} className={`personnel-item ${getRoleClass(person.role)}`}>
+                                                    <div className="personnel-info">
+                                                        <span className="personnel-name">{person.name}</span>
+                                                        <span className="personnel-role"> - {person.role || 'No role'}</span>
+                                                    </div>
+                                                    <button 
+                                                        className="unassign-personnel-btn"
+                                                        onClick={() => {
+                                                            handleAssignPersonnelToEvent(person.id, 'remove')
+                                                        }}
+                                                        title="Remove from event"
+                                                    >
+                                                        ×
+                                                    </button>
                                                 </div>
-                                                <button 
-                                                    className="unassign-personnel-btn"
-                                                    onClick={() => {
-                                                        handleAssignPersonnelToEvent(person.id, 'remove')
-                                                    }}
-                                                    title="Remove from event"
-                                                >
-                                                    ×
-                                                </button>
-                                            </div>
-                                        ))
-                                    )}
+                                            ))
+                                        )}
+                                    </div>
+                                    
+                                    <h4>Assign Personnel</h4>
+                                    <div className="personnel-assign-dropdown-section">
+                                        {getAvailablePersonnel().length === 0 ? (
+                                            <div className="no-personnel">All personnel are assigned to this event</div>
+                                        ) : (
+                                            <select 
+                                                className="personnel-assign-dropdown"
+                                                onChange={(e) => {
+                                                    if (e.target.value) {
+                                                        const personnelId = parseInt(e.target.value)
+                                                        handleAssignPersonnelToEvent(personnelId, 'add')
+                                                        // Reset dropdown
+                                                        e.target.value = ''
+                                                    }
+                                                }}
+                                                defaultValue=""
+                                            >
+                                                <option value="" disabled>Select personnel to assign...</option>
+                                                {getAvailablePersonnel().map(person => (
+                                                    <option key={person.id} value={person.id}>
+                                                        {person.name} - {person.role || 'No role'}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
                                 </div>
-                                
-                                <h4>Assign Personnel</h4>
-                                <div className="personnel-assign-dropdown-section">
-                                    {getAvailablePersonnel().length === 0 ? (
-                                        <div className="no-personnel">All personnel are assigned to this event</div>
-                                    ) : (
-                                        <select 
-                                            className="personnel-assign-dropdown"
-                                            onChange={(e) => {
-                                                if (e.target.value) {
-                                                    const personnelId = parseInt(e.target.value)
-                                                    handleAssignPersonnelToEvent(personnelId, 'add')
-                                                    // Reset dropdown
-                                                    e.target.value = ''
-                                                }
-                                            }}
-                                            defaultValue=""
-                                        >
-                                            <option value="" disabled>Select personnel to assign...</option>
-                                            {getAvailablePersonnel().map(person => (
-                                                <option key={person.id} value={person.id}>
-                                                    {person.name} - {person.role || 'No role'}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
+                            )}
+
+                            {/* Client View - Show Assigned Personnel (Read Only) */}
+                            {!isAdmin && (
+                                <div className="event-personnel-section">
+                                    <h3>Assigned Personnel</h3>
+                                    <div className="assigned-personnel-list">
+                                        {getAssignedPersonnel().length === 0 ? (
+                                            <div className="no-personnel">No personnel assigned to this event</div>
+                                        ) : (
+                                            getAssignedPersonnel().map(person => (
+                                                <div key={person.id} className={`personnel-item ${getRoleClass(person.role)}`}>
+                                                    <div className="personnel-info">
+                                                        <span className="personnel-name">{person.name}</span>
+                                                        <span className="personnel-role"> - {person.role || 'No role'}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                         
                         <div className="modal-footer">
-                            <button 
-                                className="modal-button edit-button" 
-                                onClick={() => handleEditEvent(selectedEvent)}
-                            >
-                                Edit Event
-                            </button>
-                            <button 
-                                className="modal-button delete-button" 
-                                onClick={() => handleDeleteEvent(selectedEvent.id)}
-                            >
-                                Delete Event
-                            </button>
+                            {isAdmin ? (
+                                <>
+                                    <button 
+                                        className="modal-button edit-button" 
+                                        onClick={() => handleEditEvent(selectedEvent)}
+                                    >
+                                        Edit Event
+                                    </button>
+                                    <button 
+                                        className="modal-button delete-button" 
+                                        onClick={() => handleDeleteEvent(selectedEvent.id)}
+                                    >
+                                        Delete Event
+                                    </button>
+                                </>
+                            ) : (
+                                <button 
+                                    className="modal-button shot-request-button" 
+                                    onClick={() => handleShotRequest(selectedEvent)}
+                                >
+                                    Add Shot Request
+                                </button>
+                            )}
                             <button className="modal-button" onClick={closeModal}>Close</button>
                         </div>
                     </div>
@@ -938,6 +1028,86 @@ export const Schedule = () => {
                                         Update Event
                                     </button>
                                     <button type="button" className="modal-button" onClick={closeEditModal}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shot Request Modal */}
+            {showShotRequestModal && shotRequestEvent && (
+                <div className="modal-overlay" onClick={closeShotRequestModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Add Shot Request</h2>
+                            <button className="modal-close" onClick={closeShotRequestModal}>×</button>
+                        </div>
+                        
+                        <div className="modal-body">
+                            <div className="event-info">
+                                <h3>{shotRequestEvent.name}</h3>
+                                <p>{formatTimeTo12Hour(shotRequestEvent.start_time)} - {formatTimeTo12Hour(shotRequestEvent.end_time)}</p>
+                                <p>{shotRequestEvent.location}</p>
+                            </div>
+                            
+                            <form onSubmit={handleShotRequestSubmit}>
+                                <div className="form-group">
+                                    <label>Description:</label>
+                                    <textarea
+                                        name="description"
+                                        value={shotRequestForm.description}
+                                        onChange={(e) => setShotRequestForm({...shotRequestForm, description: e.target.value})}
+                                        required
+                                        rows="3"
+                                        placeholder="Describe the shots you need..."
+                                    />
+                                </div>
+                                
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Priority:</label>
+                                        <select
+                                            name="priority"
+                                            value={shotRequestForm.priority}
+                                            onChange={(e) => setShotRequestForm({...shotRequestForm, priority: e.target.value})}
+                                        >
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="form-group">
+                                        <label>Deadline:</label>
+                                        <input
+                                            type="datetime-local"
+                                            name="deadline"
+                                            value={shotRequestForm.deadline}
+                                            onChange={(e) => setShotRequestForm({...shotRequestForm, deadline: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Special Instructions:</label>
+                                    <textarea
+                                        name="special_instructions"
+                                        value={shotRequestForm.special_instructions}
+                                        onChange={(e) => setShotRequestForm({...shotRequestForm, special_instructions: e.target.value})}
+                                        rows="2"
+                                        placeholder="Any specific requirements or notes..."
+                                    />
+                                </div>
+                                
+                                <div className="modal-footer">
+                                    <button type="submit" className="modal-button shot-request-button">
+                                        Submit Shot Request
+                                    </button>
+                                    <button type="button" className="modal-button" onClick={closeShotRequestModal}>
                                         Cancel
                                     </button>
                                 </div>
