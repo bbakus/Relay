@@ -141,7 +141,7 @@ export const PhotographerDashboardView = () => {
             
             // CORRECT CALCULATION: Based on 6AM = 0, using 87px per hour = 21.75px per 15-min slot
             const PIXELS_PER_15MIN_SLOT = 87 / 4 // 21.75px per 15-min slot
-            const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60 // ADD 60px to reach 6AM mark from header
+            const top = exactStartSlot * PIXELS_PER_15MIN_SLOT // NO OFFSET - events container starts at grid
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 21.75)
 
             // Debug logging
