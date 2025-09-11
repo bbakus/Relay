@@ -438,8 +438,8 @@ export const AdminDashboardView = () => {
     return { percentage, totalImages, favoritedImages }
   }, [images, events, shotRequests, selectedProjectId])
   
-  // Exhaustion level calculation
-  const exhaustionLevel = useMemo(() => {
+  // Photographer hours calculation
+  const photographerHours = useMemo(() => {
     const photoVideoStaff = personnel.filter(p => 
       ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
     )
@@ -449,27 +449,50 @@ export const AdminDashboardView = () => {
       ? projectEvents.filter(e => e.date === selectedDate)
       : []
     
-    const staffAssignmentCounts = {}
+    const staffHours = {}
+    const currentTime = new Date()
+    const currentHour = currentTime.getHours()
+    const currentMinute = currentTime.getMinutes()
+    const currentTimeInMinutes = currentHour * 60 + currentMinute
     
     photoVideoStaff.forEach(staff => {
-      // Count assignments to project events only (filtered by date)
       const assignedEventIds = staff.event_ids || []
-      const projectAssignments = assignedEventIds.filter(eventId => 
-        dateFilteredEvents.some(e => e.id === eventId)
-      )
-      staffAssignmentCounts[staff.name] = projectAssignments.length
+      const assignedEvents = assignedEventIds
+        .map(eventId => dateFilteredEvents.find(e => e.id === eventId))
+        .filter(Boolean)
+      
+      let scheduledHours = 0
+      let workedHours = 0
+      
+      assignedEvents.forEach(event => {
+        if (event.start_time && event.end_time) {
+          const [startHour, startMinute] = event.start_time.split(':').map(Number)
+          const [endHour, endMinute] = event.end_time.split(':').map(Number)
+          const startTimeInMinutes = startHour * 60 + startMinute
+          const endTimeInMinutes = endHour * 60 + endMinute
+          const eventDurationHours = (endTimeInMinutes - startTimeInMinutes) / 60
+          
+          scheduledHours += eventDurationHours
+          
+          // Calculate worked hours (events that have already ended)
+          if (currentTimeInMinutes >= endTimeInMinutes) {
+            workedHours += eventDurationHours
+          } else if (currentTimeInMinutes >= startTimeInMinutes) {
+            // Event is currently happening, calculate partial hours worked
+            const partialWorkedHours = (currentTimeInMinutes - startTimeInMinutes) / 60
+            workedHours += partialWorkedHours
+          }
+        }
+      })
+      
+      staffHours[staff.name] = {
+        scheduled: Math.round(scheduledHours * 10) / 10, // Round to 1 decimal
+        worked: Math.round(workedHours * 10) / 10,
+        exhausted: scheduledHours >= 8
+      }
     })
     
-    const topStaff = Object.entries(staffAssignmentCounts)
-      .sort(([,a], [,b]) => b - a)[0]
-    
-    if (!topStaff) return { name: 'No staff', percentage: 0, assignments: 0 }
-    
-    const [name, assignments] = topStaff
-    const maxPossible = dateFilteredEvents.length // Theoretical max if one person did everything
-    const percentage = maxPossible > 0 ? Math.round((assignments / maxPossible) * 100) : 0
-    
-    return { name, percentage: Math.min(percentage, 100), assignments }
+    return staffHours
   }, [personnel, projectEvents, selectedDate])
   
   // Image count for delivered events
@@ -982,33 +1005,25 @@ export const AdminDashboardView = () => {
               </div>
             </div>
             
-            <div className="progress-circle-item">
-              <div className="progress-circle">
-                <svg width="160" height="160" className="progress-ring">
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="65"
-                    fill="none"
-                    stroke="rgba(255, 255, 255, 0.1)"
-                    strokeWidth="10"
-                  />
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="65"
-                    fill="none"
-                    stroke="rgba(255, 193, 7, 0.9)"
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 65}`}
-                    strokeDashoffset={`${2 * Math.PI * 65 * (1 - exhaustionLevel.percentage / 100)}`}
-                    transform="rotate(-90 80 80)"
-                  />
-                </svg>
-                <div className="progress-circle-content">
-                  <span className="progress-circle-percent">{exhaustionLevel.percentage}%</span>
-                  <span className="progress-circle-label">Exhaustion</span>
+            <div className="progress-circle-item photographer-hours-item">
+              <div className="photographer-hours-mini">
+                <div className="photographer-hours-title">Photographer Hours</div>
+                <div className="photographer-hours-list">
+                  {Object.entries(photographerHours).length === 0 ? (
+                    <div className="no-photographers-mini">No photographers</div>
+                  ) : (
+                    Object.entries(photographerHours)
+                      .sort(([,a], [,b]) => b.scheduled - a.scheduled)
+                      .slice(0, 3) // Show top 3
+                      .map(([name, hours]) => (
+                        <div key={name} className={`photographer-mini-item ${hours.exhausted ? 'exhausted' : ''}`}>
+                          <div className="photographer-mini-name">{name}</div>
+                          <div className="photographer-mini-hours">
+                            {hours.scheduled}h {hours.exhausted && '⚠️'}
+                          </div>
+                        </div>
+                      ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1021,6 +1036,50 @@ export const AdminDashboardView = () => {
             <div className="detail-item">
               <span className="detail-label">Most Assigned:</span>
               <span className="detail-value">{exhaustionLevel.name} ({exhaustionLevel.assignments} events)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Detailed Photographer Hours */}
+        <div className="dashboard-card">
+          <h3>Photographer Hours Detail</h3>
+          <div className="photographer-hours-container">
+            {Object.entries(photographerHours).length === 0 ? (
+              <div className="no-photographers">No photographers assigned for this date</div>
+            ) : (
+              Object.entries(photographerHours)
+                .sort(([,a], [,b]) => b.scheduled - a.scheduled)
+                .map(([name, hours]) => (
+                  <div key={name} className={`photographer-hours-item ${hours.exhausted ? 'exhausted' : ''}`}>
+                    <div className="photographer-name">{name}</div>
+                    <div className="hours-details">
+                      <div className="hours-bar">
+                        <div 
+                          className="hours-fill" 
+                          style={{ 
+                            width: `${Math.min((hours.scheduled / 8) * 100, 100)}%`,
+                            backgroundColor: hours.exhausted ? '#dc3545' : '#28a745'
+                          }}
+                        />
+                      </div>
+                      <div className="hours-text">
+                        <span className="scheduled-hours">{hours.scheduled}h scheduled</span>
+                        <span className="worked-hours">{hours.worked}h worked</span>
+                        {hours.exhausted && <span className="exhausted-badge">EXHAUSTED</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+          <div className="progress-details">
+            <div className="detail-item">
+              <span className="detail-label">8+ Hours = Exhausted</span>
+              <span className="detail-value">Red indicates overworked staff</span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Worked Hours:</span>
+              <span className="detail-value">Based on current time and event completion</span>
             </div>
           </div>
         </div>
