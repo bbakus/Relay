@@ -129,20 +129,14 @@ export const PhotographerDashboardView = () => {
             const exactEndSlot = ((endHour - 6) * 4) + (endMinute / 15)
             const exactDurationSlots = exactEndSlot - exactStartSlot
 
-            // Use CSS grid slot height (24px per 15min slot)
+            // CRITICAL FIX: The events are positioned relative to the events container,
+            // but we need to account for the header height properly
             const PIXELS_PER_15MIN_SLOT = 24
-            // Position events relative to the grid lines (which start at 60px)
-            // Each slot is 24px, so multiply by slot index
-            const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60
-            // Calculate height based on actual duration, minimum 24px (one slot)
+            
+            // The issue is that events need to be positioned relative to the container
+            // which already accounts for the header. So we DON'T add 60px offset
+            const top = exactStartSlot * PIXELS_PER_15MIN_SLOT
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
-
-            // Debug logging for alignment
-            console.log(`EVENT: ${event.name} (${event.start_time}-${event.end_time})`)
-            console.log(`  Start slot: ${exactStartSlot}, End slot: ${exactEndSlot}`)
-            console.log(`  Calculated top: ${top}px`)
-            console.log(`  Expected for 10:30: slot ${((10-6)*4) + (30/15)} = ${((10-6)*4) + (30/15)}`)
-            console.log(`  Expected for 14:00: slot ${((14-6)*4) + (0/15)} = ${((14-6)*4) + (0/15)}`)
 
 
 
