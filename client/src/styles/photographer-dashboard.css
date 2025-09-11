@@ -84,8 +84,8 @@
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     position: relative;
-    min-height: 1800px; /* Taller with more spacing between hours */
-    height: 1800px; /* Fixed height to ensure consistent layout */
+    min-height: 1788px; /* 60px header + 72 slots × 24px = 1788px */
+    height: 1788px; /* Fixed height to ensure consistent layout */
 }
 
 /* Global grid lines */
@@ -94,7 +94,7 @@
     top: 60px; /* Account for header height */
     left: 0;
     right: 0;
-    height: 1740px; /* 72 slots × 24px = 1728px for 6AM-midnight */
+    height: 1728px; /* 72 slots × 24px = 1728px for 6AM-midnight */
     display: grid;
     grid-template-rows: repeat(72, 24px); /* 72 × 15-minute slots, taller at 24px each */
     z-index: 1;
@@ -177,8 +177,8 @@
 .photographer-events-container {
     position: relative;
     flex: 1;
-    min-height: 1740px; /* Match grid lines height */
-    height: 1740px; /* Fixed height for consistency */
+    min-height: 1788px; /* 60px header + 72 slots × 24px = 1788px */
+    height: 1788px; /* Fixed height for consistency */
 }
 
 .photographer-event-column {

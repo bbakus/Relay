@@ -129,6 +129,7 @@ export const PhotographerDashboardView = () => {
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
 
 
+
             return {
                 ...event,
                 position: { top, height }
@@ -315,12 +316,6 @@ export const PhotographerDashboardView = () => {
                                                         {event.start_time} - {event.end_time}
                                                     </div>
                                                     <div className='photographer-dashboard-event-location'>{event.location}</div>
-                                                    {event.notes && <div className='photographer-dashboard-event-notes'>{event.notes}</div>}
-                                                    {event.deadline && (
-                                                        <div className='photographer-dashboard-event-deadline'>
-                                                            ⏰ Deadline: {event.deadline}
-                                                        </div>
-                                                    )}
                                                     {event.assigned_personnel && event.assigned_personnel.length > 0 && (
                                                         <div className='photographer-dashboard-event-personnel'>
                                                             Team: {event.assigned_personnel.map(p => p.name || 'Unknown').join(', ')}
