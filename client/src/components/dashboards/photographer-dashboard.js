@@ -114,29 +114,35 @@ export const PhotographerDashboardView = () => {
         })
     }, [events, currentPhotographer, activeDate])
 
-    // Calculate event positions for the schedule grid
+    // Calculate event positions for the schedule grid - USING SAME LOGIC AS SCHEDULE.JS
     const eventsWithPositions = useMemo(() => {
         return photographerEvents.map(event => {
             if (!event.start_time || !event.end_time) {
-                return { ...event, position: { top: 0, height: 24 } }
+                return { ...event, position: { top: 0, height: 60 } }
             }
 
             const [startHour, startMinute] = event.start_time.split(':').map(Number)
             const [endHour, endMinute] = event.end_time.split(':').map(Number)
 
-            // Calculate exact slot positions (0-based index) - same as timeSlots
-            const exactStartSlot = ((startHour - 6) * 4) + (startMinute / 15)
-            const exactEndSlot = ((endHour - 6) * 4) + (endMinute / 15)
-            const exactDurationSlots = exactEndSlot - exactStartSlot
+            // Don't show events outside our time range (6 AM to 11 PM)
+            if (startHour < 6 || startHour > 23) return null
 
-            // CRITICAL FIX: The events are positioned relative to the events container,
-            // but we need to account for the header height properly
-            const PIXELS_PER_15MIN_SLOT = 24
+            // Use EXACT SAME calculation as Schedule.js
+            // Calculate exact start position using total minutes
+            const startTotalMinutes = (startHour * 60) + startMinute
+            const endTotalMinutes = (endHour * 60) + endMinute
             
-            // The issue is that events need to be positioned relative to the container
-            // which already accounts for the header. So we DON'T add 60px offset
-            const top = exactStartSlot * PIXELS_PER_15MIN_SLOT
-            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
+            // Exact start slot calculation (from 6 AM = 0)
+            const exactStartSlot = (startTotalMinutes - (6 * 60)) / 15
+            
+            // Exact duration in slots
+            const durationMinutes = endTotalMinutes - startTotalMinutes
+            const exactDurationSlots = durationMinutes / 15
+            
+            // MATCH THE ACTUAL CSS: Use 60px per 15-min slot like Schedule.js
+            const PIXELS_PER_15MIN_SLOT = 60 // Same as Schedule.js
+            const top = exactStartSlot * PIXELS_PER_15MIN_SLOT // NO OFFSET - same as Schedule.js
+            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 60)
 
 
 

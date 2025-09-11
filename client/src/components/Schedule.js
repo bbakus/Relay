@@ -48,6 +48,15 @@ export const Schedule = () => {
 
     const timeSlots = generateTimeSlots()
 
+    // Format time to 12-hour format
+    const formatTimeTo12Hour = (time24) => {
+        if (!time24) return ''
+        const [hours, minutes] = time24.split(':').map(Number)
+        const period = hours >= 12 ? 'PM' : 'AM'
+        const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+    }
+
     // Check if user is admin
     const isAdmin = useMemo(() => {
         return (user?.access || '').toLowerCase() === 'admin'
@@ -635,7 +644,7 @@ export const Schedule = () => {
                                                             {event.quick_turn && <span className='quick-turn'>⚡</span>}
                                                         </div>
                                                         <div className='event-time'>
-                                                            {event.start_time} - {event.end_time}
+                                                            {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                         </div>
                                                         <div className='event-location'>{event.location}</div>
                                                         {event.notes && <div className='event-notes'>{event.notes}</div>}
@@ -663,7 +672,7 @@ export const Schedule = () => {
                         <div className="modal-body">
                             <div className="event-detail-row">
                                 <label>Time:</label>
-                                <span>{selectedEvent.start_time} - {selectedEvent.end_time}</span>
+                                <span>{formatTimeTo12Hour(selectedEvent.start_time)} - {formatTimeTo12Hour(selectedEvent.end_time)}</span>
                             </div>
                             
                             <div className="event-detail-row">
