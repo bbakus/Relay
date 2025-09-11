@@ -139,10 +139,18 @@ export const PhotographerDashboardView = () => {
             const durationMinutes = endTotalMinutes - startTotalMinutes
             const exactDurationSlots = durationMinutes / 15
             
-            // MATCH THE ACTUAL CSS: Use 60px per 15-min slot like Schedule.js
-            const PIXELS_PER_15MIN_SLOT = 60 // Same as Schedule.js
+            // Use 24px per 15-min slot for compact photographer view
+            const PIXELS_PER_15MIN_SLOT = 24 // Compact view for photographer
             const top = exactStartSlot * PIXELS_PER_15MIN_SLOT // NO OFFSET - same as Schedule.js
-            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 60)
+            const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
+
+            // Debug logging
+            console.log(`EVENT: ${event.name} (${event.start_time}-${event.end_time})`)
+            console.log(`  Start total minutes: ${startTotalMinutes}, End total minutes: ${endTotalMinutes}`)
+            console.log(`  Exact start slot: ${exactStartSlot}, Duration slots: ${exactDurationSlots}`)
+            console.log(`  Calculated top: ${top}px, Height: ${height}px`)
+            console.log(`  Expected for 10:30: slot ${(10*60+30-6*60)/15} = ${(10*60+30-6*60)/15}`)
+            console.log(`  Expected for 14:00: slot ${(14*60+0-6*60)/15} = ${(14*60+0-6*60)/15}`)
 
 
 
