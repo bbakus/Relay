@@ -94,9 +94,9 @@
     top: 60px; /* Account for header height */
     left: 0;
     right: 0;
-    height: 4320px; /* 72 slots × 60px = 4320px */
+    height: 1740px; /* 72 slots × 24px = 1740px */
     display: grid;
-    grid-template-rows: repeat(72, 60px); /* 60px per slot to match Schedule.js */
+    grid-template-rows: repeat(72, 24px); /* 24px per slot for compact view */
     z-index: 1;
     pointer-events: none;
 }
@@ -112,7 +112,7 @@
 /* Time column */
 .photographer-time-column {
     display: grid;
-    grid-template-rows: 60px repeat(72, 60px); /* Header + 72 time slots at 60px each */
+    grid-template-rows: 60px repeat(72, 24px); /* Header + 72 time slots at 24px each */
     background: rgba(0, 0, 0, 0.2);
     border-right: 2px solid rgba(255, 122, 24, 0.3);
     z-index: 2;
@@ -177,8 +177,8 @@
 .photographer-events-container {
     position: relative;
     flex: 1;
-    min-height: 4320px; /* 72 slots × 60px = 4320px */
-    height: 4320px; /* Fixed height for consistency */
+    min-height: 1740px; /* 72 slots × 24px = 1740px */
+    height: 1740px; /* Fixed height for consistency */
 }
 
 .photographer-event-column {
