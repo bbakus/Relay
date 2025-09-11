@@ -141,7 +141,7 @@ export const PhotographerDashboardView = () => {
             
             // USE SCHEDULE.JS LOGIC BUT SCALED TO 24px per slot for compact photographer view
             const PIXELS_PER_15MIN_SLOT = 24 // Compact photographer view: 24px per 15-min slot
-            const top = exactStartSlot * PIXELS_PER_15MIN_SLOT // NO OFFSET - same calculation as Schedule.js
+            const top = (exactStartSlot * PIXELS_PER_15MIN_SLOT) + 60 // ADD 60px offset to match grid lines
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 24)
 
             // Debug logging
