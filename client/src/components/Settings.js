@@ -349,6 +349,11 @@ export const Settings = () => {
     const [editingCompany, setEditingCompany] = useState(null)
     const [editCompanyForm, setEditCompanyForm] = useState({ name: '' })
     
+    // User attachment modal states
+    const [showAttachPersonnelModal, setShowAttachPersonnelModal] = useState(false)
+    const [selectedPersonnelForAttach, setSelectedPersonnelForAttach] = useState(null)
+    const [selectedUserForAttach, setSelectedUserForAttach] = useState('')
+    
     // Popup state for organization requirement
     const [showOrgRequiredPopup, setShowOrgRequiredPopup] = useState(false)
     
@@ -1586,6 +1591,73 @@ export const Settings = () => {
         setEditingItem(null)
     }
 
+    // User attachment handlers
+    const openAttachPersonnelModal = (personnel) => {
+        setSelectedPersonnelForAttach(personnel)
+        setSelectedUserForAttach('')
+        setShowAttachPersonnelModal(true)
+    }
+
+    const closeAttachPersonnelModal = () => {
+        setShowAttachPersonnelModal(false)
+        setSelectedPersonnelForAttach(null)
+        setSelectedUserForAttach('')
+    }
+
+    const handleAttachPersonnelToUser = async () => {
+        if (!selectedPersonnelForAttach || !selectedUserForAttach) {
+            alert('Please select a user to attach to this personnel')
+            return
+        }
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${selectedPersonnelForAttach.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: parseInt(selectedUserForAttach) })
+            })
+
+            if (response.ok) {
+                await fetchPersonnel()
+                await fetchUsers()
+                closeAttachPersonnelModal()
+                alert('Personnel successfully attached to user')
+            } else {
+                const errorData = await response.json()
+                alert(`Failed to attach personnel to user: ${errorData.error}`)
+            }
+        } catch (error) {
+            console.error('Error attaching personnel to user:', error)
+            alert('Failed to attach personnel to user. Please try again.')
+        }
+    }
+
+    const handleDetachPersonnelFromUser = async (personnelId) => {
+        if (!confirm('Are you sure you want to detach this personnel from their user account?')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: null })
+            })
+
+            if (response.ok) {
+                await fetchPersonnel()
+                await fetchUsers()
+                alert('Personnel successfully detached from user')
+            } else {
+                const errorData = await response.json()
+                alert(`Failed to detach personnel from user: ${errorData.error}`)
+            }
+        } catch (error) {
+            console.error('Error detaching personnel from user:', error)
+            alert('Failed to detach personnel from user. Please try again.')
+        }
+    }
+
     return (
         <div className='view-container'>
             <Nav />
@@ -1881,6 +1953,16 @@ export const Settings = () => {
                                                 <h3>{person.name}</h3>
                                                 <p>{person.role}</p>
                                                 <span className='item-meta'>{person.email} • {person.phone}</span>
+                                                {person.user_id && expandedPersonnelCards.has(person.id) && (
+                                                    <div className='user-attachment'>
+                                                        <strong>Attached to User:</strong> {users.find(u => u.id === person.user_id)?.name || 'Unknown User'}
+                                                    </div>
+                                                )}
+                                                {!person.user_id && expandedPersonnelCards.has(person.id) && (
+                                                    <div className='user-attachment'>
+                                                        <strong>User Status:</strong> <span className='not-attached'>Not attached to any user</span>
+                                                    </div>
+                                                )}
                                                 {person.event_ids && person.event_ids.length > 0 && expandedPersonnelCards.has(person.id) && (
                                                     <div className='assignments'>
                                                         <strong>Assigned Events:</strong> {person.event_ids.length} events
@@ -1912,6 +1994,27 @@ export const Settings = () => {
                                                 >
                                                     Assign
                                                 </button>
+                                                {person.user_id ? (
+                                                    <button 
+                                                        className='detach-btn'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleDetachPersonnelFromUser(person.id)
+                                                        }}
+                                                    >
+                                                        Detach User
+                                                    </button>
+                                                ) : (
+                                                    <button 
+                                                        className='attach-btn'
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            openAttachPersonnelModal(person)
+                                                        }}
+                                                    >
+                                                        Attach User
+                                                    </button>
+                                                )}
                                                 <button 
                                                     className='delete-btn'
                                                     onClick={(e) => {
@@ -2091,6 +2194,16 @@ export const Settings = () => {
                                                     <h3>{person.name}</h3>
                                                     <p>{person.role}</p>
                                                     <span className='item-meta'>{person.email} • {person.phone}</span>
+                                                    {person.user_id && expandedPersonnelCards.has(person.id) && (
+                                                        <div className='user-attachment'>
+                                                            <strong>Attached to User:</strong> {users.find(u => u.id === person.user_id)?.name || 'Unknown User'}
+                                                        </div>
+                                                    )}
+                                                    {!person.user_id && expandedPersonnelCards.has(person.id) && (
+                                                        <div className='user-attachment'>
+                                                            <strong>User Status:</strong> <span className='not-attached'>Not attached to any user</span>
+                                                        </div>
+                                                    )}
                                                     {person.event_ids && person.event_ids.length > 0 && expandedPersonnelCards.has(person.id) && (
                                                         <div className='assignments'>
                                                             <strong>Assigned Events:</strong> {person.event_ids.length} events
@@ -2122,6 +2235,27 @@ export const Settings = () => {
                                                     >
                                                         Assign
                                                     </button>
+                                                    {person.user_id ? (
+                                                        <button 
+                                                            className='detach-btn'
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleDetachPersonnelFromUser(person.id)
+                                                            }}
+                                                        >
+                                                            Detach User
+                                                        </button>
+                                                    ) : (
+                                                        <button 
+                                                            className='attach-btn'
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                openAttachPersonnelModal(person)
+                                                            }}
+                                                        >
+                                                            Attach User
+                                                        </button>
+                                                    )}
                                                     <button 
                                                         className='delete-btn'
                                                         onClick={(e) => {
@@ -3109,6 +3243,65 @@ export const Settings = () => {
                                 onClick={() => setShowCompanyDetailsModal(false)}
                             >
                                 Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Attach Personnel to User Modal */}
+            {showAttachPersonnelModal && selectedPersonnelForAttach && (
+                <div className='modal-overlay' onClick={closeAttachPersonnelModal}>
+                    <div className='modal-content' onClick={(e) => e.stopPropagation()}>
+                        <div className='modal-header'>
+                            <h2>Attach Personnel to User</h2>
+                            <button className='modal-close' onClick={closeAttachPersonnelModal}>×</button>
+                        </div>
+                        <div className='modal-body'>
+                            <div className='personnel-info'>
+                                <h3>{selectedPersonnelForAttach.name}</h3>
+                                <p><strong>Role:</strong> {selectedPersonnelForAttach.role}</p>
+                                <p><strong>Email:</strong> {selectedPersonnelForAttach.email}</p>
+                            </div>
+                            
+                            <div className='form-group'>
+                                <label>Select User to Attach:</label>
+                                <select
+                                    value={selectedUserForAttach}
+                                    onChange={(e) => setSelectedUserForAttach(e.target.value)}
+                                    className='form-input'
+                                >
+                                    <option value=''>Select a user...</option>
+                                    {users
+                                        .filter(user => !user.personnel) // Only show users not already attached to personnel
+                                        .map(user => (
+                                            <option key={user.id} value={user.id}>
+                                                {user.name} ({user.email}) - {user.access}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+                            
+                            {users.filter(user => !user.personnel).length === 0 && (
+                                <div className='no-users-message'>
+                                    <p>No available users to attach. All users are already attached to personnel.</p>
+                                </div>
+                            )}
+                        </div>
+                        <div className='modal-footer'>
+                            <button 
+                                className='modal-button attach-button'
+                                onClick={handleAttachPersonnelToUser}
+                                disabled={!selectedUserForAttach}
+                            >
+                                Attach Personnel
+                            </button>
+                            <button 
+                                className='modal-button'
+                                onClick={closeAttachPersonnelModal}
+                            >
+                                Cancel
                             </button>
                         </div>
                     </div>
