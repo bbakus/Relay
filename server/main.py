@@ -1431,7 +1431,7 @@ class PersonnelDetail(Resource):
             session.close()
 
     def put(self, personnel_id):
-        """Attach personnel to a user"""
+        """Update personnel (project assignment or user attachment)"""
         session = Session()
         try:
             personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
@@ -1439,34 +1439,103 @@ class PersonnelDetail(Resource):
                 return {'error': 'Personnel not found'}, 404
             
             data = request.get_json()
-            user_id = data.get('user_id')
             
-            if not user_id:
-                return {'error': 'user_id is required'}, 400
+            # Handle user attachment (requires user_id)
+            if 'user_id' in data:
+                user_id = data.get('user_id')
+                
+                if not user_id:
+                    return {'error': 'user_id is required'}, 400
+                
+                # Check if user exists
+                user = session.query(User).filter_by(id=user_id).first()
+                if not user:
+                    return {'error': 'User not found'}, 404
+                
+                # Check if personnel and user belong to same company
+                if personnel.company_id != user.company_id:
+                    return {'error': 'Personnel and user must belong to the same company'}, 400
+                
+                # Check if personnel is already attached to another user
+                if personnel.user_id and personnel.user_id != user_id:
+                    return {'error': 'Personnel is already attached to another user'}, 400
+                
+                personnel.user_id = user_id
+                session.commit()
+                
+                return {
+                    'message': 'Personnel attached to user successfully',
+                    'personnel_id': personnel.id,
+                    'user_id': user_id
+                }, 200
             
-            # Check if user exists
-            user = session.query(User).filter_by(id=user_id).first()
-            if not user:
-                return {'error': 'User not found'}, 404
+            # Handle project assignment
+            elif 'project_id' in data:
+                project_id = data.get('project_id')
+                
+                # Clear existing project assignments
+                personnel.projects.clear()
+                
+                # Assign to new project if provided
+                if project_id:
+                    project = session.query(ProjectModel).filter_by(id=project_id).first()
+                    if project:
+                        personnel.projects.append(project)
+                
+                session.commit()
+                
+                return {
+                    'message': 'Project assignment updated successfully',
+                    'personnel_id': personnel.id,
+                    'project_id': project_id
+                }, 200
             
-            # Check if personnel and user belong to same company
-            if personnel.company_id != user.company_id:
-                return {'error': 'Personnel and user must belong to the same company'}, 400
+            # Handle event assignments
+            elif 'event_ids' in data:
+                event_ids = data.get('event_ids')
+                
+                # Clear existing event assignments
+                personnel.events.clear()
+                
+                # Assign to new events
+                if event_ids:
+                    events = session.query(EventModel).filter(EventModel.id.in_(event_ids)).all()
+                    personnel.events.extend(events)
+                    
+                    # Auto-assign to projects that these events belong to
+                    project_ids = set()
+                    for event in events:
+                        if event.project_id:
+                            project_ids.add(event.project_id)
+                    
+                    if project_ids:
+                        # Clear existing project assignments
+                        personnel.projects.clear()
+                        # Assign to projects
+                        projects = session.query(ProjectModel).filter(ProjectModel.id.in_(project_ids)).all()
+                        personnel.projects.extend(projects)
+                
+                session.commit()
+                
+                return {
+                    'message': 'Event assignments updated successfully',
+                    'personnel_id': personnel.id,
+                    'event_ids': event_ids
+                }, 200
             
-            # Check if personnel is already attached to another user
-            if personnel.user_id and personnel.user_id != user_id:
-                return {'error': 'Personnel is already attached to another user'}, 400
-            
-            # Attach personnel to user
-            personnel.user_id = user_id
-            session.commit()
-            
-            return {
-                'message': 'Personnel attached to user successfully',
-                'personnel_id': personnel.id,
-                'user_id': user_id
-            }, 200
-            
+            # Update other fields
+            else:
+                for key, value in data.items():
+                    if hasattr(personnel, key):
+                        setattr(personnel, key, value)
+                
+                session.commit()
+                
+                return {
+                    'message': 'Personnel updated successfully',
+                    'personnel_id': personnel.id
+                }, 200
+                
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
