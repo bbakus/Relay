@@ -598,6 +598,14 @@
     box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
 }
 
+.modal-button.edit-button {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.modal-button.edit-button:hover {
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
 /* Personnel Assignment Styles in Event Modal */
 .event-personnel-section {
     margin-top: 24px;

@@ -269,6 +269,16 @@ export const Schedule = () => {
         }
     }
 
+    const handleEditEvent = (event) => {
+        // Close the modal first
+        setShowModal(false)
+        setSelectedEvent(null)
+        
+        // Navigate to the Events page with the event pre-selected for editing
+        // This assumes you have a way to pass the event ID to the Events page
+        window.location.href = `/events?edit=${event.id}`
+    }
+
     // Handle personnel assignment to event
     const handleAssignPersonnelToEvent = async (personnelId, action = 'add') => {
         try {
@@ -786,6 +796,12 @@ export const Schedule = () => {
                         </div>
                         
                         <div className="modal-footer">
+                            <button 
+                                className="modal-button edit-button" 
+                                onClick={() => handleEditEvent(selectedEvent)}
+                            >
+                                Edit Event
+                            </button>
                             <button 
                                 className="modal-button delete-button" 
                                 onClick={() => handleDeleteEvent(selectedEvent.id)}
