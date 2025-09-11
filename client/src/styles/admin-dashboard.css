@@ -1373,3 +1373,59 @@
   font-size: 0.8rem;
   font-style: italic;
 }
+
+/* Available Photographers Styles */
+.available-photographers-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: center;
+}
+
+.available-photographers-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.available-photographers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.available-photographer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(40, 167, 69, 0.2);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.photographer-icon {
+  font-size: 1rem;
+  filter: grayscale(0);
+}
+
+.photographer-name-mini {
+  color: #ffffff;
+  font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-available-mini {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-style: italic;
+  padding: 8px;
+}

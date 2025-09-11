@@ -494,6 +494,42 @@ export const AdminDashboardView = () => {
     
     return staffHours
   }, [personnel, projectEvents, selectedDate])
+
+  // Available photographers calculation
+  const availablePhotographers = useMemo(() => {
+    const photoVideoStaff = personnel.filter(p => 
+      ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
+    )
+    
+    const currentTime = new Date()
+    const currentHour = currentTime.getHours()
+    const currentMinute = currentTime.getMinutes()
+    const currentTimeInMinutes = currentHour * 60 + currentMinute
+    
+    const availableStaff = photoVideoStaff.filter(staff => {
+      const assignedEventIds = staff.event_ids || []
+      const assignedEvents = assignedEventIds
+        .map(eventId => projectEvents.find(e => e.id === eventId))
+        .filter(Boolean)
+      
+      // Check if photographer is currently in an event
+      const isCurrentlyBusy = assignedEvents.some(event => {
+        if (event.start_time && event.end_time) {
+          const [startHour, startMinute] = event.start_time.split(':').map(Number)
+          const [endHour, endMinute] = event.end_time.split(':').map(Number)
+          const startTimeInMinutes = startHour * 60 + startMinute
+          const endTimeInMinutes = endHour * 60 + endMinute
+          
+          return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes
+        }
+        return false
+      })
+      
+      return !isCurrentlyBusy
+    })
+    
+    return availableStaff
+  }, [personnel, projectEvents])
   
   // Image count for delivered events
   const deliveredEventImages = useMemo(() => {
@@ -1005,24 +1041,19 @@ export const AdminDashboardView = () => {
               </div>
             </div>
             
-            <div className="progress-circle-item photographer-hours-item">
-              <div className="photographer-hours-mini">
-                <div className="photographer-hours-title">Photographer Hours</div>
-                <div className="photographer-hours-list">
-                  {Object.entries(photographerHours).length === 0 ? (
-                    <div className="no-photographers-mini">No photographers</div>
+            <div className="progress-circle-item available-photographers-item">
+              <div className="available-photographers-mini">
+                <div className="available-photographers-title">Available Now</div>
+                <div className="available-photographers-list">
+                  {availablePhotographers.length === 0 ? (
+                    <div className="no-available-mini">All busy</div>
                   ) : (
-                    Object.entries(photographerHours)
-                      .sort(([,a], [,b]) => b.scheduled - a.scheduled)
-                      .slice(0, 3) // Show top 3
-                      .map(([name, hours]) => (
-                        <div key={name} className={`photographer-mini-item ${hours.exhausted ? 'exhausted' : ''}`}>
-                          <div className="photographer-mini-name">{name}</div>
-                          <div className="photographer-mini-hours">
-                            {hours.scheduled}h {hours.exhausted && '⚠️'}
-                          </div>
-                        </div>
-                      ))
+                    availablePhotographers.slice(0, 4).map((photographer) => (
+                      <div key={photographer.id} className="available-photographer-item">
+                        <div className="photographer-icon">📸</div>
+                        <div className="photographer-name-mini">{photographer.name}</div>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
@@ -1071,16 +1102,6 @@ export const AdminDashboardView = () => {
                   </div>
                 ))
             )}
-          </div>
-          <div className="progress-details">
-            <div className="detail-item">
-              <span className="detail-label">8+ Hours = Exhausted</span>
-              <span className="detail-value">Red indicates overworked staff</span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">Worked Hours:</span>
-              <span className="detail-value">Based on current time and event completion</span>
-            </div>
           </div>
         </div>
 
