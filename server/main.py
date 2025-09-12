@@ -1364,13 +1364,11 @@ class PersonnelDetail(Resource):
                 return {'error': 'Personnel not found'}, 404
             
             data = request.get_json()
+            print(f"🔍 Personnel update request for ID {personnel_id}: {data}")
             
             # Handle user attachment (requires user_id)
-            if 'user_id' in data:
+            if 'user_id' in data and data.get('user_id'):
                 user_id = data.get('user_id')
-                
-                if not user_id:
-                    return {'error': 'user_id is required'}, 400
                 
                 # Check if user exists
                 user = session.query(User).filter_by(id=user_id).first()
@@ -1386,10 +1384,9 @@ class PersonnelDetail(Resource):
                     return {'error': 'Personnel is already attached to another user'}, 400
                 
                 personnel.user_id = user_id
-                session.commit()
-                
+            
             # Handle project assignment
-            elif 'project_id' in data:
+            if 'project_id' in data:
                 project_id = data.get('project_id')
                 
                 # Clear existing project assignments
@@ -1400,11 +1397,9 @@ class PersonnelDetail(Resource):
                     project = session.query(ProjectModel).filter_by(id=project_id).first()
                     if project:
                         personnel.projects.append(project)
-                
-                session.commit()
-                
+            
             # Handle event assignments
-            elif 'event_ids' in data:
+            if 'event_ids' in data:
                 event_ids = data.get('event_ids')
                 
                 # Clear existing event assignments
@@ -1427,16 +1422,17 @@ class PersonnelDetail(Resource):
                         # Assign to projects
                         projects = session.query(ProjectModel).filter(ProjectModel.id.in_(project_ids)).all()
                         personnel.projects.extend(projects)
-                
-                session.commit()
-                
-            # Update other fields
-            else:
-                for key, value in data.items():
-                    if hasattr(personnel, key):
-                        setattr(personnel, key, value)
-                
-                session.commit()
+            
+            # Update other fields (name, email, phone, role, etc.)
+            for key, value in data.items():
+                if hasattr(personnel, key) and key not in ['user_id', 'project_id', 'event_ids']:
+                    print(f"🔍 Updating field {key}: {value}")
+                    setattr(personnel, key, value)
+            
+            # Commit all changes at once
+            print(f"🔍 Committing changes for personnel {personnel_id}")
+            session.commit()
+            print(f"🔍 Successfully committed changes for personnel {personnel_id}")
             
             # Return updated personnel with assignments
             event_ids = [event.id for event in personnel.events]

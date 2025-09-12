@@ -727,8 +727,8 @@ export const Settings = () => {
             if (response.ok) {
                 const personnelData = await response.json()
                 
-                // If user_id was provided in the original form, attach the personnel to the user
-                if (personnelForm.user_id && personnelData.id) {
+                // Only do user attachment for new personnel (not editing)
+                if (!editingItem && personnelForm.user_id && personnelData.id) {
                     try {
                         const attachResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelData.id}`, {
                             method: 'PUT',
@@ -753,7 +753,7 @@ export const Settings = () => {
                 
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to create personnel')
+                alert(data.error || 'Failed to save personnel')
             }
         } catch (error) {
             console.error('Error saving personnel:', error)
