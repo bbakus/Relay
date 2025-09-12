@@ -608,6 +608,7 @@ class UserSchedule(Resource):
                 'quick_turn': event.quick_turn,
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
+                'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                 'project_id': event.project_id
             } for event in events], 200
         except Exception as e:
@@ -1100,6 +1101,12 @@ class EventDetail(Resource):
                         # Add to the many-to-many relationship
                         event.personnels.append(personnel)
 
+            # Track who updated the process point
+            if 'process_point' in data and data['process_point'] != event.process_point:
+                # Get user name from request headers
+                user_name = request.headers.get('X-User-Name', 'Unknown')
+                event.process_point_updated_by_name = user_name
+
             # Update other fields
             for key, value in data.items():
                 if key in ['project_id', 'assigned_photographers']:
@@ -1473,6 +1480,7 @@ class ShotRequests(Resource):
                 'end_time': request.end_time,
                 'deadline': request.deadline,
                 'process_point': getattr(request, 'process_point', 'idle'),
+                'process_point_updated_by_name': getattr(request, 'process_point_updated_by_name', None),
                 'events': [{
                     'id': event.id,
                     'name': event.name,
@@ -1578,6 +1586,13 @@ class ShotRequestDetail(Resource):
                 return {'error': 'Shot request not found'}, 404
             
             data = request.get_json()
+            
+            # Track who updated the process point
+            if 'process_point' in data and data['process_point'] != shot_request.process_point:
+                # Get user name from request headers
+                user_name = request.headers.get('X-User-Name', 'Unknown')
+                shot_request.process_point_updated_by_name = user_name
+            
             for key, value in data.items():
                 if hasattr(shot_request, key):
                     setattr(shot_request, key, value)

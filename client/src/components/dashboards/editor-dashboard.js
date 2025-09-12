@@ -144,8 +144,11 @@ export const EditorDashboardView = () => {
   const handleShotRequestProcessUpdate = async (shotRequestId, newProcessPoint) => {
     try {
       const response = await fetch(`/api/shot-requests/${shotRequestId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Name': user?.name || 'Unknown'
+        },
         body: JSON.stringify({ process_point: newProcessPoint })
       })
 
@@ -169,8 +172,11 @@ export const EditorDashboardView = () => {
   const handleEventProcessUpdate = async (eventId, newProcessPoint) => {
     try {
       const response = await fetch(`/api/events/${eventId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Name': user?.name || 'Unknown'
+        },
         body: JSON.stringify({ process_point: newProcessPoint })
       })
 

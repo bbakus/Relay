@@ -200,6 +200,7 @@ export const Schedule = () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-User-Name': user?.name || 'Unknown'
                 },
                 body: JSON.stringify({
                     process_point: newProcessPoint

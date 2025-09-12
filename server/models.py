@@ -129,6 +129,8 @@ class Events(Base, SerializerMixin):
     # Pipeline/process point for coloring the schedule card
     # allowed values: idle, ingest, cull, color, delivered
     process_point = Column(String, default='idle')
+    # Track who last updated the process point (simple name field)
+    process_point_updated_by_name = Column(String)
     # Column assignment for schedule (0-3 for the 4 columns)
     column_number = Column(Integer, default=0)
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'))
@@ -152,6 +154,8 @@ class ShotRequest(Base, SerializerMixin):
     end_time = Column(String)
     deadline = Column(String)
     process_point = Column(String, default='idle')
+    # Track who last updated the process point (simple name field)
+    process_point_updated_by_name = Column(String)
 
     # Relationships
     events = relationship('Events', secondary=event_request_association_table, back_populates='shot_requests')

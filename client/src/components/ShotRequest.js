@@ -345,6 +345,7 @@ export const ShotRequest = () => {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-User-Name': user?.name || 'Unknown'
                 },
                 body: JSON.stringify({
                     process_point: newProcessPoint
@@ -541,6 +542,23 @@ export const ShotRequest = () => {
                             <span className="sr-event-time">{event.start_time} - {event.end_time}</span>
                         </div>
                     )}
+                    
+                    {/* Process point display */}
+                    <div className="sr-process-display">
+                        <span className="sr-process-point">
+                            {(shotRequest.process_point || 'idle').toUpperCase()}
+                            {shotRequest.process_point_updated_by_name && (
+                                <span style={{ 
+                                    fontSize: '10px', 
+                                    marginLeft: '8px', 
+                                    opacity: 0.7,
+                                    fontStyle: 'italic'
+                                }}>
+                                    by {shotRequest.process_point_updated_by_name}
+                                </span>
+                            )}
+                        </span>
+                    </div>
                 </div>
 
                 {/* Expanded Content */}

@@ -461,7 +461,10 @@ export const Events = () => {
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-User-Name': user?.name || 'Unknown'
+                },
                 body: JSON.stringify({ process_point: newProcessPoint })
             })
             if (response.ok) {
@@ -673,6 +676,16 @@ export const Events = () => {
                                     letterSpacing: '1px'
                                 }}>
                                     {(event.process_point || 'idle')}
+                                    {event.process_point_updated_by_name && (
+                                        <span style={{ 
+                                            fontSize: '10px', 
+                                            marginLeft: '8px', 
+                                            opacity: 0.7,
+                                            fontStyle: 'italic'
+                                        }}>
+                                            by {event.process_point_updated_by_name}
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                         )}
