@@ -1337,81 +1337,6 @@ class PersonnelDetail(Resource):
         finally:
             session.close()
 
-    def put(self, personnel_id):
-        """Update personnel"""
-        session = Session()
-        try:
-            personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
-            if not personnel:
-                return {'error': 'Personnel not found'}, 404
-            
-            data = request.get_json()
-            
-            # Handle direct project assignment
-            if 'project_id' in data:
-                project_id = data.pop('project_id')  # Remove from data to avoid setattr
-                
-                # Clear existing project assignments
-                personnel.projects.clear()
-                
-                # Assign to new project if provided
-                if project_id:
-                    project = session.query(ProjectModel).filter_by(id=project_id).first()
-                    if project:
-                        personnel.projects.append(project)
-            
-            # Handle event assignments
-            elif 'event_ids' in data:
-                event_ids = data.pop('event_ids')  # Remove from data to avoid setattr
-                
-                # Clear existing event assignments
-                personnel.events.clear()
-                
-                # Assign to new events
-                if event_ids:
-                    events = session.query(EventModel).filter(EventModel.id.in_(event_ids)).all()
-                    personnel.events.extend(events)
-                    
-                    # Auto-assign to projects that these events belong to
-                    project_ids = set()
-                    for event in events:
-                        if event.project_id:
-                            project_ids.add(event.project_id)
-                    
-                    if project_ids:
-                        # Clear existing project assignments
-                        personnel.projects.clear()
-                        # Assign to projects
-                        projects = session.query(ProjectModel).filter(ProjectModel.id.in_(project_ids)).all()
-                        personnel.projects.extend(projects)
-            
-            # Update other fields
-            for key, value in data.items():
-                if hasattr(personnel, key):
-                    setattr(personnel, key, value)
-            
-            session.commit()
-            
-            # Return updated personnel with assignments
-            event_ids = [event.id for event in personnel.events]
-            project_ids = [project.id for project in personnel.projects]
-            
-            return {
-                'id': personnel.id,
-                'name': personnel.name,
-                'email': personnel.email,
-                'phone': personnel.phone,
-                'role': personnel.role,
-                'avatar': personnel.avatar,
-                'user_id': personnel.user_id,
-                'event_ids': event_ids,
-                'project_ids': project_ids
-            }, 200
-        except Exception as e:
-            session.rollback()
-            return {'error': str(e)}, 500
-        finally:
-            session.close()
 
     def delete(self, personnel_id):
         """Delete personnel"""
@@ -1431,7 +1356,7 @@ class PersonnelDetail(Resource):
             session.close()
 
     def put(self, personnel_id):
-        """Update personnel (project assignment or user attachment)"""
+        """Update personnel"""
         session = Session()
         try:
             personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
@@ -1463,12 +1388,6 @@ class PersonnelDetail(Resource):
                 personnel.user_id = user_id
                 session.commit()
                 
-                return {
-                    'message': 'Personnel attached to user successfully',
-                    'personnel_id': personnel.id,
-                    'user_id': user_id
-                }, 200
-            
             # Handle project assignment
             elif 'project_id' in data:
                 project_id = data.get('project_id')
@@ -1484,12 +1403,6 @@ class PersonnelDetail(Resource):
                 
                 session.commit()
                 
-                return {
-                    'message': 'Project assignment updated successfully',
-                    'personnel_id': personnel.id,
-                    'project_id': project_id
-                }, 200
-            
             # Handle event assignments
             elif 'event_ids' in data:
                 event_ids = data.get('event_ids')
@@ -1517,12 +1430,6 @@ class PersonnelDetail(Resource):
                 
                 session.commit()
                 
-                return {
-                    'message': 'Event assignments updated successfully',
-                    'personnel_id': personnel.id,
-                    'event_ids': event_ids
-                }, 200
-            
             # Update other fields
             else:
                 for key, value in data.items():
@@ -1530,11 +1437,22 @@ class PersonnelDetail(Resource):
                         setattr(personnel, key, value)
                 
                 session.commit()
-                
-                return {
-                    'message': 'Personnel updated successfully',
-                    'personnel_id': personnel.id
-                }, 200
+            
+            # Return updated personnel with assignments
+            event_ids = [event.id for event in personnel.events]
+            project_ids = [project.id for project in personnel.projects]
+            
+            return {
+                'id': personnel.id,
+                'name': personnel.name,
+                'email': personnel.email,
+                'phone': personnel.phone,
+                'role': personnel.role,
+                'avatar': personnel.avatar,
+                'user_id': personnel.user_id,
+                'event_ids': event_ids,
+                'project_ids': project_ids
+            }, 200
                 
         except Exception as e:
             session.rollback()
