@@ -4,6 +4,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuth } from '../context/AuthContext'
 import { formatDateDisplay } from '../utils/dateUtils'
 import '../styles/nav.css'
+import '../styles/mobile-nav.css'
 
 export const Nav = () => {
   const { user, setUser, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId, setGlobalCompany, setGlobalOrganization, setGlobalProject, setGlobalDate } = useAuth()
@@ -29,6 +30,10 @@ export const Nav = () => {
     avatar: user?.avatar || 'avatar1.png'
   })
 
+  // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
+
   // Available avatars list (same as Settings)
   const availableAvatars = [
     'avatar1.png', 'avatar2.png', 'avatar3.png', 'avatar4.png', 'avatar5.png',
@@ -45,6 +50,23 @@ export const Nav = () => {
       avatar: user?.avatar || 'avatar1.png'
     })
     setShowProfileModal(true)
+  }
+
+  // Mobile menu functions
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
+
+  const toggleMobileFilters = () => {
+    setIsMobileFiltersOpen(!isMobileFiltersOpen)
+  }
+
+  const closeMobileFilters = () => {
+    setIsMobileFiltersOpen(false)
   }
 
   // Handle logout
@@ -379,6 +401,176 @@ export const Nav = () => {
 
   return (
     <>
+      {/* Mobile Hamburger Menu Button */}
+      <button 
+        className={`mobile-menu-toggle ${isMobileMenuOpen ? 'open' : ''}`}
+        onClick={toggleMobileMenu}
+        aria-label="Toggle mobile menu"
+      >
+        <div className="hamburger">
+          <div className="hamburger-line"></div>
+          <div className="hamburger-line"></div>
+          <div className="hamburger-line"></div>
+        </div>
+      </button>
+
+      {/* Mobile Filters Toggle Button */}
+      <button 
+        className={`mobile-filters-toggle ${isMobileFiltersOpen ? 'open' : ''}`}
+        onClick={toggleMobileFilters}
+        aria-label="Toggle mobile filters"
+      >
+        Filters
+      </button>
+
+      {/* Mobile Navigation Overlay */}
+      <div 
+        className={`mobile-nav-overlay ${isMobileMenuOpen ? 'open' : ''}`}
+        onClick={closeMobileMenu}
+      ></div>
+
+      {/* Mobile Navigation Panel */}
+      <div className={`mobile-nav-panel ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="mobile-nav-header">
+          <h3 className="mobile-nav-title">{currentCompanyName}</h3>
+          <button 
+            className="mobile-nav-close"
+            onClick={closeMobileMenu}
+            aria-label="Close mobile menu"
+          >
+            ×
+          </button>
+        </div>
+        
+        <div className="mobile-nav-links">
+          {itemsWithIcons.map((item) => {
+            // Check if this is an external link (Deliver button)
+            if (item.label === 'Deliver') {
+              return (
+                <a 
+                  key={item.label} 
+                  href="https://damionhamiltonphotographer.shootproof.com/gallery/AutoDeskAU2025" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className='mobile-nav-link'
+                  onClick={closeMobileMenu}
+                >
+                  <img src={item.icon} alt={item.label} className='mobile-nav-link-icon' />
+                  <span className='mobile-nav-link-label'>{item.label}</span>
+                </a>
+              )
+            }
+            
+            // Regular internal navigation
+            return (
+              <Link 
+                key={item.to} 
+                to={item.to} 
+                className='mobile-nav-link'
+                onClick={closeMobileMenu}
+              >
+                <img src={item.icon} alt={item.label} className='mobile-nav-link-icon' />
+                <span className='mobile-nav-link-label'>{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+        
+        <div className="mobile-nav-footer">
+          <div className="mobile-nav-user">{user?.access}</div>
+          <button className="mobile-nav-logout" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Filters Panel */}
+      <div className={`mobile-filters-panel ${isMobileFiltersOpen ? 'open' : ''}`}>
+        <div className="mobile-filter-groups">
+          {/* Company Filter - Only for Super Admin */}
+          {user?.is_super_admin && (
+            <div className='mobile-filter-group'>
+              <label>Company:</label>
+              <select 
+                value={selectedCompanyId || ''} 
+                onChange={(e) => setGlobalCompany(e.target.value)}
+              >
+                <option value="">All Companies</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>{company.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          
+          {/* Organization/Project Selection - For Admin, Editor, and Coordinator */}
+          {(user?.access === 'Admin' || user?.access === 'Editor' || user?.access === 'Coordinator') && (
+            <>
+              <div className='mobile-filter-group'>
+                <label>Organization:</label>
+                <select 
+                  value={selectedOrganizationId} 
+                  onChange={(e) => setGlobalOrganization(e.target.value)}
+                >
+                  <option value="">All Organizations</option>
+                  {organizations.map(org => (
+                    <option key={org.id} value={org.id}>{org.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className='mobile-filter-group'>
+                <label>Project:</label>
+                <select 
+                  value={selectedProjectId} 
+                  onChange={(e) => setGlobalProject(e.target.value)}
+                  disabled={!selectedOrganizationId}
+                >
+                  <option value="">Auto-Select Project</option>
+                  {filteredProjects.map(project => (
+                    <option key={project.id} value={project.id}>{project.name}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+          
+          {/* Project Selection - For Client and Editor */}
+          {(user?.access === 'Client' || user?.access === 'Editor') && (
+            <div className='mobile-filter-group'>
+              <label>Project:</label>
+              <select 
+                value={selectedProjectId} 
+                onChange={(e) => setGlobalProject(e.target.value)}
+              >
+                <option value="">Select Project</option>
+                {projects.map(project => (
+                  <option key={project.id} value={project.id}>{project.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          
+          {/* Date Filter - Available to ALL user roles */}
+          <div className='mobile-filter-group'>
+            <label>Date:</label>
+            <select 
+              value={selectedDate} 
+              onChange={(e) => setGlobalDate(e.target.value)}
+            >
+              <option value="">All Dates</option>
+              {availableDates.map(date => {
+                const displayDate = formatDateDisplay(date)
+                return (
+                  <option key={date} value={date}>
+                    {displayDate}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
+        </div>
+      </div>
+
       <header className='app-header'>
         <div className='app-header-left'>
           {/* <img className='app-header-logo' src='/images/logo/logo5.png' alt='Relay logo'/> */}

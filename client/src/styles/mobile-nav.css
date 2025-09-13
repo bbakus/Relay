@@ -1,0 +1,399 @@
+/* Mobile Navigation Styles - Only applies on mobile devices */
+/* This file should be imported alongside the main nav.css */
+
+/* Mobile breakpoint - only apply these styles on mobile devices */
+@media (max-width: 768px) {
+  /* Hide the regular nav on mobile */
+  .nav {
+    display: none;
+  }
+
+  /* Mobile hamburger menu button */
+  .mobile-menu-toggle {
+    display: block;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 200;
+    background: rgba(255, 122, 24, 0.9);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .mobile-menu-toggle:hover {
+    background: rgba(255, 122, 24, 1);
+    transform: scale(1.05);
+  }
+
+  .mobile-menu-toggle:active {
+    transform: scale(0.95);
+  }
+
+  /* Hamburger icon */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    width: 24px;
+    height: 18px;
+    justify-content: space-between;
+  }
+
+  .hamburger-line {
+    width: 100%;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  /* Hamburger animation when menu is open */
+  .mobile-menu-toggle.open .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+  }
+
+  .mobile-menu-toggle.open .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu-toggle.open .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+  }
+
+  /* Mobile navigation overlay */
+  .mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 150;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .mobile-nav-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Mobile navigation panel */
+  .mobile-nav-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    background: linear-gradient(160deg, #0b0f17, #0f1522);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    z-index: 160;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+  }
+
+  .mobile-nav-panel.open {
+    transform: translateX(0);
+  }
+
+  /* Mobile nav header */
+  .mobile-nav-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mobile-nav-title {
+    color: #ff7a18;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .mobile-nav-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-nav-close:hover {
+    background: rgba(255, 122, 24, 0.2);
+    color: #ff7a18;
+  }
+
+  /* Mobile nav links */
+  .mobile-nav-links {
+    padding: 20px 0;
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    color: #ffffff;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .mobile-nav-link:hover {
+    background: rgba(255, 122, 24, 0.1);
+    color: #ff7a18;
+  }
+
+  .mobile-nav-link-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(255, 122, 24, 0.3));
+  }
+
+  .mobile-nav-link-label {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  /* Mobile nav footer */
+  .mobile-nav-footer {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-nav-user {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .mobile-nav-logout {
+    width: 100%;
+    background: linear-gradient(45deg, #dc3545, #c82333);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-nav-logout:hover {
+    background: linear-gradient(45deg, #c82333, #a71e2a);
+    transform: translateY(-1px);
+  }
+
+  /* Adjust main header for mobile */
+  .app-header {
+    height: 80px;
+    padding: 0 15px;
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .app-header-left {
+    display: none; /* Hide on mobile, hamburger menu will be in top-left */
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+    text-align: center;
+    justify-self: center;
+  }
+
+  .app-header-right {
+    gap: 10px;
+  }
+
+  .user-info h3 {
+    font-size: 0.9rem;
+  }
+
+  .header-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logout-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Mobile global filters - Collapsible */
+  .mobile-filters-toggle {
+    display: block;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 200;
+    background: rgba(255, 122, 24, 0.9);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .mobile-filters-toggle:hover {
+    background: rgba(255, 122, 24, 1);
+    transform: scale(1.05);
+  }
+
+  .mobile-filters-toggle:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-filters-toggle.open {
+    background: rgba(255, 122, 24, 1);
+  }
+
+  /* Mobile filters panel */
+  .mobile-filters-panel {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    background: rgba(11, 15, 23, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 150;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-filters-panel.open {
+    transform: translateY(0);
+  }
+
+  /* Hide regular global filters on mobile */
+  .global-filters {
+    display: none;
+  }
+
+  /* Mobile filter groups - stacked vertically */
+  .mobile-filter-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .mobile-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mobile-filter-group label {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .mobile-filter-group select {
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    width: 100%;
+  }
+
+  .mobile-filter-group select:focus {
+    outline: none;
+    border-color: #ff7a18;
+    box-shadow: 0 0 0 2px rgba(255, 122, 24, 0.25);
+  }
+
+  .mobile-filter-group select option {
+    background: #1a1a1a;
+    color: #ffffff;
+  }
+
+  /* Adjust page container for mobile */
+  .page-container {
+    margin: 80px 0 0 0;
+    padding: 0 15px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .mobile-menu-toggle {
+    top: 15px;
+    left: 15px;
+    padding: 10px;
+  }
+
+  .mobile-filters-toggle {
+    top: 15px;
+    right: 15px;
+    padding: 10px;
+    font-size: 0.75rem;
+  }
+
+  .mobile-nav-panel {
+    width: 260px;
+  }
+
+  .app-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .app-header-right {
+    gap: 8px;
+  }
+
+  .user-info h3 {
+    font-size: 0.8rem;
+  }
+
+  .header-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .logout-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  .mobile-filters-panel {
+    padding: 15px;
+  }
+}
+
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+  .mobile-menu-toggle,
+  .mobile-nav-overlay,
+  .mobile-nav-panel,
+  .mobile-filters-toggle,
+  .mobile-filters-panel {
+    display: none;
+  }
+}

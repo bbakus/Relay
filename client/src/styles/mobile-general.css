@@ -1,0 +1,154 @@
+/* General Mobile Styles - Only applies on mobile devices */
+/* This file should be imported in App.js or main components */
+
+/* Mobile breakpoint - only apply these styles on mobile devices */
+@media (max-width: 768px) {
+  /* General mobile adjustments */
+  body {
+    font-size: 14px;
+  }
+
+  /* Mobile-friendly buttons */
+  button, .btn {
+    min-height: 44px; /* iOS recommended touch target size */
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+
+  /* Mobile-friendly inputs */
+  input, select, textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+  }
+
+  /* Mobile-friendly links */
+  a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Mobile modal adjustments */
+  .modal-overlay {
+    padding: 20px;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 12px;
+  }
+
+  /* Mobile table adjustments */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile card adjustments */
+  .card {
+    margin-bottom: 16px;
+    border-radius: 12px;
+  }
+
+  /* Mobile form adjustments */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* Mobile spacing adjustments */
+  .container {
+    padding: 0 15px;
+  }
+
+  .row {
+    margin: 0 -15px;
+  }
+
+  .col {
+    padding: 0 15px;
+  }
+
+  /* Mobile text adjustments */
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.3rem; }
+  h4 { font-size: 1.1rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.9rem; }
+
+  /* Mobile utility classes */
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-visible {
+    display: block !important;
+  }
+
+  .mobile-text-center {
+    text-align: center;
+  }
+
+  .mobile-text-left {
+    text-align: left;
+  }
+
+  .mobile-text-right {
+    text-align: right;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-no-margin {
+    margin: 0 !important;
+  }
+
+  .mobile-no-padding {
+    padding: 0 !important;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.4rem; }
+  h3 { font-size: 1.2rem; }
+  h4 { font-size: 1rem; }
+  h5 { font-size: 0.9rem; }
+  h6 { font-size: 0.8rem; }
+
+  .container {
+    padding: 0 10px;
+  }
+
+  .row {
+    margin: 0 -10px;
+  }
+
+  .col {
+    padding: 0 10px;
+  }
+}
+
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+}

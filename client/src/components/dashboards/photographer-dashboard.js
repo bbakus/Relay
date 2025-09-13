@@ -3,6 +3,7 @@ import { API_CONFIG } from '../../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader } from '../../utils/dateUtils'
 import '../../styles/photographer-dashboard.css'
+import '../../styles/photographer-dashboard-mobile.css'
 
 export const PhotographerDashboardView = () => {
     const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
