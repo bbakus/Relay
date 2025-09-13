@@ -1,4 +1,5 @@
 import '../styles/settings.css'
+import '../styles/settings-mobile.css'
 import { useState, useEffect } from 'react'
 import { API_CONFIG } from '../utils/apiConfig'
 import { Nav } from './Nav'
