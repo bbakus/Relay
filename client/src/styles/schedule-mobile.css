@@ -1,0 +1,249 @@
+/* Mobile Schedule Styles - Only applies on mobile devices */
+/* This file should be imported alongside the main schedule.css */
+
+/* Mobile breakpoint - only apply these styles on mobile devices */
+@media (max-width: 768px) {
+  /* Mobile schedule container */
+  .schedule-container {
+    padding: 15px;
+    margin: 0;
+  }
+
+  /* Mobile schedule header */
+  .schedule-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+  }
+
+  .schedule-header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+
+  .schedule-controls {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .schedule-controls .control-group {
+    width: 100%;
+  }
+
+  .schedule-controls select {
+    width: 100%;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Mobile schedule grid - horizontal scrolling */
+  .schedule-grid {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 20px;
+    padding-bottom: 20px;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .schedule-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mobile schedule column - single column width */
+  .schedule-column {
+    min-width: 280px;
+    width: 280px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Mobile column header */
+  .column-header {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .column-header h3 {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .column-header .personnel-count {
+    font-size: 0.8rem;
+    margin-top: 5px;
+  }
+
+  /* Mobile events container */
+  .events-container {
+    min-height: 1200px;
+    position: relative;
+  }
+
+  /* Mobile event cards */
+  .event-card {
+    padding: 8px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+  }
+
+  .event-card h4 {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+
+  .event-card .event-time {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+  }
+
+  .event-card .event-location {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+  }
+
+  .event-card .event-notes {
+    font-size: 0.65rem;
+    margin-bottom: 2px;
+  }
+
+  /* Mobile time column - hide on mobile since we're using horizontal scroll */
+  .time-column {
+    display: none;
+  }
+
+  /* Mobile global grid lines - hide on mobile */
+  .global-grid-lines {
+    display: none;
+  }
+
+  /* Mobile scroll indicator */
+  .mobile-scroll-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 122, 24, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+
+  /* Mobile modal adjustments */
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 20px auto;
+  }
+
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .schedule-container {
+    padding: 10px;
+  }
+
+  .schedule-column {
+    min-width: 260px;
+    width: 260px;
+    padding: 12px;
+  }
+
+  .column-header {
+    padding: 12px;
+  }
+
+  .column-header h3 {
+    font-size: 1rem;
+  }
+
+  .event-card {
+    padding: 6px;
+    font-size: 0.75rem;
+  }
+
+  .event-card h4 {
+    font-size: 0.85rem;
+  }
+
+  .mobile-scroll-indicator {
+    bottom: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Hide mobile elements on desktop */
+@media (min-width: 769px) {
+  .mobile-scroll-indicator {
+    display: none;
+  }
+}

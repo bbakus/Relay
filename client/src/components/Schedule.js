@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/schedule.css'
+import '../styles/schedule-mobile.css'
 
 export const Schedule = () => {
     const { user, selectedDate, selectedProjectId, selectedCompanyId } = useAuth()
@@ -777,6 +778,11 @@ export const Schedule = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* Mobile scroll indicator */}
+                    <div className="mobile-scroll-indicator">
+                        ← Swipe to see more columns →
+                    </div>
                 </div>
             </div>
             

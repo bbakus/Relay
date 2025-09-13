@@ -478,9 +478,6 @@ export const Nav = () => {
         
         <div className="mobile-nav-footer">
           <div className="mobile-nav-user">{user?.access}</div>
-          <button className="mobile-nav-logout" onClick={handleLogout}>
-            Logout
-          </button>
         </div>
       </div>
 
@@ -787,6 +784,13 @@ export const Nav = () => {
                   onClick={() => setShowProfileModal(false)}
                 >
                   Cancel
+                </button>
+                <button 
+                  type='button' 
+                  className='logout-btn'
+                  onClick={handleLogout}
+                >
+                  Logout
                 </button>
               </div>
             </form>
