@@ -338,7 +338,7 @@
 @media (min-width: 769px) {
   /* Show desktop layout, hide mobile */
   .desktop-layout {
-    display: block !important;
+    display: contents !important;
   }
   
   .mobile-layout {
