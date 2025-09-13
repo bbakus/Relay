@@ -373,29 +373,40 @@
   }
 
   /* Hide email and phone details by default on mobile personnel cards */
-  .settings-section:nth-child(2) .settings-item-card:not(.expanded) p:nth-child(n+3) {
+  .settings-section:nth-child(2) .settings-item-card:not(.expanded) .settings-item-info p:not(:first-child) {
     display: none !important;
   }
 
   /* Show all details when expanded */
-  .settings-section:nth-child(2) .settings-item-card.expanded p {
+  .settings-section:nth-child(2) .settings-item-card.expanded .settings-item-info p {
     display: block !important;
   }
 
-  /* Fix card expansion overflow */
+  /* Fix card expansion overflow - make cards push content down instead of overlapping */
   .settings-section:nth-child(2) .settings-item-card {
     margin-bottom: 15px !important;
     overflow: visible !important;
+    position: relative !important;
+    z-index: 1 !important;
   }
 
   .settings-section:nth-child(2) .settings-item-card.expanded {
     margin-bottom: 20px !important;
-    z-index: 10 !important;
+    z-index: 2 !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure expanded cards don't overlap by making the list container handle overflow properly */
+  .settings-section:nth-child(2) .settings-items-list {
+    overflow: visible !important;
     position: relative !important;
   }
 
-  /* Ensure expanded cards don't overlap */
-  .settings-section:nth-child(2) .settings-items-list {
+  /* Make sure expanded content pushes down subsequent cards */
+  .settings-section:nth-child(2) .settings-item-card.expanded .settings-item-actions {
+    position: relative !important;
+    z-index: 3 !important;
     overflow: visible !important;
   }
 
