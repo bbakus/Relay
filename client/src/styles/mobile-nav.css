@@ -7,6 +7,42 @@
   .app-header-right .logout-btn {
     display: none;
   }
+
+  /* Mobile header layout - align user info with filters button */
+  .app-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 15px !important;
+  }
+
+  .app-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+
+  .app-header-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+
+  .app-header-right .user-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .app-header-right .user-info .user-avatar {
+    width: 35px !important;
+    height: 35px !important;
+  }
+
+  .app-header-right .user-info .user-name {
+    font-size: 0.9rem !important;
+    color: #ff7a18 !important;
+  }
   /* Hide the regular nav on mobile */
   .nav {
     display: none;
