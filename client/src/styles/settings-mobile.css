@@ -365,6 +365,40 @@
     align-items: flex-start !important;
   }
 
+  /* Personnel Cards - Mobile Specific */
+  .settings-item-card p {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+
+  /* Hide email and phone details by default on mobile personnel cards */
+  .settings-section:nth-child(2) .settings-item-card:not(.expanded) p:nth-child(n+3) {
+    display: none !important;
+  }
+
+  /* Show all details when expanded */
+  .settings-section:nth-child(2) .settings-item-card.expanded p {
+    display: block !important;
+  }
+
+  /* Fix card expansion overflow */
+  .settings-section:nth-child(2) .settings-item-card {
+    margin-bottom: 15px !important;
+    overflow: visible !important;
+  }
+
+  .settings-section:nth-child(2) .settings-item-card.expanded {
+    margin-bottom: 20px !important;
+    z-index: 10 !important;
+    position: relative !important;
+  }
+
+  /* Ensure expanded cards don't overlap */
+  .settings-section:nth-child(2) .settings-items-list {
+    overflow: visible !important;
+  }
+
   /* Role Colors - Keep them but make them more subtle on mobile */
   .settings-item-card.role-photographer { 
     border-width: 1px !important; 
