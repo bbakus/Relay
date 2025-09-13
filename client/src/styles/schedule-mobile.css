@@ -3,10 +3,19 @@
 
 /* Mobile breakpoint - only apply these styles on mobile devices */
 @media (max-width: 768px) {
+  /* Show mobile layout, hide desktop */
+  .mobile-layout {
+    display: flex !important;
+  }
+  
+  .desktop-layout {
+    display: none !important;
+  }
   /* Mobile schedule container */
   .schedule-container {
     padding: 15px;
     margin: 0;
+    overflow-x: hidden;
   }
 
   /* Mobile schedule header */
@@ -38,7 +47,7 @@
     font-size: 16px; /* Prevents zoom on iOS */
   }
 
-  /* Mobile schedule grid - horizontal scrolling */
+  /* COMPLETELY OVERRIDE THE DESKTOP SCHEDULE LAYOUT */
   .schedule-grid {
     display: flex !important;
     flex-direction: row !important;
@@ -46,133 +55,34 @@
     -webkit-overflow-scrolling: touch;
     gap: 0;
     padding-bottom: 20px;
-    /* Hide scrollbar but keep functionality */
     scrollbar-width: none;
     -ms-overflow-style: none;
     scroll-snap-type: x mandatory;
+    height: 1200px !important;
   }
 
   .schedule-grid::-webkit-scrollbar {
     display: none;
   }
 
-  /* Mobile events area - make it horizontal but preserve content */
+  /* Hide the desktop events area completely */
   .events-area {
-    display: flex !important;
-    flex-direction: row !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    gap: 0;
-    min-height: 1200px;
-    scroll-snap-type: x mandatory;
-    position: relative !important;
+    display: none !important;
   }
 
-  /* Mobile events header - make it horizontal */
-  .events-header {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 0;
-    min-width: 100%;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 10 !important;
+  /* Create mobile-specific layout */
+  .schedule-grid::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
   }
 
-  /* Mobile event columns container - make it horizontal */
-  .sched-events-container {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 0;
-    min-height: 1200px;
-    scroll-snap-type: x mandatory;
-    position: relative !important;
-    top: 60px !important;
-  }
-
-  /* Mobile schedule column - full screen width */
-  .sched-event-column {
-    min-width: 100vw !important;
-    width: 100vw !important;
-    flex-shrink: 0 !important;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0;
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    position: relative !important;
-    scroll-snap-align: start;
-    min-height: 1200px !important;
-    overflow-y: visible !important;
-  }
-
-  /* Mobile column header */
-  .column-header {
-    padding: 15px 10px;
-    margin-bottom: 0;
-    border-radius: 0;
-    text-align: center;
-    background: rgba(255, 122, 24, 0.1);
-    border: 1px solid rgba(255, 122, 24, 0.3);
-    width: calc(100% - 2px);
-    margin-left: 0;
-    margin-right: 0;
-    border-bottom: 1px solid rgba(255, 122, 24, 0.3);
-  }
-
-  .column-header h3 {
-    font-size: 1.2rem;
-    margin: 0;
-    color: #ff7a18;
-    font-weight: 600;
-  }
-
-  .column-header .personnel-count {
-    font-size: 0.9rem;
-    margin-top: 5px;
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  /* Mobile event cards */
-  .sched-event-card {
-    padding: 12px !important;
-    margin-bottom: 8px !important;
-    margin-left: 60px !important;
-    margin-right: 15px !important;
-    border-radius: 8px !important;
-    font-size: 0.9rem !important;
-    position: absolute !important;
-    left: 60px !important;
-    right: 15px !important;
-    width: calc(100% - 75px) !important;
-    min-height: 60px !important;
-    z-index: 5 !important;
-  }
-
-  .sched-event-card h3 {
-    font-size: 1rem !important;
-    margin-bottom: 6px !important;
-    font-weight: 600 !important;
-  }
-
-  .sched-event-card .event-time {
-    font-size: 0.8rem !important;
-    margin-bottom: 4px !important;
-    font-weight: 500 !important;
-  }
-
-  .sched-event-card .event-location {
-    font-size: 0.75rem !important;
-    margin-bottom: 4px !important;
-  }
-
-  .sched-event-card .event-notes {
-    font-size: 0.7rem !important;
-    margin-bottom: 4px !important;
-  }
-
-  /* Mobile time column - show but make it narrower */
+  /* Mobile time column */
   .time-column {
     display: block !important;
     width: 60px !important;
@@ -182,6 +92,7 @@
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     position: relative !important;
     z-index: 10 !important;
+    height: 100% !important;
   }
 
   .time-column .time-header {
@@ -190,12 +101,19 @@
     text-align: center !important;
     background: rgba(255, 122, 24, 0.1);
     border-bottom: 1px solid rgba(255, 122, 24, 0.3);
+    height: 60px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .time-column .time-slot {
     padding: 8px 5px !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     min-height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .time-column .time-slot .time-text {
@@ -205,7 +123,96 @@
     color: rgba(255, 255, 255, 0.7);
   }
 
-  /* Mobile global grid lines - hide on mobile */
+  /* Mobile column wrapper - each column takes full screen width */
+  .mobile-column-wrapper {
+    display: flex !important;
+    min-width: calc(100vw - 60px) !important;
+    width: calc(100vw - 60px) !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;
+    position: relative !important;
+  }
+
+  /* Mobile column header */
+  .mobile-column-header {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 60px !important;
+    background: rgba(255, 122, 24, 0.1);
+    border: 1px solid rgba(255, 122, 24, 0.3);
+    border-bottom: 1px solid rgba(255, 122, 24, 0.3);
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 5 !important;
+  }
+
+  .mobile-column-header h3 {
+    font-size: 1.2rem !important;
+    margin: 0 !important;
+    color: #ff7a18 !important;
+    font-weight: 600 !important;
+  }
+
+  /* Mobile events container */
+  .mobile-events-container {
+    position: absolute !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+    z-index: 1 !important;
+  }
+
+  /* Mobile event cards */
+  .mobile-event-card {
+    padding: 12px !important;
+    margin: 8px 15px !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    position: relative !important;
+    width: calc(100% - 30px) !important;
+    min-height: 60px !important;
+    background: rgba(255, 122, 24, 0.1) !important;
+    border: 1px solid rgba(255, 122, 24, 0.3) !important;
+  }
+
+  .mobile-event-card h3 {
+    font-size: 1rem !important;
+    margin-bottom: 6px !important;
+    font-weight: 600 !important;
+    color: #ff7a18 !important;
+  }
+
+  .mobile-event-card .event-time {
+    font-size: 0.8rem !important;
+    margin-bottom: 4px !important;
+    font-weight: 500 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .mobile-event-card .event-location {
+    font-size: 0.75rem !important;
+    margin-bottom: 4px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .mobile-event-card .event-notes {
+    font-size: 0.7rem !important;
+    margin-bottom: 4px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Hide desktop elements */
+  .events-area,
+  .events-header,
+  .sched-events-container,
+  .sched-event-column,
+  .sched-event-card,
   .global-grid-lines {
     display: none !important;
   }
@@ -291,27 +298,32 @@
     padding: 10px;
   }
 
-  .schedule-column {
-    min-width: 260px;
-    width: 260px;
-    padding: 12px;
+  .mobile-column-wrapper {
+    min-width: calc(100vw - 50px) !important;
+    width: calc(100vw - 50px) !important;
   }
 
-  .column-header {
-    padding: 12px;
+  .time-column {
+    width: 50px !important;
+    min-width: 50px !important;
   }
 
-  .column-header h3 {
-    font-size: 1rem;
+  .mobile-column-header {
+    height: 50px !important;
   }
 
-  .event-card {
-    padding: 6px;
-    font-size: 0.75rem;
+  .mobile-events-container {
+    top: 50px !important;
   }
 
-  .event-card h4 {
-    font-size: 0.85rem;
+  .mobile-event-card {
+    padding: 10px !important;
+    margin: 6px 10px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .mobile-event-card h3 {
+    font-size: 0.95rem !important;
   }
 
   .mobile-scroll-indicator {
@@ -324,7 +336,11 @@
 
 /* Hide mobile elements on desktop */
 @media (min-width: 769px) {
-  .mobile-scroll-indicator {
-    display: none;
+  .mobile-scroll-indicator,
+  .mobile-column-wrapper,
+  .mobile-column-header,
+  .mobile-events-container,
+  .mobile-event-card {
+    display: none !important;
   }
 }

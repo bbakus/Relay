@@ -690,7 +690,9 @@ export const Schedule = () => {
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
 
                             
-                            {/* unified grid overlay across time + events */}
+                            {/* Desktop Layout */}
+                            <div className='desktop-layout'>
+                                {/* unified grid overlay across time + events */}
                             <div className='global-grid-lines'>
                                 {timeSlots.map((slot) => (
                                     <div
@@ -775,6 +777,59 @@ export const Schedule = () => {
                                         ))
                                     )}
                                 </div>
+                            </div>
+                            </div>
+
+                            {/* Mobile Layout */}
+                            <div className='mobile-layout'>
+                                {/* Time column */}
+                                <div className='time-column'>
+                                    <div className='time-header'>Time</div>
+                                    {timeSlots.map((slot) => (
+                                        <div key={slot.time} className='time-slot'>
+                                            <p className='time-text'>{slot.display}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Mobile columns */}
+                                {eventsWithPositions.length === 0 ? (
+                                    <div className='mobile-column-wrapper'>
+                                        <div className='mobile-column-header'>
+                                            <h3>No Events</h3>
+                                        </div>
+                                        <div className='mobile-events-container'>
+                                            <p>No events scheduled for {formatDateForHeader(activeDate)}</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    columns.map((columnIndex) => (
+                                        <div key={columnIndex} className='mobile-column-wrapper'>
+                                            <div className='mobile-column-header'>
+                                                <h3>Column {columnIndex + 1}</h3>
+                                            </div>
+                                            <div className='mobile-events-container'>
+                                                {eventsByColumn[columnIndex]?.map(event => (
+                                                    <div
+                                                        key={event.id}
+                                                        className='mobile-event-card'
+                                                        onClick={() => handleEventClick(event)}
+                                                    >
+                                                        <div className='event-header'>
+                                                            <h3>{event.name}</h3>
+                                                            {event.quick_turn && <span className='quick-turn'>⚡</span>}
+                                                        </div>
+                                                        <div className='event-time'>
+                                                            {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                        </div>
+                                                        <div className='event-location'>{event.location}</div>
+                                                        {event.notes && <div className='event-notes'>{event.notes}</div>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     )}
