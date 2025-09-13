@@ -336,6 +336,15 @@
 
 /* Hide mobile elements on desktop */
 @media (min-width: 769px) {
+  /* Show desktop layout, hide mobile */
+  .desktop-layout {
+    display: block !important;
+  }
+  
+  .mobile-layout {
+    display: none !important;
+  }
+
   .mobile-scroll-indicator,
   .mobile-column-wrapper,
   .mobile-column-header,
