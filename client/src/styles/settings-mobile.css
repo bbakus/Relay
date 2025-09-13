@@ -385,15 +385,15 @@
   /* Fix card expansion overflow - make cards push content down instead of overlapping */
   .settings-section:nth-child(2) .settings-item-card {
     margin-bottom: 15px !important;
-    overflow: visible !important;
     position: relative !important;
-    z-index: 1 !important;
+    display: block !important;
+    overflow: visible !important;
   }
 
   .settings-section:nth-child(2) .settings-item-card.expanded {
     margin-bottom: 20px !important;
-    z-index: 2 !important;
     position: relative !important;
+    display: block !important;
     overflow: visible !important;
   }
 
@@ -401,13 +401,27 @@
   .settings-section:nth-child(2) .settings-items-list {
     overflow: visible !important;
     position: relative !important;
+    display: block !important;
   }
 
-  /* Make sure expanded content pushes down subsequent cards */
-  .settings-section:nth-child(2) .settings-item-card.expanded .settings-item-actions {
+  /* Make sure expanded content is contained within the card and pushes down subsequent cards */
+  .settings-section:nth-child(2) .settings-item-card .settings-item-actions {
     position: relative !important;
-    z-index: 3 !important;
+    display: block !important;
     overflow: visible !important;
+    margin-top: 15px !important;
+  }
+
+  /* Override any absolute positioning that might be causing overlap */
+  .settings-section:nth-child(2) .settings-item-card * {
+    position: relative !important;
+  }
+
+  /* Ensure the personnel section doesn't go under project management */
+  .settings-section:nth-child(2) {
+    margin-bottom: 30px !important;
+    position: relative !important;
+    z-index: 1 !important;
   }
 
   /* Role Colors - Keep them but make them more subtle on mobile */
