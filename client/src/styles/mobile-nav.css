@@ -8,7 +8,7 @@
     display: none;
   }
 
-  /* Mobile header layout - align user info with filters button */
+  /* Mobile header layout - hide company name, center user info */
   .app-header {
     display: flex !important;
     justify-content: space-between !important;
@@ -22,10 +22,17 @@
     gap: 15px !important;
   }
 
+  /* Hide company name on mobile */
+  .app-header-left h1 {
+    display: none !important;
+  }
+
   .app-header-right {
     display: flex !important;
     align-items: center !important;
     gap: 15px !important;
+    justify-content: center !important;
+    flex: 1 !important;
   }
 
   .app-header-right .user-info {
