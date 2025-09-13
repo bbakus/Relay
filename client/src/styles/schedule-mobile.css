@@ -40,9 +40,9 @@
 
   /* Mobile schedule grid - horizontal scrolling */
   .schedule-grid {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
     gap: 20px;
     padding-bottom: 20px;
@@ -55,16 +55,43 @@
     display: none;
   }
 
+  /* Mobile events area - make it horizontal */
+  .events-area {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    gap: 20px;
+    min-height: 1200px;
+  }
+
+  /* Mobile events header - make it horizontal */
+  .events-header {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px;
+    min-width: 100%;
+  }
+
+  /* Mobile event columns container - make it horizontal */
+  .sched-events-container {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px;
+    min-height: 1200px;
+  }
+
   /* Mobile schedule column - single column width */
-  .schedule-column {
-    min-width: 280px;
-    width: 280px;
-    flex-shrink: 0;
+  .sched-event-column {
+    min-width: 280px !important;
+    width: 280px !important;
+    flex-shrink: 0 !important;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 15px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative !important;
   }
 
   /* Mobile column header */
@@ -73,60 +100,62 @@
     margin-bottom: 15px;
     border-radius: 8px;
     text-align: center;
+    background: rgba(255, 122, 24, 0.1);
+    border: 1px solid rgba(255, 122, 24, 0.3);
   }
 
   .column-header h3 {
     font-size: 1.1rem;
     margin: 0;
+    color: #ff7a18;
   }
 
   .column-header .personnel-count {
     font-size: 0.8rem;
     margin-top: 5px;
-  }
-
-  /* Mobile events container */
-  .events-container {
-    min-height: 1200px;
-    position: relative;
+    color: rgba(255, 255, 255, 0.7);
   }
 
   /* Mobile event cards */
-  .event-card {
-    padding: 8px;
-    margin-bottom: 4px;
-    border-radius: 6px;
-    font-size: 0.8rem;
+  .sched-event-card {
+    padding: 8px !important;
+    margin-bottom: 4px !important;
+    border-radius: 6px !important;
+    font-size: 0.8rem !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    width: calc(100% - 16px) !important;
   }
 
-  .event-card h4 {
-    font-size: 0.9rem;
-    margin-bottom: 4px;
+  .sched-event-card h3 {
+    font-size: 0.9rem !important;
+    margin-bottom: 4px !important;
   }
 
-  .event-card .event-time {
-    font-size: 0.75rem;
-    margin-bottom: 2px;
+  .sched-event-card .event-time {
+    font-size: 0.75rem !important;
+    margin-bottom: 2px !important;
   }
 
-  .event-card .event-location {
-    font-size: 0.7rem;
-    margin-bottom: 2px;
+  .sched-event-card .event-location {
+    font-size: 0.7rem !important;
+    margin-bottom: 2px !important;
   }
 
-  .event-card .event-notes {
-    font-size: 0.65rem;
-    margin-bottom: 2px;
+  .sched-event-card .event-notes {
+    font-size: 0.65rem !important;
+    margin-bottom: 2px !important;
   }
 
   /* Mobile time column - hide on mobile since we're using horizontal scroll */
   .time-column {
-    display: none;
+    display: none !important;
   }
 
   /* Mobile global grid lines - hide on mobile */
   .global-grid-lines {
-    display: none;
+    display: none !important;
   }
 
   /* Mobile scroll indicator */

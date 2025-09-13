@@ -3,6 +3,10 @@
 
 /* Mobile breakpoint - only apply these styles on mobile devices */
 @media (max-width: 768px) {
+  /* Hide desktop logout button on mobile */
+  .app-header-right .logout-btn {
+    display: none;
+  }
   /* Hide the regular nav on mobile */
   .nav {
     display: none;
