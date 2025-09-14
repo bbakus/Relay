@@ -131,7 +131,7 @@ print(f"🔍 PORT = '{os.getenv('PORT', 'NOT_SET')}'")
 print("=== END DEBUGGING ===")
 
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-    SENDGRID_FROM_EMAIL = os.getenv('SENDGRID_FROM_EMAIL', 'noreply@relay.report')
+SENDGRID_FROM_EMAIL = os.getenv('SENDGRID_FROM_EMAIL', 'noreply@relay.report')
 
 def send_approval_email(recipient_email, recipient_name, login_email, temporary_password, organization_name):
     """Send approval email to the requestee with login information using SendGrid"""
