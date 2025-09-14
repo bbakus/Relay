@@ -434,7 +434,7 @@ export const PhotographerDashboardView = () => {
                         <div className="photographer-modal-body">
                             <div className="photographer-event-detail-row">
                                 <label>Time:</label>
-                                <span>{selectedEvent.start_time} - {selectedEvent.end_time}</span>
+                                <span>{formatTimeTo12Hour(selectedEvent.start_time)} - {formatTimeTo12Hour(selectedEvent.end_time)}</span>
                             </div>
                             
                             <div className="photographer-event-detail-row">

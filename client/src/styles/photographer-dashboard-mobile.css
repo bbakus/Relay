@@ -8,6 +8,7 @@
     padding: 15px;
     margin: 0;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   /* Mobile header adjustments */
@@ -47,73 +48,109 @@
     gap: 20px;
   }
 
-  /* Mobile schedule section */
+  /* Mobile schedule section - full page scrollable */
   .photographer-schedule-section {
     padding: 15px;
     border-radius: 12px;
+    overflow: visible;
   }
 
-  /* Mobile schedule grid - adjust for smaller screens */
+  /* Mobile schedule grid - proper mobile layout */
   .photographer-schedule-grid {
-    grid-template-columns: 60px 1fr;
-    min-height: 1200px;
-    height: 1200px;
+    display: block !important;
+    grid-template-columns: none !important;
+    min-height: auto !important;
+    height: auto !important;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    position: relative;
   }
 
-  /* Mobile time column adjustments */
+  /* Hide desktop grid lines on mobile */
+  .photographer-global-grid-lines {
+    display: none !important;
+  }
+
+  /* Mobile time column - horizontal layout */
   .photographer-time-column {
-    grid-template-rows: 50px repeat(72, 15px);
+    display: none !important;
   }
 
-  .photographer-time-header {
-    height: 50px;
-    font-size: 0.9rem;
+  /* Mobile events area - full width */
+  .photographer-events-area {
+    display: block !important;
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  .photographer-time-slot {
-    height: 15px;
-  }
-
-  .photographer-time-text {
-    font-size: 0.7rem;
-  }
-
-  /* Mobile events area */
   .photographer-events-header {
-    height: 50px;
-  }
-
-  .photographer-column-header {
-    font-size: 1rem;
+    display: none !important;
   }
 
   .photographer-events-container {
-    min-height: 1080px;
-    height: 1080px;
+    display: block !important;
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: relative !important;
   }
 
-  /* Mobile event cards */
+  /* Mobile event columns - single column */
+  .photographer-event-column {
+    display: block !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .photographer-event-column:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Mobile event cards - proper positioning */
   .photographer-dashboard-event-card {
-    padding: 6px;
-    font-size: 0.75rem;
-    left: 4px;
-    right: 4px;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    margin-bottom: 10px;
+    padding: 12px;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .photographer-dashboard-event-card:last-child {
+    margin-bottom: 0;
   }
 
   .photographer-dashboard-event-title {
-    font-size: 0.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
   }
 
   .photographer-dashboard-event-time {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
   }
 
   .photographer-dashboard-event-location {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 4px;
   }
 
   .photographer-dashboard-event-notes {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   /* Mobile shot requests section */
@@ -201,52 +238,24 @@
     font-size: 1.5rem;
   }
 
-  .photographer-schedule-grid {
-    grid-template-columns: 50px 1fr;
-    min-height: 1000px;
-    height: 1000px;
-  }
-
-  .photographer-time-column {
-    grid-template-rows: 45px repeat(72, 13px);
-  }
-
-  .photographer-time-header {
-    height: 45px;
-    font-size: 0.8rem;
-  }
-
-  .photographer-time-slot {
-    height: 13px;
-  }
-
-  .photographer-time-text {
-    font-size: 0.65rem;
-  }
-
-  .photographer-events-header {
-    height: 45px;
-  }
-
-  .photographer-events-container {
-    min-height: 900px;
-    height: 900px;
-  }
-
   .photographer-dashboard-event-card {
-    padding: 4px;
-    font-size: 0.7rem;
+    padding: 10px;
+    font-size: 0.85rem;
   }
 
   .photographer-dashboard-event-title {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
   }
 
   .photographer-dashboard-event-time {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
   }
 
   .photographer-dashboard-event-location {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .photographer-dashboard-event-notes {
+    font-size: 0.7rem;
   }
 }
