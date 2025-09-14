@@ -565,3 +565,80 @@
   font-size: 0.9rem;
   min-width: 60px;
 }
+
+/* Enhanced card styling with colored borders */
+.editor-item-card {
+  border-left: 4px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.3s ease;
+}
+
+.editor-item-card:hover {
+  border-left-width: 6px !important;
+  transform: translateY(-2px);
+}
+
+/* Process select styling */
+.editor-process-select {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.editor-process-select:hover {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.editor-process-select:focus {
+  outline: none;
+  border-color: rgba(255, 122, 24, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(255, 122, 24, 0.2);
+}
+
+/* Status badges */
+.editor-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 4px;
+}
+
+/* Live status indicators */
+.editor-live-status {
+  position: relative;
+}
+
+.editor-live-status::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-50%) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}

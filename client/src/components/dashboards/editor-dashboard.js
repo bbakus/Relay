@@ -103,6 +103,73 @@ export const EditorDashboardView = () => {
     }
   }
 
+  // Filter items by selected date
+  const getFilteredItems = (items, itemType) => {
+    let filteredItems = items
+    
+    // Filter by selected date
+    if (selectedDate) {
+      filteredItems = items.filter(item => {
+        if (itemType === 'event') {
+          return item.date === selectedDate
+        } else if (itemType === 'shotRequest') {
+          // For shot requests, check if they're associated with events on the selected date
+          return item.events && item.events.some(event => event.date === selectedDate)
+        }
+        return false
+      })
+    }
+    
+    return filteredItems
+  }
+
+  // Get live status for events
+  const getEventStatus = (event) => {
+    if (!event.date || !event.start_time || !event.end_time) return 'scheduled'
+    
+    const now = new Date()
+    const eventDate = new Date(event.date)
+    const startTime = new Date(`${event.date}T${event.start_time}`)
+    const endTime = new Date(`${event.date}T${event.end_time}`)
+    
+    const isToday = now.toDateString() === eventDate.toDateString()
+    
+    if (!isToday) {
+      if (now < startTime) return 'scheduled'
+      if (now > endTime) return 'completed'
+      return 'scheduled'
+    }
+    
+    if (isToday) {
+      const timeUntilStart = startTime - now
+      const timeUntilEnd = endTime - now
+      
+      if (timeUntilStart > 0) {
+        if (timeUntilStart <= 15 * 60 * 1000) return 'starting-soon'
+        if (timeUntilStart <= 60 * 60 * 1000) return 'upcoming'
+        return 'scheduled'
+      } else if (timeUntilEnd > 0) {
+        return 'ongoing'
+      } else {
+        return 'completed'
+      }
+    }
+    
+    return 'scheduled'
+  }
+
+  // Get live status color for events
+  const getLiveStatusColor = (status) => {
+    switch (status) {
+      case 'scheduled': return '#00bcd4'
+      case 'upcoming': return '#ff9800'
+      case 'starting-soon': return '#ff5722'
+      case 'ongoing': return '#f44336'
+      case 'completed': return '#4caf50'
+      default: return '#9e9e9e'
+    }
+  }
+
   // Fetch data on component mount
   useEffect(() => {
     fetchDashboardData()
@@ -420,119 +487,150 @@ export const EditorDashboardView = () => {
           </div>
           <div className="editor-items-list">
             {activePanel === 'events' ? (
-              events.length === 0 ? (
-                <div className="editor-empty-state">
-                  No events found
-                </div>
-              ) : (
-                events.map(event => (
-                  <div key={event.id} className="editor-item-card">
-                    <div className="editor-item-header">
-                      <div className="editor-item-title">{event.name}</div>
-                      <div className="editor-item-details">
-                        {event.location && <span>Location: {event.location}</span>}
-                        {event.date && <span>Date: {new Date(event.date).toLocaleDateString()}</span>}
-                        {event.quick_turn && <span>Quick Turn</span>}
-                      </div>
-                    </div>
-                    
-                    <div className="editor-item-process">
-                      <span>Process:</span>
-                      <select
-                        className="editor-process-select"
-                        value={event.process_point || 'idle'}
-                        onChange={(e) => handleEventProcessUpdate(event.id, e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {processPoints.map(point => (
-                          <option key={point} value={point}>
-                            {point.charAt(0).toUpperCase() + point.slice(1)}
-                          </option>
-                        ))}
-                      </select>
-                      
-                      <button 
-                        className="editor-expand-button"
-                        onClick={() => toggleEventExpanded(event.id)}
-                      >
-                        <span className={`editor-expand-icon ${expandedEvents.has(event.id) ? 'expanded' : ''}`}>
-                          ▼
-                        </span>
-                      </button>
-                    </div>
-
-                    <div className={`editor-expandable-content ${expandedEvents.has(event.id) ? 'expanded' : ''}`}>
-                      <div className="editor-expanded-details">
-                        <p><strong>Current Process:</strong> {event.process_point || 'idle'}</p>
-                        {event.start_time && <p><strong>Start Time:</strong> {event.start_time}</p>}
-                        {event.end_time && <p><strong>End Time:</strong> {event.end_time}</p>}
-                        {event.notes && <p><strong>Notes:</strong> {event.notes}</p>}
-                        {event.deadline && <p><strong>Deadline:</strong> {new Date(event.deadline).toLocaleDateString()}</p>}
-                        {event.quick_turn && <p><strong>Quick Turn</strong></p>}
-                        {event.shot_requests && event.shot_requests.length > 0 && (
-                          <p><strong>Shot Requests:</strong> {event.shot_requests.map(sr => sr.request).join(', ')}</p>
-                        )}
-                      </div>
-                    </div>
+              (() => {
+                const filteredEvents = getFilteredItems(events, 'event')
+                return filteredEvents.length === 0 ? (
+                  <div className="editor-empty-state">
+                    {selectedDate ? `No events found for ${new Date(selectedDate).toLocaleDateString()}` : 'No events found'}
                   </div>
-                ))
-              )
+                ) : (
+                  filteredEvents.map(event => {
+                    const processColor = getProcessPointColor(event.process_point || 'idle')
+                    const liveStatus = getEventStatus(event)
+                    const liveStatusColor = getLiveStatusColor(liveStatus)
+                    const status = getStatus(event)
+                    const statusColor = getStatusColor(status)
+                    
+                    return (
+                      <div key={event.id} className="editor-item-card" style={{ borderLeftColor: processColor.borderColor }}>
+                        <div className="editor-item-header">
+                          <div className="editor-item-title">{event.name}</div>
+                          <div className="editor-item-details">
+                            {event.location && <span>Location: {event.location}</span>}
+                            {event.date && <span>Date: {new Date(event.date).toLocaleDateString()}</span>}
+                            {event.quick_turn && <span>Quick Turn</span>}
+                            <span style={{ backgroundColor: liveStatusColor, color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
+                              {liveStatus.replace('-', ' ').toUpperCase()}
+                            </span>
+                            <span style={{ backgroundColor: statusColor, color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
+                              {status.replace('-', ' ').toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="editor-item-process">
+                          <span>Process:</span>
+                          <select
+                            className="editor-process-select"
+                            value={event.process_point || 'idle'}
+                            onChange={(e) => handleEventProcessUpdate(event.id, e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ backgroundColor: processColor.backgroundColor, borderColor: processColor.borderColor }}
+                          >
+                            {processPoints.map(point => (
+                              <option key={point} value={point}>
+                                {point.charAt(0).toUpperCase() + point.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                          
+                          <button 
+                            className="editor-expand-button"
+                            onClick={() => toggleEventExpanded(event.id)}
+                          >
+                            <span className={`editor-expand-icon ${expandedEvents.has(event.id) ? 'expanded' : ''}`}>
+                              ▼
+                            </span>
+                          </button>
+                        </div>
+
+                        <div className={`editor-expandable-content ${expandedEvents.has(event.id) ? 'expanded' : ''}`}>
+                          <div className="editor-expanded-details">
+                            <p><strong>Current Process:</strong> {event.process_point || 'idle'}</p>
+                            {event.start_time && <p><strong>Start Time:</strong> {event.start_time}</p>}
+                            {event.end_time && <p><strong>End Time:</strong> {event.end_time}</p>}
+                            {event.notes && <p><strong>Notes:</strong> {event.notes}</p>}
+                            {event.deadline && <p><strong>Deadline:</strong> {new Date(event.deadline).toLocaleDateString()}</p>}
+                            {event.quick_turn && <p><strong>Quick Turn</strong></p>}
+                            {event.shot_requests && event.shot_requests.length > 0 && (
+                              <p><strong>Shot Requests:</strong> {event.shot_requests.map(sr => sr.request).join(', ')}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )
+              })()
             ) : (
-              shotRequests.length === 0 ? (
-                <div className="editor-empty-state">
-                  No shot requests found
-                </div>
-              ) : (
-                shotRequests.map(shotRequest => (
-                  <div key={shotRequest.id} className="editor-item-card">
-                    <div className="editor-item-header">
-                      <div className="editor-item-title">{shotRequest.request}</div>
-                      <div className="editor-item-details">
-                        {shotRequest.notes && <span>Notes: {shotRequest.notes}</span>}
-                        {shotRequest.deadline && <span>Deadline: {new Date(shotRequest.deadline).toLocaleDateString()}</span>}
-                        {shotRequest.quick_turn && <span>Quick Turn</span>}
-                      </div>
-                    </div>
-                    
-                    <div className="editor-item-process">
-                      <span>Process:</span>
-                      <select
-                        className="editor-process-select"
-                        value={shotRequest.process_point || 'idle'}
-                        onChange={(e) => handleShotRequestProcessUpdate(shotRequest.id, e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {processPoints.map(point => (
-                          <option key={point} value={point}>
-                            {point.charAt(0).toUpperCase() + point.slice(1)}
-                          </option>
-                        ))}
-                      </select>
-                      
-                      <button 
-                        className="editor-expand-button"
-                        onClick={() => toggleShotRequestExpanded(shotRequest.id)}
-                      >
-                        <span className={`editor-expand-icon ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
-                          ▼
-                        </span>
-                      </button>
-                    </div>
-
-                    <div className={`editor-expandable-content ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
-                      <div className="editor-expanded-details">
-                        <p><strong>Current Process:</strong> {shotRequest.process_point || 'idle'}</p>
-                        {shotRequest.start_time && <p><strong>Start Time:</strong> {shotRequest.start_time}</p>}
-                        {shotRequest.end_time && <p><strong>End Time:</strong> {shotRequest.end_time}</p>}
-                        {shotRequest.notes && <p><strong>Notes:</strong> {shotRequest.notes}</p>}
-                        {shotRequest.deadline && <p><strong>Deadline:</strong> {new Date(shotRequest.deadline).toLocaleDateString()}</p>}
-                        {shotRequest.quick_turn && <p><strong>Quick Turn</strong></p>}
-                        {shotRequest.event && <p><strong>Event:</strong> {shotRequest.event.name}</p>}
-                      </div>
-                    </div>
+              (() => {
+                const filteredShotRequests = getFilteredItems(shotRequests, 'shotRequest')
+                return filteredShotRequests.length === 0 ? (
+                  <div className="editor-empty-state">
+                    {selectedDate ? `No shot requests found for ${new Date(selectedDate).toLocaleDateString()}` : 'No shot requests found'}
                   </div>
-                ))
-              )
+                ) : (
+                  filteredShotRequests.map(shotRequest => {
+                    const processColor = getProcessPointColor(shotRequest.process_point || 'idle')
+                    const status = getStatus(shotRequest)
+                    const statusColor = getStatusColor(status)
+                    
+                    return (
+                      <div key={shotRequest.id} className="editor-item-card" style={{ borderLeftColor: processColor.borderColor }}>
+                        <div className="editor-item-header">
+                          <div className="editor-item-title">{shotRequest.request}</div>
+                          <div className="editor-item-details">
+                            {shotRequest.notes && <span>Notes: {shotRequest.notes}</span>}
+                            {shotRequest.deadline && <span>Deadline: {new Date(shotRequest.deadline).toLocaleDateString()}</span>}
+                            {shotRequest.quick_turn && <span>Quick Turn</span>}
+                            <span style={{ backgroundColor: statusColor, color: 'white', padding: '2px 8px', borderRadius: '4px' }}>
+                              {status.replace('-', ' ').toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="editor-item-process">
+                          <span>Process:</span>
+                          <select
+                            className="editor-process-select"
+                            value={shotRequest.process_point || 'idle'}
+                            onChange={(e) => handleShotRequestProcessUpdate(shotRequest.id, e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ backgroundColor: processColor.backgroundColor, borderColor: processColor.borderColor }}
+                          >
+                            {processPoints.map(point => (
+                              <option key={point} value={point}>
+                                {point.charAt(0).toUpperCase() + point.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                          
+                          <button 
+                            className="editor-expand-button"
+                            onClick={() => toggleShotRequestExpanded(shotRequest.id)}
+                          >
+                            <span className={`editor-expand-icon ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
+                              ▼
+                            </span>
+                          </button>
+                        </div>
+
+                        <div className={`editor-expandable-content ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
+                          <div className="editor-expanded-details">
+                            <p><strong>Current Process:</strong> {shotRequest.process_point || 'idle'}</p>
+                            {shotRequest.start_time && <p><strong>Start Time:</strong> {shotRequest.start_time}</p>}
+                            {shotRequest.end_time && <p><strong>End Time:</strong> {shotRequest.end_time}</p>}
+                            {shotRequest.notes && <p><strong>Notes:</strong> {shotRequest.notes}</p>}
+                            {shotRequest.deadline && <p><strong>Deadline:</strong> {new Date(shotRequest.deadline).toLocaleDateString()}</p>}
+                            {shotRequest.quick_turn && <p><strong>Quick Turn</strong></p>}
+                            {shotRequest.event && <p><strong>Event:</strong> {shotRequest.event.name}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )
+              })()
             )}
           </div>
         </div>
