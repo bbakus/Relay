@@ -125,7 +125,15 @@ export const EditorDashboardView = () => {
       filteredItems.sort((a, b) => {
         // Sort by start_time
         if (a.start_time && b.start_time) {
-          return a.start_time.localeCompare(b.start_time)
+          // Parse time strings (handle formats like "10:30", "10:30:00", etc.)
+          const parseTime = (timeStr) => {
+            const parts = timeStr.split(':').map(p => parseInt(p) || 0)
+            return parts[0] * 60 + parts[1] // Convert to minutes for comparison
+          }
+          
+          const minutesA = parseTime(a.start_time)
+          const minutesB = parseTime(b.start_time)
+          return minutesA - minutesB
         }
         // If no start_time, sort by name
         return a.name.localeCompare(b.name)
