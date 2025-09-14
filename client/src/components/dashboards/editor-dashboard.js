@@ -511,19 +511,19 @@ export const EditorDashboardView = () => {
                         backgroundColor: processColor.backgroundColor 
                       }}>
                         <div className="editor-card-header" onClick={() => toggleEventExpanded(event.id)}>
-                          <div className="editor-card-title">
+                          <div className="editor-card-title-row">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
-                            <span>{event.name}</span>
-                            {event.quick_turn && <span className="editor-quick-turn-badge">Quick Turn</span>}
+                            <span className="editor-event-name">{event.name}</span>
+                            <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
-                          <div className="editor-card-badges">
+                          <div className="editor-card-details-row">
+                            {event.quick_turn && <span className="editor-quick-turn-badge">⚡ Quick Turn</span>}
                             {event.start_time && event.end_time && (
                               <span className="editor-time-badge">{event.start_time} - {event.end_time}</span>
                             )}
                             <span className="editor-status-badge" style={{ backgroundColor: liveStatusColor }}>
                               {liveStatus.replace('-', ' ')}
                             </span>
-                            <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                         </div>
 
@@ -593,19 +593,19 @@ export const EditorDashboardView = () => {
                         backgroundColor: processColor.backgroundColor 
                       }}>
                         <div className="editor-card-header" onClick={() => toggleShotRequestExpanded(shotRequest.id)}>
-                          <div className="editor-card-title">
+                          <div className="editor-card-title-row">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
-                            <span>{shotRequest.request}</span>
-                            {shotRequest.quick_turn && <span className="editor-quick-turn-badge">Quick Turn</span>}
+                            <span className="editor-event-name">{shotRequest.request}</span>
+                            <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
-                          <div className="editor-card-badges">
+                          <div className="editor-card-details-row">
+                            {shotRequest.quick_turn && <span className="editor-quick-turn-badge">⚡ Quick Turn</span>}
                             {shotRequest.deadline && (
                               <span className="editor-time-badge">{new Date(shotRequest.deadline).toLocaleDateString()}</span>
                             )}
                             <span className="editor-status-badge" style={{ backgroundColor: statusColor }}>
                               {status.replace('-', ' ')}
                             </span>
-                            <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                         </div>
 
@@ -733,7 +733,7 @@ export const EditorDashboardView = () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                  legend: { position: 'bottom' },
+                  legend: { display: false },
                   tooltip: { callbacks: { label: (context) => `${context.label}: ${context.parsed}` } }
                 },
                 scales: {
@@ -759,7 +759,7 @@ export const EditorDashboardView = () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                  legend: { position: 'bottom' },
+                  legend: { display: false },
                   tooltip: { callbacks: { label: (context) => `${context.label}: ${context.parsed}` } }
                 },
                 scales: {

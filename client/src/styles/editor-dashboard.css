@@ -585,20 +585,21 @@
 
 /* Card header */
 .editor-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
   cursor: pointer;
 }
 
-.editor-card-title {
+.editor-card-title-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 8px;
+}
+
+.editor-event-name {
   font-size: 1.1rem;
   font-weight: 600;
   color: #ffffff;
+  flex: 1;
 }
 
 .editor-process-indicator {
@@ -608,21 +609,31 @@
   flex-shrink: 0;
 }
 
-.editor-card-badges {
+.editor-expand-icon {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.editor-expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.editor-card-details-row {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Badge styling */
 .editor-quick-turn-badge {
   background: rgba(255, 193, 7, 0.2);
   color: #ffc107;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  margin-left: 8px;
 }
 
 .editor-time-badge {
@@ -631,7 +642,14 @@
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.8rem;
-  margin-right: 8px;
+}
+
+.editor-status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
 }
 
 /* Card details */
