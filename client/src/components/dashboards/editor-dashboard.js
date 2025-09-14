@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Line, Pie, Doughnut } from 'react-chartjs-2'
+import { Line, Pie, Doughnut, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -21,6 +22,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -36,6 +38,7 @@ export const EditorDashboardView = () => {
   const [error, setError] = useState(null)
   const [expandedShotRequests, setExpandedShotRequests] = useState(new Set())
   const [expandedEvents, setExpandedEvents] = useState(new Set())
+  const [activePanel, setActivePanel] = useState('events') // 'events' or 'shotRequests'
 
   // Process point options for global use
   const processPoints = ['idle', 'ingest', 'cull', 'color', 'delivered']
@@ -287,7 +290,7 @@ export const EditorDashboardView = () => {
     }
   }
 
-  const getProcessPointPieData = (items, title) => {
+  const getProcessPointBarData = (items, title) => {
     let filteredItems = items
     
     // Filter by selected project if available
@@ -311,10 +314,13 @@ export const EditorDashboardView = () => {
     return {
       labels: processPoints.map(point => point.charAt(0).toUpperCase() + point.slice(1)),
       datasets: [{
+        label: title,
         data: processCounts,
         backgroundColor: processPoints.map(point => getProcessPointColor(point).chartColor),
+        borderColor: processPoints.map(point => getProcessPointColor(point).borderColor),
         borderWidth: 2,
-        borderColor: '#ffffff'
+        borderRadius: 4,
+        borderSkipped: false,
       }]
     }
   }
@@ -391,63 +397,142 @@ export const EditorDashboardView = () => {
           </div>
         </div>
 
-        {/* 2. Shot Requests Panel */}
+        {/* 2. Events/Shot Requests Toggle Panel */}
         <div className="editor-dashboard-panel">
-          <h3>Shot Requests ({shotRequests.length})</h3>
-          <div className="editor-shot-requests-list">
-            {shotRequests.length === 0 ? (
-              <div className="editor-empty-state">
-                No shot requests found
-              </div>
-            ) : (
-              shotRequests.map(shotRequest => (
-                <div key={shotRequest.id} className="editor-shot-request-item">
-                  <div className="editor-shot-request-header">
-                    <div className="editor-shot-request-title">{shotRequest.request}</div>
-                    <div className="editor-shot-request-details">
-                      {shotRequest.notes && <span>Notes: {shotRequest.notes}</span>}
-                      {shotRequest.deadline && <span>Deadline: {new Date(shotRequest.deadline).toLocaleDateString()}</span>}
-                      {shotRequest.quick_turn && <span>Quick Turn</span>}
-                    </div>
-                  </div>
-                  
-                  <div className="editor-shot-request-process">
-                    <span>Process:</span>
-                    <select
-                      className="editor-process-select"
-                      value={shotRequest.process_point || 'idle'}
-                      onChange={(e) => handleShotRequestProcessUpdate(shotRequest.id, e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {processPoints.map(point => (
-                        <option key={point} value={point}>
-                          {point.charAt(0).toUpperCase() + point.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-                    
-                    <button 
-                      className="editor-expand-button"
-                      onClick={() => toggleShotRequestExpanded(shotRequest.id)}
-                    >
-                      <span className={`editor-expand-icon ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
-                        ▼
-                      </span>
-                    </button>
-                  </div>
-
-                  <div className={`editor-expandable-content ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
-                    <div className="editor-expanded-details">
-                      <p><strong>Current Process:</strong> {shotRequest.process_point || 'idle'}</p>
-                      {shotRequest.start_time && <p><strong>Start Time:</strong> {shotRequest.start_time}</p>}
-                      {shotRequest.end_time && <p><strong>End Time:</strong> {shotRequest.end_time}</p>}
-                      {shotRequest.events && shotRequest.events.length > 0 && (
-                        <p><strong>Related Events:</strong> {shotRequest.events.map(e => e.name).join(', ')}</p>
-                      )}
-                    </div>
-                  </div>
+          <div className="editor-panel-header">
+            <h3>
+              {activePanel === 'events' ? `Events (${events.length})` : `Shot Requests (${shotRequests.length})`}
+            </h3>
+            <div className="editor-toggle-buttons">
+              <button 
+                className={`editor-toggle-btn ${activePanel === 'events' ? 'active' : ''}`}
+                onClick={() => setActivePanel('events')}
+              >
+                Events
+              </button>
+              <button 
+                className={`editor-toggle-btn ${activePanel === 'shotRequests' ? 'active' : ''}`}
+                onClick={() => setActivePanel('shotRequests')}
+              >
+                Shot Requests
+              </button>
+            </div>
+          </div>
+          <div className="editor-items-list">
+            {activePanel === 'events' ? (
+              events.length === 0 ? (
+                <div className="editor-empty-state">
+                  No events found
                 </div>
-              ))
+              ) : (
+                events.map(event => (
+                  <div key={event.id} className="editor-item-card">
+                    <div className="editor-item-header">
+                      <div className="editor-item-title">{event.name}</div>
+                      <div className="editor-item-details">
+                        {event.location && <span>Location: {event.location}</span>}
+                        {event.date && <span>Date: {new Date(event.date).toLocaleDateString()}</span>}
+                        {event.quick_turn && <span>Quick Turn</span>}
+                      </div>
+                    </div>
+                    
+                    <div className="editor-item-process">
+                      <span>Process:</span>
+                      <select
+                        className="editor-process-select"
+                        value={event.process_point || 'idle'}
+                        onChange={(e) => handleEventProcessUpdate(event.id, e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {processPoints.map(point => (
+                          <option key={point} value={point}>
+                            {point.charAt(0).toUpperCase() + point.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      <button 
+                        className="editor-expand-button"
+                        onClick={() => toggleEventExpanded(event.id)}
+                      >
+                        <span className={`editor-expand-icon ${expandedEvents.has(event.id) ? 'expanded' : ''}`}>
+                          ▼
+                        </span>
+                      </button>
+                    </div>
+
+                    <div className={`editor-expandable-content ${expandedEvents.has(event.id) ? 'expanded' : ''}`}>
+                      <div className="editor-expanded-details">
+                        <p><strong>Current Process:</strong> {event.process_point || 'idle'}</p>
+                        {event.start_time && <p><strong>Start Time:</strong> {event.start_time}</p>}
+                        {event.end_time && <p><strong>End Time:</strong> {event.end_time}</p>}
+                        {event.notes && <p><strong>Notes:</strong> {event.notes}</p>}
+                        {event.deadline && <p><strong>Deadline:</strong> {new Date(event.deadline).toLocaleDateString()}</p>}
+                        {event.quick_turn && <p><strong>Quick Turn</strong></p>}
+                        {event.shot_requests && event.shot_requests.length > 0 && (
+                          <p><strong>Shot Requests:</strong> {event.shot_requests.map(sr => sr.request).join(', ')}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )
+            ) : (
+              shotRequests.length === 0 ? (
+                <div className="editor-empty-state">
+                  No shot requests found
+                </div>
+              ) : (
+                shotRequests.map(shotRequest => (
+                  <div key={shotRequest.id} className="editor-item-card">
+                    <div className="editor-item-header">
+                      <div className="editor-item-title">{shotRequest.request}</div>
+                      <div className="editor-item-details">
+                        {shotRequest.notes && <span>Notes: {shotRequest.notes}</span>}
+                        {shotRequest.deadline && <span>Deadline: {new Date(shotRequest.deadline).toLocaleDateString()}</span>}
+                        {shotRequest.quick_turn && <span>Quick Turn</span>}
+                      </div>
+                    </div>
+                    
+                    <div className="editor-item-process">
+                      <span>Process:</span>
+                      <select
+                        className="editor-process-select"
+                        value={shotRequest.process_point || 'idle'}
+                        onChange={(e) => handleShotRequestProcessUpdate(shotRequest.id, e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {processPoints.map(point => (
+                          <option key={point} value={point}>
+                            {point.charAt(0).toUpperCase() + point.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      <button 
+                        className="editor-expand-button"
+                        onClick={() => toggleShotRequestExpanded(shotRequest.id)}
+                      >
+                        <span className={`editor-expand-icon ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
+                          ▼
+                        </span>
+                      </button>
+                    </div>
+
+                    <div className={`editor-expandable-content ${expandedShotRequests.has(shotRequest.id) ? 'expanded' : ''}`}>
+                      <div className="editor-expanded-details">
+                        <p><strong>Current Process:</strong> {shotRequest.process_point || 'idle'}</p>
+                        {shotRequest.start_time && <p><strong>Start Time:</strong> {shotRequest.start_time}</p>}
+                        {shotRequest.end_time && <p><strong>End Time:</strong> {shotRequest.end_time}</p>}
+                        {shotRequest.notes && <p><strong>Notes:</strong> {shotRequest.notes}</p>}
+                        {shotRequest.deadline && <p><strong>Deadline:</strong> {new Date(shotRequest.deadline).toLocaleDateString()}</p>}
+                        {shotRequest.quick_turn && <p><strong>Quick Turn</strong></p>}
+                        {shotRequest.event && <p><strong>Event:</strong> {shotRequest.event.name}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )
             )}
           </div>
         </div>
@@ -563,36 +648,52 @@ export const EditorDashboardView = () => {
           )}
         </div>
 
-        {/* 5. Events Process Points Pie Chart */}
+        {/* 5. Events Process Points Bar Chart */}
         <div className="editor-dashboard-panel">
           <h3>Events by Process Point</h3>
           <div className="editor-chart-container">
-            <Pie 
-              data={getProcessPointPieData(events, 'Events')}
+            <Bar 
+              data={getProcessPointBarData(events, 'Events')}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                   legend: { position: 'bottom' },
                   tooltip: { callbacks: { label: (context) => `${context.label}: ${context.parsed}` } }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: 1
+                    }
+                  }
                 }
               }}
             />
           </div>
         </div>
 
-        {/* 6. Shot Requests Process Points Pie Chart */}
+        {/* 6. Shot Requests Process Points Bar Chart */}
         <div className="editor-dashboard-panel">
           <h3>Shot Requests by Process Point</h3>
           <div className="editor-chart-container">
-            <Doughnut 
-              data={getProcessPointPieData(shotRequests, 'Shot Requests')}
+            <Bar 
+              data={getProcessPointBarData(shotRequests, 'Shot Requests')}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                   legend: { position: 'bottom' },
                   tooltip: { callbacks: { label: (context) => `${context.label}: ${context.parsed}` } }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      stepSize: 1
+                    }
+                  }
                 }
               }}
             />
