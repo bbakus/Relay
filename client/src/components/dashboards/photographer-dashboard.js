@@ -240,6 +240,36 @@ export const PhotographerDashboardView = () => {
         }
     }
 
+    // Get process point color for event cards
+    const getProcessPointColor = (processPoint) => {
+        switch (processPoint?.toLowerCase()) {
+            case 'idle': return {
+                backgroundColor: 'rgba(0, 255, 255, 0.15)',
+                borderColor: 'rgba(0, 255, 255, 0.9)'
+            }
+            case 'ingest': return {
+                backgroundColor: 'rgba(0, 128, 255, 0.15)',
+                borderColor: 'rgba(0, 128, 255, 0.9)'
+            }
+            case 'cull': return {
+                backgroundColor: 'rgba(255, 122, 24, 0.15)',
+                borderColor: 'rgba(255, 122, 24, 0.9)'
+            }
+            case 'color': return {
+                backgroundColor: 'rgba(255, 64, 64, 0.15)',
+                borderColor: 'rgba(255, 64, 64, 0.9)'
+            }
+            case 'delivered': return {
+                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                borderColor: 'rgba(34, 197, 94, 0.9)'
+            }
+            default: return {
+                backgroundColor: 'rgba(107, 114, 128, 0.15)',
+                borderColor: 'rgba(107, 114, 128, 0.9)'
+            }
+        }
+    }
+
     if (loading) {
         return (
             <div className="photographer-dashboard-container">
@@ -311,6 +341,7 @@ export const PhotographerDashboardView = () => {
                                         {/* Render photographer's events */}
                                         {eventsWithPositions.map((event, index) => {
                                             const eventStatus = getEventStatus(event)
+                                            const processColors = getProcessPointColor(event.process_point)
                                             return (
                                                 <div
                                                     key={event.id}
@@ -322,8 +353,8 @@ export const PhotographerDashboardView = () => {
                                                         left: '8px',
                                                         zIndex: eventsWithPositions.length - index, // Shorter events (sorted first) get higher z-index
                                                         right: '8px',
-                                                        backgroundColor: 'rgba(0, 123, 255, 0.15)', /* Blue background */
-                                                        border: `2px solid rgba(0, 123, 255, 0.8)`, /* Blue border */
+                                                        backgroundColor: processColors.backgroundColor,
+                                                        border: `2px solid ${processColors.borderColor}`,
                                                         cursor: 'pointer'
                                                     }}
                                                     onClick={() => handleEventClick(event)}
@@ -344,6 +375,16 @@ export const PhotographerDashboardView = () => {
                                                         {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                     </div>
                                                     <div className='photographer-dashboard-event-location'>{event.location}</div>
+                                                    <div className='photographer-dashboard-event-process' style={{ 
+                                                        color: processColors.borderColor,
+                                                        fontWeight: '600',
+                                                        fontSize: '0.7rem',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        marginTop: '4px'
+                                                    }}>
+                                                        {(event.process_point || 'idle')}
+                                                    </div>
                                                 </div>
                                             )
                                         })}
