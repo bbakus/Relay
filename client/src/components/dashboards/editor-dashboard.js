@@ -120,6 +120,27 @@ export const EditorDashboardView = () => {
       })
     }
     
+    // Sort by time
+    if (itemType === 'event') {
+      filteredItems.sort((a, b) => {
+        // Sort by start_time
+        if (a.start_time && b.start_time) {
+          return a.start_time.localeCompare(b.start_time)
+        }
+        // If no start_time, sort by name
+        return a.name.localeCompare(b.name)
+      })
+    } else if (itemType === 'shotRequest') {
+      filteredItems.sort((a, b) => {
+        // Sort by deadline
+        if (a.deadline && b.deadline) {
+          return new Date(a.deadline) - new Date(b.deadline)
+        }
+        // If no deadline, sort by name
+        return a.request.localeCompare(b.request)
+      })
+    }
+    
     return filteredItems
   }
 
