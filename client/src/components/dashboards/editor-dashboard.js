@@ -514,45 +514,43 @@ export const EditorDashboardView = () => {
                           <div className="editor-card-title">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
                             <span>{event.name}</span>
+                            {event.quick_turn && <span className="editor-quick-turn-badge">Quick Turn</span>}
                           </div>
                           <div className="editor-card-badges">
+                            {event.start_time && event.end_time && (
+                              <span className="editor-time-badge">{event.start_time} - {event.end_time}</span>
+                            )}
                             <span className="editor-status-badge" style={{ backgroundColor: liveStatusColor }}>
                               {liveStatus.replace('-', ' ')}
-                            </span>
-                            <span className="editor-status-badge" style={{ backgroundColor: statusColor }}>
-                              {status.replace('-', ' ')}
                             </span>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                         </div>
-                        
-                        <div className="editor-card-content">
-                          <div className="editor-card-summary">
-                            {event.location && <span>📍 {event.location}</span>}
-                            {event.start_time && event.end_time && <span>🕐 {event.start_time} - {event.end_time}</span>}
-                            {event.quick_turn && <span>⚡ Quick Turn</span>}
-                          </div>
-                          
-                          <select
-                            className="editor-process-select"
-                            value={event.process_point || 'idle'}
-                            onChange={(e) => handleEventProcessUpdate(event.id, e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ backgroundColor: processColor.backgroundColor, borderColor: processColor.borderColor }}
-                          >
-                            {processPoints.map(point => (
-                              <option key={point} value={point}>
-                                {point.charAt(0).toUpperCase() + point.slice(1)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
 
                         {isExpanded && (
                           <div className="editor-card-details">
-                            <div className="editor-detail-row">
-                              <strong>Process:</strong> {event.process_point || 'idle'}
+                            <div className="editor-process-control">
+                              <label>Process:</label>
+                              <select
+                                className="editor-process-select"
+                                value={event.process_point || 'idle'}
+                                onChange={(e) => handleEventProcessUpdate(event.id, e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ backgroundColor: processColor.backgroundColor, borderColor: processColor.borderColor }}
+                              >
+                                {processPoints.map(point => (
+                                  <option key={point} value={point}>
+                                    {point.charAt(0).toUpperCase() + point.slice(1)}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
+                            
+                            {event.location && (
+                              <div className="editor-detail-row">
+                                <strong>Location:</strong> {event.location}
+                              </div>
+                            )}
                             {event.notes && (
                               <div className="editor-detail-row">
                                 <strong>Notes:</strong> {event.notes}
@@ -598,42 +596,38 @@ export const EditorDashboardView = () => {
                           <div className="editor-card-title">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
                             <span>{shotRequest.request}</span>
+                            {shotRequest.quick_turn && <span className="editor-quick-turn-badge">Quick Turn</span>}
                           </div>
                           <div className="editor-card-badges">
+                            {shotRequest.deadline && (
+                              <span className="editor-time-badge">{new Date(shotRequest.deadline).toLocaleDateString()}</span>
+                            )}
                             <span className="editor-status-badge" style={{ backgroundColor: statusColor }}>
                               {status.replace('-', ' ')}
                             </span>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                         </div>
-                        
-                        <div className="editor-card-content">
-                          <div className="editor-card-summary">
-                            {shotRequest.deadline && <span>📅 {new Date(shotRequest.deadline).toLocaleDateString()}</span>}
-                            {shotRequest.quick_turn && <span>⚡ Quick Turn</span>}
-                            {shotRequest.event && <span>🎬 {shotRequest.event.name}</span>}
-                          </div>
-                          
-                          <select
-                            className="editor-process-select"
-                            value={shotRequest.process_point || 'idle'}
-                            onChange={(e) => handleShotRequestProcessUpdate(shotRequest.id, e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ backgroundColor: processColor.backgroundColor, borderColor: processColor.borderColor }}
-                          >
-                            {processPoints.map(point => (
-                              <option key={point} value={point}>
-                                {point.charAt(0).toUpperCase() + point.slice(1)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
 
                         {isExpanded && (
                           <div className="editor-card-details">
-                            <div className="editor-detail-row">
-                              <strong>Process:</strong> {shotRequest.process_point || 'idle'}
+                            <div className="editor-process-control">
+                              <label>Process:</label>
+                              <select
+                                className="editor-process-select"
+                                value={shotRequest.process_point || 'idle'}
+                                onChange={(e) => handleShotRequestProcessUpdate(shotRequest.id, e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ backgroundColor: processColor.backgroundColor, borderColor: processColor.borderColor }}
+                              >
+                                {processPoints.map(point => (
+                                  <option key={point} value={point}>
+                                    {point.charAt(0).toUpperCase() + point.slice(1)}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
+                            
                             {shotRequest.notes && (
                               <div className="editor-detail-row">
                                 <strong>Notes:</strong> {shotRequest.notes}
@@ -647,6 +641,11 @@ export const EditorDashboardView = () => {
                             {shotRequest.end_time && (
                               <div className="editor-detail-row">
                                 <strong>End Time:</strong> {shotRequest.end_time}
+                              </div>
+                            )}
+                            {shotRequest.event && (
+                              <div className="editor-detail-row">
+                                <strong>Event:</strong> {shotRequest.event.name}
                               </div>
                             )}
                           </div>
@@ -673,17 +672,8 @@ export const EditorDashboardView = () => {
               <button className="editor-save-notes-btn">Save Notes</button>
             </div>
             <div className="editor-notes-list">
-              <div className="editor-note-item">
-                <div className="editor-note-date">Today, 2:30 PM</div>
-                <div className="editor-note-content">
-                  Remember to backup all footage from the wedding shoot before editing.
-                </div>
-              </div>
-              <div className="editor-note-item">
-                <div className="editor-note-date">Yesterday, 4:15 PM</div>
-                <div className="editor-note-content">
-                  Client requested color correction adjustments for outdoor shots.
-                </div>
+              <div className="editor-empty-state">
+                No notes yet. Add your first note above.
               </div>
             </div>
           </div>

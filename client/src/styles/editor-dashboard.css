@@ -614,26 +614,24 @@
   gap: 8px;
 }
 
-/* Card content */
-.editor-card-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+/* Badge styling */
+.editor-quick-turn-badge {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 8px;
 }
 
-.editor-card-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.editor-card-summary span {
+.editor-time-badge {
   background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
   padding: 4px 8px;
   border-radius: 4px;
+  font-size: 0.8rem;
+  margin-right: 8px;
 }
 
 /* Card details */
@@ -641,6 +639,22 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 12px;
   margin-top: 12px;
+}
+
+.editor-process-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.editor-process-control label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 60px;
 }
 
 .editor-detail-row {
