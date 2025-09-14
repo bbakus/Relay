@@ -12,6 +12,7 @@ import {
   ArcElement,
 } from 'chart.js'
 import { useAuth } from '../../context/AuthContext'
+import { API_CONFIG } from '../../utils/apiConfig'
 import '../../styles/editor-dashboard.css'
 
 // Register Chart.js components
@@ -110,7 +111,7 @@ export const EditorDashboardView = () => {
       setError(null)
       
       // Fetch shot requests
-      const shotRequestsResponse = await fetch('/api/shot-requests')
+      const shotRequestsResponse = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`)
       if (!shotRequestsResponse.ok) {
         throw new Error(`Failed to fetch shot requests: ${shotRequestsResponse.status}`)
       }
@@ -118,7 +119,7 @@ export const EditorDashboardView = () => {
       setShotRequests(shotRequestsData)
 
       // Fetch events
-      const eventsResponse = await fetch('/api/events')
+      const eventsResponse = await fetch(`${API_CONFIG.baseUrl}/api/events`)
       if (!eventsResponse.ok) {
         throw new Error(`Failed to fetch events: ${eventsResponse.status}`)
       }
@@ -126,7 +127,7 @@ export const EditorDashboardView = () => {
       setEvents(eventsData)
 
       // Fetch projects
-      const projectsResponse = await fetch('/api/projects')
+      const projectsResponse = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
       if (!projectsResponse.ok) {
         throw new Error(`Failed to fetch projects: ${projectsResponse.status}`)
       }
@@ -143,7 +144,7 @@ export const EditorDashboardView = () => {
   // Handle process point updates
   const handleShotRequestProcessUpdate = async (shotRequestId, newProcessPoint) => {
     try {
-      const response = await fetch(`/api/shot-requests/${shotRequestId}`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -171,7 +172,7 @@ export const EditorDashboardView = () => {
 
   const handleEventProcessUpdate = async (eventId, newProcessPoint) => {
     try {
-      const response = await fetch(`/api/events/${eventId}`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
