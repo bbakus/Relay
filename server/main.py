@@ -1373,24 +1373,29 @@ class PersonnelDetail(Resource):
             data = request.get_json()
             print(f"🔍 Personnel update request for ID {personnel_id}: {data}")
             
-            # Handle user attachment (requires user_id)
-            if 'user_id' in data and data.get('user_id'):
+            # Handle user attachment/detachment
+            if 'user_id' in data:
                 user_id = data.get('user_id')
                 
-                # Check if user exists
-                user = session.query(User).filter_by(id=user_id).first()
-                if not user:
-                    return {'error': 'User not found'}, 404
-                
-                # Check if personnel and user belong to same company
-                if personnel.company_id != user.company_id:
-                    return {'error': 'Personnel and user must belong to the same company'}, 400
-                
-                # Check if personnel is already attached to another user
-                if personnel.user_id and personnel.user_id != user_id:
-                    return {'error': 'Personnel is already attached to another user'}, 400
-                
-                personnel.user_id = user_id
+                if user_id is None:
+                    # Detach user (set to null)
+                    personnel.user_id = None
+                else:
+                    # Attach user (requires user_id validation)
+                    # Check if user exists
+                    user = session.query(User).filter_by(id=user_id).first()
+                    if not user:
+                        return {'error': 'User not found'}, 404
+                    
+                    # Check if personnel and user belong to same company
+                    if personnel.company_id != user.company_id:
+                        return {'error': 'Personnel and user must belong to the same company'}, 400
+                    
+                    # Check if personnel is already attached to another user
+                    if personnel.user_id and personnel.user_id != user_id:
+                        return {'error': 'Personnel is already attached to another user'}, 400
+                    
+                    personnel.user_id = user_id
             
             # Handle project assignment
             if 'project_id' in data:
