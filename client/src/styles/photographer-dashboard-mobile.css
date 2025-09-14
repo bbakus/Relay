@@ -60,8 +60,8 @@
   .photographer-schedule-grid {
     display: grid !important;
     grid-template-columns: 80px 1fr !important;
-    min-height: 1200px !important;
-    height: 1200px !important;
+    min-height: 1626px !important;
+    height: 1626px !important;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
     overflow: hidden;
@@ -79,7 +79,7 @@
     right: 0;
     height: 100%;
     grid-template-columns: 80px 1fr;
-    grid-template-rows: 60px repeat(72, 15px);
+    grid-template-rows: 60px repeat(72, 21.75px);
     z-index: 1;
   }
 
@@ -100,7 +100,7 @@
   /* Mobile time column */
   .photographer-time-column {
     display: grid !important;
-    grid-template-rows: 60px repeat(72, 15px);
+    grid-template-rows: 60px repeat(72, 21.75px);
     background: rgba(255, 255, 255, 0.05);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
@@ -118,7 +118,7 @@
   }
 
   .photographer-time-slot {
-    height: 15px;
+    height: 21.75px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -155,10 +155,10 @@
   .photographer-events-container {
     display: grid !important;
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(72, 15px);
+    grid-template-rows: repeat(72, 21.75px);
     position: relative;
-    min-height: 1080px;
-    height: 1080px;
+    min-height: 1566px;
+    height: 1566px;
   }
 
   /* Mobile event columns */
@@ -293,17 +293,17 @@
   /* Smaller timeline for very small screens */
   .photographer-schedule-grid {
     grid-template-columns: 70px 1fr !important;
-    min-height: 1000px !important;
-    height: 1000px !important;
+    min-height: 1626px !important;
+    height: 1626px !important;
   }
 
   .photographer-global-grid-lines {
     grid-template-columns: 70px 1fr;
-    grid-template-rows: 50px repeat(72, 13px);
+    grid-template-rows: 50px repeat(72, 21.75px);
   }
 
   .photographer-time-column {
-    grid-template-rows: 50px repeat(72, 13px);
+    grid-template-rows: 50px repeat(72, 21.75px);
   }
 
   .photographer-time-header {
@@ -312,7 +312,7 @@
   }
 
   .photographer-time-slot {
-    height: 13px;
+    height: 21.75px;
   }
 
   .photographer-time-text {
@@ -328,9 +328,9 @@
   }
 
   .photographer-events-container {
-    grid-template-rows: repeat(72, 13px);
-    min-height: 900px;
-    height: 900px;
+    grid-template-rows: repeat(72, 21.75px);
+    min-height: 1566px;
+    height: 1566px;
   }
 
   .photographer-dashboard-event-card {
