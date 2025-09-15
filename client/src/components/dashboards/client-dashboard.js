@@ -435,8 +435,9 @@ export const ClientDashboardView = () => {
                 const hoursRemaining = Math.max(0, 8 - totalHours)
                 
                 return {
-                    ...person,
-                    totalHours: Math.round(totalHours * 10) / 10,
+                    id: person.id,
+                    name: person.name,
+                    hoursWorked: Math.round(totalHours * 10) / 10,
                     hoursRemaining: Math.round(hoursRemaining * 10) / 10,
                     status,
                     assignedEvents: assignedEvents.length
@@ -523,8 +524,9 @@ export const ClientDashboardView = () => {
                 const hoursRemaining = Math.max(0, 8 - totalHours)
                 
                 return {
-                    ...photographer,
-                    totalHours: Math.round(totalHours * 10) / 10, // Round to 1 decimal
+                    id: photographer.id,
+                    name: photographer.name,
+                    hoursWorked: Math.round(totalHours * 10) / 10,
                     hoursRemaining: Math.round(hoursRemaining * 10) / 10,
                     status,
                     assignedEvents: assignedEvents.length
