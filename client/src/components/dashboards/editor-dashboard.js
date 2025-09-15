@@ -651,7 +651,6 @@ export const EditorDashboardView = () => {
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
                             <span className="editor-event-name">
                               {event.name}
-                              {isNew('events', event.id) && <span className="new-badge">NEW</span>}
                             </span>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
@@ -736,7 +735,6 @@ export const EditorDashboardView = () => {
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
                             <span className="editor-event-name">
                               {shotRequest.request}
-                              {isNew('shotRequests', shotRequest.id) && <span className="new-badge">NEW</span>}
                             </span>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>

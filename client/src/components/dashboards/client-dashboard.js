@@ -11,7 +11,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export const ClientDashboardView = () => {
     const { user, selectedDate, selectedProjectId } = useAuth()
-    const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications()
+    // const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications() // Temporarily disabled
     const [events, setEvents] = useState([])
     const [shotRequests, setShotRequests] = useState([])
     const [projects, setProjects] = useState([])
@@ -706,7 +706,6 @@ export const ClientDashboardView = () => {
                                         <div className="client-event-name" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span>
                                                 {event.name}
-                                                {isNew('events', event.id) && <span className="new-badge">NEW</span>}
                                             </span>
                                             <span className="event-status-badge" style={{ color: statusColor, borderColor: statusColor }}>
                                                 {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
@@ -726,7 +725,6 @@ export const ClientDashboardView = () => {
                                         <div className="client-event-name" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span>
                                                 {event.name}
-                                                {isNew('events', event.id) && <span className="new-badge">NEW</span>}
                                             </span>
                                             <span className="event-status-badge" style={{ color: statusColor, borderColor: statusColor }}>
                                                 {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
@@ -853,7 +851,6 @@ export const ClientDashboardView = () => {
                                 <div key={request.id} className="client-shot-request-card" style={{ borderLeftColor: getProcessPointColor('delivered') }}>
                                     <div className="client-request-text">
                                         {request.request}
-                                        {isNew('shotRequests', request.id) && <span className="new-badge">NEW</span>}
                                     </div>
                                     <div className="client-request-status" style={{ color: getProcessPointColor('delivered') }}>Delivered</div>
                                     {request.deadline && (
