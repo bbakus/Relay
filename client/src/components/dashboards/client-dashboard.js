@@ -840,7 +840,6 @@ export const ClientDashboardView = () => {
                                 <div key={event.id} className="client-event-card delivered">
                                     <div className="client-event-name">
                                         {event.name}
-                                        {isNew('events', event.id) && <span className="new-badge">NEW</span>}
                                     </div>
                                     <div className="client-event-date">{formatDateForHeader(event.date)}</div>
                                     <div className="client-delivery-badge">✓ Delivered</div>
