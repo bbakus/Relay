@@ -831,7 +831,7 @@ export const AdminDashboardView = () => {
               // Events Tab
               <div className="admin-events-list">
                 {deliveredEvents.length > 0 ? (
-                  deliveredEvents.slice(0, 8).map(event => (
+                  deliveredEvents.map(event => (
                     <div key={event.id} className="admin-event-item delivered">
                       <div className="delivered-indicator">✓</div>
                       <span className="admin-event-name">{event.name}</span>
@@ -841,15 +841,12 @@ export const AdminDashboardView = () => {
                 ) : (
                   <p className="no-data">No delivered events for {selectedDate ? formatDateForHeader(selectedDate) : 'today'}</p>
                 )}
-                {deliveredEvents.length > 8 && (
-                  <p className="more-events">+{deliveredEvents.length - 8} more events</p>
-                )}
               </div>
             ) : (
               // Shot Requests Tab
               <div className="shot-requests-list">
                 {deliveredShotRequests.length > 0 ? (
-                  deliveredShotRequests.slice(0, 8).map(sr => {
+                  deliveredShotRequests.map(sr => {
                     // Get the first event from the events array
                     const event = sr.events && sr.events.length > 0 ? sr.events[0] : null
                     return (
@@ -869,9 +866,6 @@ export const AdminDashboardView = () => {
                   })
                 ) : (
                   <p className="no-data">No delivered shot requests for {selectedDate ? formatDateForHeader(selectedDate) : 'today'}</p>
-                )}
-                {deliveredShotRequests.length > 8 && (
-                  <p className="more-events">+{deliveredShotRequests.length - 8} more delivered</p>
                 )}
               </div>
             )}
@@ -1034,7 +1028,7 @@ export const AdminDashboardView = () => {
           <h3>In Process Events ({inProcessEvents.length})</h3>
           <div className="admin-events-list">
             {inProcessEvents.length > 0 ? (
-              inProcessEvents.slice(0, 8).map(event => (
+              inProcessEvents.map(event => (
                 <div key={event.id} className="admin-event-item in-process">
                   <span className="admin-event-name">{event.name}</span>
                   <span 
@@ -1048,9 +1042,6 @@ export const AdminDashboardView = () => {
             ) : (
               <p className="no-data">No events in process</p>
             )}
-            {inProcessEvents.length > 8 && (
-              <p className="more-events">+{inProcessEvents.length - 8} more events</p>
-            )}
           </div>
         </div>
 
@@ -1059,7 +1050,7 @@ export const AdminDashboardView = () => {
           <h3>Live Events ({liveEvents.length})</h3>
           <div className="admin-events-list">
             {liveEvents.length > 0 ? (
-              liveEvents.slice(0, 8).map(event => (
+              liveEvents.map(event => (
                 <div key={event.id} className="admin-event-item live">
                   <div className="live-indicator">●</div>
                   <span className="admin-event-name">{event.name}</span>
@@ -1072,9 +1063,6 @@ export const AdminDashboardView = () => {
             ) : (
               <p className="no-data">No live events currently</p>
             )}
-            {liveEvents.length > 8 && (
-              <p className="more-events">+{liveEvents.length - 8} more live events</p>
-            )}
           </div>
         </div>
         
@@ -1083,7 +1071,7 @@ export const AdminDashboardView = () => {
           <h3>Delivered Event Images</h3>
           <div className="admin-image-counts-list">
             {deliveredEventImages.length > 0 ? (
-              deliveredEventImages.slice(0, 8).map(event => (
+              deliveredEventImages.map(event => (
                 <div key={event.id} className="admin-image-count-item">
                   <div className="admin-event-info">
                     <span className="admin-event-name">{event.name}</span>
@@ -1096,9 +1084,6 @@ export const AdminDashboardView = () => {
               ))
             ) : (
               <p className="no-data">No delivered events with images</p>
-            )}
-            {deliveredEventImages.length > 8 && (
-              <p className="more-events">+{deliveredEventImages.length - 8} more events</p>
             )}
           </div>
         </div>
