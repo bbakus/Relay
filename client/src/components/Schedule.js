@@ -1184,7 +1184,6 @@ export const Schedule = () => {
                     </div>
                 </div>
             )}
-                </div>
             </div>
             {user?.access?.toLowerCase() !== 'client' && (
                 <div className="notification-section">
