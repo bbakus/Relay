@@ -103,6 +103,7 @@ export const ClientDashboardView = () => {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
             if (response.ok) {
                 const data = await response.json()
+                console.log('Fetched personnel data:', data)
                 setPersonnel(data)
             }
         } catch (error) {
@@ -312,19 +313,71 @@ export const ClientDashboardView = () => {
 
     // Photographer availability calculation
     const photographerAvailability = useMemo(() => {
-        if (!personnel.length || !events.length) return []
+        console.log('Calculating photographer availability...')
+        console.log('Personnel data:', personnel)
+        console.log('Events data:', events)
+        console.log('Selected date:', selectedDate)
+        
+        if (!personnel.length || !events.length) {
+            console.log('Missing data - personnel:', personnel.length, 'events:', events.length)
+            return []
+        }
         
         const targetDate = selectedDate || new Date().toISOString().split('T')[0]
+        console.log('Target date for calculations:', targetDate)
         
-        return personnel
-            .filter(person => person.role === 'photographer')
-            .map(photographer => {
+        const photographers = personnel.filter(person => person.role === 'photographer')
+        console.log('Filtered photographers:', photographers)
+        
+        // If no photographers found, show all personnel for debugging
+        if (photographers.length === 0) {
+            console.log('No photographers found, showing all personnel roles:', personnel.map(p => ({ name: p.name, role: p.role })))
+            // For now, let's show all personnel to debug the role issue
+            return personnel.map(person => {
+                const assignedEvents = events.filter(event => 
+                    event.date === targetDate && 
+                    event.photographer_ids && 
+                    event.photographer_ids.includes(person.id)
+                )
+                
+                const totalHours = assignedEvents.reduce((total, event) => {
+                    if (!event.start_time || !event.end_time) return total
+                    const startTime = new Date(`${event.date}T${event.start_time}`)
+                    const endTime = new Date(`${event.date}T${event.end_time}`)
+                    const hours = (endTime - startTime) / (1000 * 60 * 60)
+                    return total + hours
+                }, 0)
+                
+                const isAvailable = totalHours < 8
+                const status = isAvailable ? 'available' : 'busy'
+                const hoursRemaining = Math.max(0, 8 - totalHours)
+                
+                return {
+                    ...person,
+                    totalHours: Math.round(totalHours * 10) / 10,
+                    hoursRemaining: Math.round(hoursRemaining * 10) / 10,
+                    status,
+                    assignedEvents: assignedEvents.length
+                }
+            }).sort((a, b) => {
+                if (a.status !== b.status) {
+                    return a.status === 'available' ? -1 : 1
+                }
+                return b.hoursRemaining - a.hoursRemaining
+            })
+        }
+        
+        return photographers.map(photographer => {
                 // Get events assigned to this photographer on the target date
                 const assignedEvents = events.filter(event => 
                     event.date === targetDate && 
                     event.photographer_ids && 
                     event.photographer_ids.includes(photographer.id)
                 )
+                
+                console.log(`Photographer ${photographer.name} (ID: ${photographer.id}):`)
+                console.log('  Assigned events:', assignedEvents)
+                console.log('  Events on target date:', events.filter(e => e.date === targetDate))
                 
                 // Calculate total hours worked
                 const totalHours = assignedEvents.reduce((total, event) => {
@@ -358,6 +411,9 @@ export const ClientDashboardView = () => {
                 return b.hoursRemaining - a.hoursRemaining
             })
     }, [personnel, events, selectedDate])
+
+    // Debug the final result
+    console.log('Final photographer availability result:', photographerAvailability)
 
     // Events progress percentage (completed vs total events)
     const eventsProgress = useMemo(() => {
@@ -582,7 +638,12 @@ export const ClientDashboardView = () => {
                             photographerAvailability.map(photographer => (
                                 <div key={photographer.id} className={`client-photographer-card ${photographer.status}`}>
                                     <div className="client-photographer-header">
-                                        <div className="client-photographer-name">{photographer.name}</div>
+                                        <div className="client-photographer-name">
+                                            {photographer.name}
+                                            <span style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginLeft: '8px'}}>
+                                                ({photographer.role})
+                                            </span>
+                                        </div>
                                         <div className={`client-photographer-status ${photographer.status}`}>
                                             {photographer.status === 'available' ? 'Available' : 'Busy'}
                                         </div>
