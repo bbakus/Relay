@@ -159,7 +159,7 @@ export const EditorDashboardView = () => {
     return filteredItems
   }
 
-  // Get live status for events
+  // Get live status for events (matching Events.js)
   const getEventStatus = (event) => {
     void currentTimeTick // Force recalculation for real-time status
     
@@ -174,8 +174,7 @@ export const EditorDashboardView = () => {
     
     if (!isToday) {
       if (now < startTime) return 'scheduled'
-      if (now > endTime) return 'completed'
-      return 'scheduled'
+      if (now > endTime) return 'done'
     }
     
     if (isToday) {
@@ -183,28 +182,27 @@ export const EditorDashboardView = () => {
       const timeUntilEnd = endTime - now
       
       if (timeUntilStart > 0) {
-        if (timeUntilStart <= 15 * 60 * 1000) return 'starting-soon'
-        if (timeUntilStart <= 60 * 60 * 1000) return 'upcoming'
+        if (timeUntilStart <= 15 * 60 * 1000) return 'starting-soon' // 15 minutes
+        if (timeUntilStart <= 60 * 60 * 1000) return 'upcoming' // 1 hour
         return 'scheduled'
-      } else if (timeUntilEnd > 0) {
-        return 'ongoing'
-      } else {
-        return 'completed'
       }
+      
+      if (timeUntilEnd > 0) return 'ongoing'
+      return 'done'
     }
     
     return 'scheduled'
   }
 
-  // Get live status color for events
+  // Get live status color for events (matching Events.js)
   const getLiveStatusColor = (status) => {
     switch (status) {
-      case 'scheduled': return '#00bcd4'
-      case 'upcoming': return '#ff9800'
-      case 'starting-soon': return '#ff5722'
-      case 'ongoing': return '#f44336'
-      case 'completed': return '#4caf50'
-      default: return '#9e9e9e'
+      case 'scheduled': return '#007bff'
+      case 'upcoming': return '#fd7e14'
+      case 'starting-soon': return '#dc3545'
+      case 'ongoing': return '#28a745'
+      case 'done': return '#6c757d'
+      default: return '#007bff'
     }
   }
 
@@ -560,7 +558,7 @@ export const EditorDashboardView = () => {
                               <span className="editor-time-badge">{event.start_time} - {event.end_time}</span>
                             )}
                             <span className="editor-status-badge" style={{ backgroundColor: liveStatusColor }}>
-                              {liveStatus.replace('-', ' ')}
+                              {liveStatus.charAt(0).toUpperCase() + liveStatus.slice(1).replace('-', ' ')}
                             </span>
                           </div>
                         </div>
