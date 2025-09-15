@@ -40,6 +40,8 @@ export const EditorDashboardView = () => {
   const [expandedEvents, setExpandedEvents] = useState(new Set())
   const [activePanel, setActivePanel] = useState('events') // 'events' or 'shotRequests'
   const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
+  const [notes, setNotes] = useState('')
+  const [savedNotes, setSavedNotes] = useState([])
 
   // Real-time updates for event status
   useEffect(() => {
@@ -355,6 +357,20 @@ export const EditorDashboardView = () => {
       }
       return newSet
     })
+  }
+
+  // Save notes function
+  const handleSaveNotes = () => {
+    if (notes.trim()) {
+      const newNote = {
+        id: Date.now(),
+        content: notes.trim(),
+        timestamp: new Date().toISOString(),
+        user: user?.name || 'Editor'
+      }
+      setSavedNotes(prev => [newNote, ...prev])
+      setNotes('')
+    }
   }
 
   // Get current project
@@ -732,13 +748,35 @@ export const EditorDashboardView = () => {
                 placeholder="Add your notes here..."
                 className="editor-notes-textarea"
                 rows="4"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
               />
-              <button className="editor-save-notes-btn">Save Notes</button>
+              <button 
+                className="editor-save-notes-btn"
+                onClick={handleSaveNotes}
+                disabled={!notes.trim()}
+              >
+                Save Notes
+              </button>
             </div>
             <div className="editor-notes-list">
-              <div className="editor-empty-state">
-                No notes yet. Add your first note above.
-              </div>
+              {savedNotes.length === 0 ? (
+                <div className="editor-empty-state">
+                  No notes yet. Add your first note above.
+                </div>
+              ) : (
+                savedNotes.map(note => (
+                  <div key={note.id} className="editor-note-item">
+                    <div className="editor-note-content">{note.content}</div>
+                    <div className="editor-note-meta">
+                      <span className="editor-note-user">{note.user}</span>
+                      <span className="editor-note-date">
+                        {new Date(note.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

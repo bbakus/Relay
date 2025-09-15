@@ -798,9 +798,17 @@
   align-self: flex-start;
 }
 
-.editor-save-notes-btn:hover {
+.editor-save-notes-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
+}
+
+.editor-save-notes-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .editor-notes-list {
@@ -832,4 +840,22 @@
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.editor-note-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.editor-note-user {
+  font-weight: 500;
+  color: rgba(255, 122, 24, 0.8);
+}
+
+.editor-note-date {
+  font-style: italic;
 }
