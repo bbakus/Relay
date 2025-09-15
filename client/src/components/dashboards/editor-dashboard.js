@@ -39,6 +39,13 @@ export const EditorDashboardView = () => {
   const [expandedShotRequests, setExpandedShotRequests] = useState(new Set())
   const [expandedEvents, setExpandedEvents] = useState(new Set())
   const [activePanel, setActivePanel] = useState('events') // 'events' or 'shotRequests'
+  const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
+
+  // Real-time updates for event status
+  useEffect(() => {
+    const intervalId = setInterval(() => setCurrentTimeTick(Date.now()), 30000) // Update every 30 seconds
+    return () => clearInterval(intervalId)
+  }, [])
 
   // Process point options for global use
   const processPoints = ['idle', 'ingest', 'cull', 'color', 'delivered']
@@ -154,6 +161,8 @@ export const EditorDashboardView = () => {
 
   // Get live status for events
   const getEventStatus = (event) => {
+    void currentTimeTick // Force recalculation for real-time status
+    
     if (!event.date || !event.start_time || !event.end_time) return 'scheduled'
     
     const now = new Date()
