@@ -376,9 +376,9 @@ export const ClientDashboardView = () => {
         
         const targetDate = selectedDate || new Date().toISOString().split('T')[0]
         
-        // Filter for photographers using same roles as admin dashboard
+        // Filter for photographers ONLY - no admins or other staff
         const photographers = personnel.filter(p => 
-            ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
+            ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
         )
         
         if (photographers.length === 0) {
@@ -391,17 +391,35 @@ export const ClientDashboardView = () => {
         const currentTimeInMinutes = currentHour * 60 + currentMinute
         
         return photographers.map(photographer => {
+            console.log(`\n=== Processing photographer: ${photographer.name} ===`)
+            console.log('Photographer data:', photographer)
+            console.log('Event IDs:', photographer.event_ids)
+            
             // Get assigned events using event_ids (same as admin dashboard)
             const assignedEventIds = photographer.event_ids || []
+            console.log('Assigned event IDs:', assignedEventIds)
+            
             const assignedEvents = assignedEventIds
-                .map(eventId => events.find(e => e.id === eventId))
+                .map(eventId => {
+                    const event = events.find(e => e.id === eventId)
+                    console.log(`Event ID ${eventId}:`, event)
+                    return event
+                })
                 .filter(Boolean)
-                .filter(event => event.date === targetDate)
+                .filter(event => {
+                    console.log(`Event ${event.name} date: ${event.date}, target date: ${targetDate}`)
+                    return event.date === targetDate
+                })
+            
+            console.log('Filtered assigned events:', assignedEvents)
             
             let scheduledHours = 0
             let workedHours = 0
             
             assignedEvents.forEach(event => {
+                console.log(`Processing event: ${event.name}`)
+                console.log(`  Start time: ${event.start_time}, End time: ${event.end_time}`)
+                
                 if (event.start_time && event.end_time) {
                     const [startHour, startMinute] = event.start_time.split(':').map(Number)
                     const [endHour, endMinute] = event.end_time.split(':').map(Number)
@@ -409,26 +427,38 @@ export const ClientDashboardView = () => {
                     const endTimeInMinutes = endHour * 60 + endMinute
                     const eventDurationHours = (endTimeInMinutes - startTimeInMinutes) / 60
                     
+                    console.log(`  Duration: ${eventDurationHours} hours`)
+                    console.log(`  Current time: ${currentTimeInMinutes} minutes`)
+                    console.log(`  Start time: ${startTimeInMinutes} minutes`)
+                    console.log(`  End time: ${endTimeInMinutes} minutes`)
+                    
                     // Always add to scheduled hours
                     scheduledHours += eventDurationHours
                     
                     // Calculate worked hours (events that have already ended)
                     if (currentTimeInMinutes >= endTimeInMinutes) {
                         workedHours += eventDurationHours
+                        console.log(`  Event completed - added ${eventDurationHours} hours`)
                     } else if (currentTimeInMinutes >= startTimeInMinutes) {
                         // Event is currently happening, calculate partial hours worked
                         const partialWorkedHours = (currentTimeInMinutes - startTimeInMinutes) / 60
                         workedHours += partialWorkedHours
+                        console.log(`  Event ongoing - added ${partialWorkedHours} hours`)
+                    } else {
+                        console.log(`  Event in future - no hours added`)
                     }
                 }
             })
+            
+            console.log(`Total scheduled hours: ${scheduledHours}`)
+            console.log(`Total worked hours: ${workedHours}`)
             
             // Determine availability status
             const isAvailable = workedHours < 8
             const status = isAvailable ? 'available' : 'busy'
             const hoursRemaining = Math.max(0, 8 - workedHours)
             
-            return {
+            const result = {
                 id: photographer.id,
                 name: photographer.name,
                 hoursWorked: Math.round(workedHours * 10) / 10,
@@ -436,6 +466,9 @@ export const ClientDashboardView = () => {
                 status,
                 assignedEvents: assignedEvents.length
             }
+            
+            console.log('Final result:', result)
+            return result
         }).sort((a, b) => {
             if (a.status !== b.status) {
                 return a.status === 'available' ? -1 : 1
