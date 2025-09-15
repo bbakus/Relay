@@ -711,11 +711,6 @@ export const Nav = () => {
           </div>
         </div>
       </nav>
-      
-      {/* Notification Center - sits beneath header */}
-      <div className="notification-bar">
-        <NotificationCenter />
-      </div>
 
       {/* Profile Modal */}
       {showProfileModal && (

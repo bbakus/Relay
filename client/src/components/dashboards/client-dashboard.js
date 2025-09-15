@@ -62,8 +62,14 @@ export const ClientDashboardView = () => {
         fetchPersonnel()
     }, [])
 
-    // Detect new items and send notifications
+    // Detect new items and send notifications (only for truly new items)
     useEffect(() => {
+        // Only run this after initial data load
+        if (lastFetchTime === 0) {
+            setLastFetchTime(Date.now())
+            return
+        }
+
         if (events.length > 0) {
             const newEvents = events.filter(event => {
                 const eventTime = new Date(event.created_at || event.date).getTime()
@@ -408,6 +414,12 @@ export const ClientDashboardView = () => {
                     const endTime = new Date(year, month - 1, day, endHour, endMinute)
                     const now = new Date()
                     
+                    // Check if event is today
+                    const today = new Date()
+                    const eventDate = new Date(year, month - 1, day)
+                    const isToday = today.toDateString() === eventDate.toDateString()
+                    
+                    if (!isToday) return total
                     if (now < startTime) return total
                     if (now >= endTime) {
                         return total + (endTime - startTime) / (1000 * 60 * 60)
@@ -466,6 +478,21 @@ export const ClientDashboardView = () => {
                     console.log(`  Start: ${startTime.toISOString()}`)
                     console.log(`  End: ${endTime.toISOString()}`)
                     console.log(`  Now: ${now.toISOString()}`)
+                    console.log(`  Event date: ${event.date}`)
+                    console.log(`  Start time: ${event.start_time}`)
+                    console.log(`  End time: ${event.end_time}`)
+                    
+                    // Check if event is today
+                    const today = new Date()
+                    const eventDate = new Date(year, month - 1, day)
+                    const isToday = today.toDateString() === eventDate.toDateString()
+                    
+                    console.log(`  Is today: ${isToday}`)
+                    
+                    if (!isToday) {
+                        console.log(`  Event is not today - 0 hours`)
+                        return total
+                    }
                     
                     // If event is in the future, don't count any hours yet
                     if (now < startTime) {
