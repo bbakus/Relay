@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
+import { NotificationCenter } from './NotificationCenter'
 import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/schedule.css'
 import '../styles/schedule-mobile.css'
@@ -671,9 +672,16 @@ export const Schedule = () => {
     }
 
     return (
-        <div className='view-container'>
+        <div className='page-container'>
             <Nav />
-            <div className='page-container'>
+            {user?.access?.toLowerCase() !== 'client' && (
+                <div className="notification-section">
+                    <div className="notification-container">
+                        <NotificationCenter />
+                    </div>
+                </div>
+            )}
+            <div className='view-container'>
                 <div className='schedule-container'>
                     <div className='schedule-header'>
                         <h1>Schedule</h1>
@@ -1182,6 +1190,7 @@ export const Schedule = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     )
 }
