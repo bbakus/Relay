@@ -385,10 +385,56 @@ export const ClientDashboardView = () => {
         })
         console.log('Filtered photographers:', photographers)
         
-        // If no photographers found, return empty array
+        // If no photographers found, show all personnel for debugging
         if (photographers.length === 0) {
             console.log('No photographers found. Available roles:', allRoles)
-            return []
+            console.log('Showing all personnel for debugging...')
+            // For debugging, show all personnel
+            return personnel.map(person => {
+                const assignedEvents = events.filter(event => 
+                    event.date === targetDate && 
+                    event.photographer_ids && 
+                    event.photographer_ids.includes(person.id)
+                )
+                
+                const totalHours = assignedEvents.reduce((total, event) => {
+                    if (!event.start_time || !event.end_time) return total
+                    
+                    const [startHour, startMinute] = event.start_time.split(':').map(Number)
+                    const [endHour, endMinute] = event.end_time.split(':').map(Number)
+                    const [year, month, day] = event.date.split('-').map(Number)
+                    
+                    const startTime = new Date(year, month - 1, day, startHour, startMinute)
+                    const endTime = new Date(year, month - 1, day, endHour, endMinute)
+                    const now = new Date()
+                    
+                    if (now < startTime) return total
+                    if (now >= endTime) {
+                        return total + (endTime - startTime) / (1000 * 60 * 60)
+                    }
+                    if (now >= startTime && now < endTime) {
+                        return total + (now - startTime) / (1000 * 60 * 60)
+                    }
+                    return total
+                }, 0)
+                
+                const isAvailable = totalHours < 8
+                const status = isAvailable ? 'available' : 'busy'
+                const hoursRemaining = Math.max(0, 8 - totalHours)
+                
+                return {
+                    ...person,
+                    totalHours: Math.round(totalHours * 10) / 10,
+                    hoursRemaining: Math.round(hoursRemaining * 10) / 10,
+                    status,
+                    assignedEvents: assignedEvents.length
+                }
+            }).sort((a, b) => {
+                if (a.status !== b.status) {
+                    return a.status === 'available' ? -1 : 1
+                }
+                return b.hoursRemaining - a.hoursRemaining
+            })
         }
         
         return photographers.map(photographer => {
@@ -403,15 +449,45 @@ export const ClientDashboardView = () => {
                 console.log('  Assigned events:', assignedEvents)
                 console.log('  Events on target date:', events.filter(e => e.date === targetDate))
                 
-                // Calculate total hours worked
+                // Calculate total hours worked (including real-time for ongoing events)
                 const totalHours = assignedEvents.reduce((total, event) => {
                     if (!event.start_time || !event.end_time) return total
                     
-                    const startTime = new Date(`${event.date}T${event.start_time}`)
-                    const endTime = new Date(`${event.date}T${event.end_time}`)
-                    const hours = (endTime - startTime) / (1000 * 60 * 60)
+                    // Parse times using local timezone to avoid UTC issues
+                    const [startHour, startMinute] = event.start_time.split(':').map(Number)
+                    const [endHour, endMinute] = event.end_time.split(':').map(Number)
+                    const [year, month, day] = event.date.split('-').map(Number)
                     
-                    return total + hours
+                    const startTime = new Date(year, month - 1, day, startHour, startMinute)
+                    const endTime = new Date(year, month - 1, day, endHour, endMinute)
+                    const now = new Date()
+                    
+                    console.log(`Event ${event.name}:`)
+                    console.log(`  Start: ${startTime.toISOString()}`)
+                    console.log(`  End: ${endTime.toISOString()}`)
+                    console.log(`  Now: ${now.toISOString()}`)
+                    
+                    // If event is in the future, don't count any hours yet
+                    if (now < startTime) {
+                        console.log(`  Event is in the future - 0 hours`)
+                        return total
+                    }
+                    
+                    // If event is completed, count full duration
+                    if (now >= endTime) {
+                        const hours = (endTime - startTime) / (1000 * 60 * 60)
+                        console.log(`  Event completed - ${hours} hours`)
+                        return total + hours
+                    }
+                    
+                    // If event is ongoing, count partial hours
+                    if (now >= startTime && now < endTime) {
+                        const hours = (now - startTime) / (1000 * 60 * 60)
+                        console.log(`  Event ongoing - ${hours} hours so far`)
+                        return total + hours
+                    }
+                    
+                    return total
                 }, 0)
                 
                 // Determine availability status
@@ -434,7 +510,7 @@ export const ClientDashboardView = () => {
                 }
                 return b.hoursRemaining - a.hoursRemaining
             })
-    }, [personnel, events, selectedDate])
+    }, [personnel, events, selectedDate, currentTimeTick])
 
     // Debug the final result
     console.log('Final photographer availability result:', photographerAvailability)

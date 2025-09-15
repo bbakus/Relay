@@ -38,7 +38,7 @@ export const NotificationCenter = () => {
         className="notification-toggle"
         onClick={() => setIsOpen(!isOpen)}
       >
-        🔔
+        <div className="notification-dot"></div>
         {notifications.length > 0 && (
           <span className="notification-badge">{notifications.length}</span>
         )}

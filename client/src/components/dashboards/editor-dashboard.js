@@ -44,6 +44,8 @@ export const EditorDashboardView = () => {
   const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
   const [notes, setNotes] = useState('')
   const [savedNotes, setSavedNotes] = useState([])
+  const [editingNoteId, setEditingNoteId] = useState(null)
+  const [editingText, setEditingText] = useState('')
 
   // Real-time updates for event status
   useEffect(() => {
@@ -415,6 +417,41 @@ export const EditorDashboardView = () => {
       }
       setSavedNotes(prev => [newNote, ...prev])
       setNotes('')
+    }
+  }
+
+  // Edit note function
+  const handleEditNote = (noteId) => {
+    const note = savedNotes.find(n => n.id === noteId)
+    if (note) {
+      setEditingNoteId(noteId)
+      setEditingText(note.content)
+    }
+  }
+
+  // Save edited note
+  const handleSaveEdit = () => {
+    if (editingText.trim()) {
+      setSavedNotes(prev => prev.map(note => 
+        note.id === editingNoteId 
+          ? { ...note, content: editingText.trim(), timestamp: new Date().toISOString() }
+          : note
+      ))
+      setEditingNoteId(null)
+      setEditingText('')
+    }
+  }
+
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setEditingNoteId(null)
+    setEditingText('')
+  }
+
+  // Delete note function
+  const handleDeleteNote = (noteId) => {
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      setSavedNotes(prev => prev.filter(note => note.id !== noteId))
     }
   }
 
@@ -821,13 +858,58 @@ export const EditorDashboardView = () => {
               ) : (
                 savedNotes.map(note => (
                   <div key={note.id} className="editor-note-item">
-                    <div className="editor-note-content">{note.content}</div>
-                    <div className="editor-note-meta">
-                      <span className="editor-note-user">{note.user}</span>
-                      <span className="editor-note-date">
-                        {new Date(note.timestamp).toLocaleString()}
-                      </span>
-                    </div>
+                    {editingNoteId === note.id ? (
+                      <div className="editor-note-edit">
+                        <textarea
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          className="editor-notes-textarea"
+                          rows="3"
+                          placeholder="Edit your note..."
+                        />
+                        <div className="editor-note-edit-actions">
+                          <button 
+                            className="editor-save-notes-btn"
+                            onClick={handleSaveEdit}
+                            disabled={!editingText.trim()}
+                          >
+                            Save
+                          </button>
+                          <button 
+                            className="editor-cancel-btn"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="editor-note-content">{note.content}</div>
+                        <div className="editor-note-meta">
+                          <span className="editor-note-user">{note.user}</span>
+                          <span className="editor-note-date">
+                            {new Date(note.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="editor-note-actions">
+                          <button 
+                            className="editor-edit-btn"
+                            onClick={() => handleEditNote(note.id)}
+                            title="Edit note"
+                          >
+                            ✏️
+                          </button>
+                          <button 
+                            className="editor-delete-btn"
+                            onClick={() => handleDeleteNote(note.id)}
+                            title="Delete note"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))
               )}

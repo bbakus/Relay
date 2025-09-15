@@ -859,3 +859,78 @@
 .editor-note-date {
   font-style: italic;
 }
+
+/* Note Actions */
+.editor-note-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.editor-note-item:hover .editor-note-actions {
+  opacity: 1;
+}
+
+.editor-edit-btn,
+.editor-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.editor-edit-btn {
+  color: rgba(255, 184, 77, 0.8);
+}
+
+.editor-edit-btn:hover {
+  color: #ffb84d;
+  background: rgba(255, 184, 77, 0.1);
+}
+
+.editor-delete-btn {
+  color: rgba(248, 113, 113, 0.8);
+}
+
+.editor-delete-btn:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+/* Note Edit Mode */
+.editor-note-edit {
+  width: 100%;
+}
+
+.editor-note-edit .editor-notes-textarea {
+  margin-bottom: 8px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.editor-note-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.editor-cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.editor-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
