@@ -8,6 +8,10 @@
   box-sizing: border-box;
   position: relative;
   z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
 }
 
 .notification-container {
@@ -15,8 +19,21 @@
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
+  width: 100%;
+}
+
+.notification-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-label {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* Notification Center Styles */

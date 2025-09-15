@@ -34,15 +34,18 @@ export const NotificationCenter = () => {
 
   return (
     <div className="notification-center">
-      <button 
-        className="notification-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div className="notification-dot"></div>
-        {notifications.length > 0 && (
-          <span className="notification-badge">{notifications.length}</span>
-        )}
-      </button>
+      <div className="notification-bar-content">
+        <span className="notification-label">Notifications</span>
+        <button 
+          className="notification-toggle"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="notification-dot"></div>
+          {notifications.length > 0 && (
+            <span className="notification-badge">{notifications.length}</span>
+          )}
+        </button>
+      </div>
 
       {isOpen && (
         <div className="notification-dropdown">
