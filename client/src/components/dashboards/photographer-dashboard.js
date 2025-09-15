@@ -384,6 +384,18 @@ export const PhotographerDashboardView = () => {
                                                         marginTop: '4px'
                                                     }}>
                                                         {(event.process_point || 'idle')}
+                                                        {event.process_point_updated_by_name && (
+                                                            <span style={{ 
+                                                                fontSize: '0.6rem', 
+                                                                marginLeft: '6px', 
+                                                                opacity: 0.8,
+                                                                fontStyle: 'italic',
+                                                                textTransform: 'none',
+                                                                fontWeight: '400'
+                                                            }}>
+                                                                by {event.process_point_updated_by_name}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             )
@@ -453,6 +465,37 @@ export const PhotographerDashboardView = () => {
                                                         Deadline: {shotRequest.deadline}
                                                     </span>
                                                 )}
+                                            </div>
+
+                                            {/* Process Point Display */}
+                                            <div className="photographer-shot-process" style={{
+                                                marginTop: '8px',
+                                                padding: '6px 8px',
+                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                borderRadius: '4px',
+                                                border: '1px solid rgba(255, 255, 255, 0.1)'
+                                            }}>
+                                                <span style={{
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    color: '#ffffff'
+                                                }}>
+                                                    Process: {(shotRequest.process_point || 'idle')}
+                                                    {shotRequest.process_point_updated_by_name && (
+                                                        <span style={{ 
+                                                            fontSize: '0.65rem', 
+                                                            marginLeft: '6px', 
+                                                            opacity: 0.8,
+                                                            fontStyle: 'italic',
+                                                            textTransform: 'none',
+                                                            fontWeight: '400'
+                                                        }}>
+                                                            by {shotRequest.process_point_updated_by_name}
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
