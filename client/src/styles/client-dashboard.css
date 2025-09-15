@@ -100,13 +100,17 @@
 /* Dashboard Grid */
 .client-dashboard-grid {
     display: grid;
-    grid-template-columns: 300px repeat(2, 1fr);
+    grid-template-columns: 300px 300px repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
     gap: 20px;
     min-height: 600px;
 }
 
 .client-metrics-vertical {
+    grid-row: 1 / -1;
+}
+
+.client-photographer-availability {
     grid-row: 1 / -1;
 }
 
@@ -668,6 +672,13 @@
 .client-dashboard-panel:nth-child(8) { animation-delay: 0.8s; }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .client-dashboard-grid {
+        grid-template-columns: 300px 300px 1fr;
+        grid-template-rows: repeat(3, 1fr);
+    }
+}
+
 @media (max-width: 900px) {
     .client-dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -698,4 +709,113 @@
     .client-form-row {
         flex-direction: column;
     }
+}
+
+/* Photographer Availability Styles */
+.client-photographer-availability {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.client-photographer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.client-photographer-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.client-photographer-card.available {
+    border-left: 4px solid #4ade80;
+    background: rgba(74, 222, 128, 0.05);
+}
+
+.client-photographer-card.busy {
+    border-left: 4px solid #f87171;
+    background: rgba(248, 113, 113, 0.05);
+}
+
+.client-photographer-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.client-photographer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.client-photographer-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.client-photographer-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.client-photographer-status.available {
+    background: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.client-photographer-status.busy {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.client-photographer-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.client-photographer-hours,
+.client-photographer-events {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.client-hours-label,
+.client-events-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.client-hours-value,
+.client-events-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.client-photographer-card.available .client-hours-value {
+    color: #4ade80;
+}
+
+.client-photographer-card.busy .client-hours-value {
+    color: #f87171;
 }

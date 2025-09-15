@@ -13,6 +13,7 @@ export const ClientDashboardView = () => {
     const [events, setEvents] = useState([])
     const [shotRequests, setShotRequests] = useState([])
     const [projects, setProjects] = useState([])
+    const [personnel, setPersonnel] = useState([])
     const [loading, setLoading] = useState(true)
     const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
     
@@ -56,6 +57,7 @@ export const ClientDashboardView = () => {
         fetchEvents()
         fetchShotRequests()
         fetchProjects()
+        fetchPersonnel()
     }, [])
 
     const fetchEvents = async () => {
@@ -93,6 +95,18 @@ export const ClientDashboardView = () => {
         } catch (error) {
             console.error('Error fetching projects:', error)
             setLoading(false)
+        }
+    }
+
+    const fetchPersonnel = async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
+            if (response.ok) {
+                const data = await response.json()
+                setPersonnel(data)
+            }
+        } catch (error) {
+            console.error('Error fetching personnel:', error)
         }
     }
 
@@ -279,12 +293,15 @@ export const ClientDashboardView = () => {
         }
     }, [projectEvents, selectedDate])
 
-    // Project completion percentage
+    // Project completion percentage (filtered by selected date)
     const projectCompletion = useMemo(() => {
-        if (!projectEvents.length) return 0
-        const deliveredCount = projectEvents.filter(e => e.process_point === 'delivered').length
-        return Math.round((deliveredCount / projectEvents.length) * 100)
-    }, [projectEvents])
+        const eventsToFilter = selectedDate 
+            ? projectEvents.filter(e => e.date === selectedDate)
+            : projectEvents
+        if (!eventsToFilter.length) return 0
+        const deliveredCount = eventsToFilter.filter(e => e.process_point === 'delivered').length
+        return Math.round((deliveredCount / eventsToFilter.length) * 100)
+    }, [projectEvents, selectedDate])
 
     // Shot request completion percentage
     const shotRequestCompletion = useMemo(() => {
@@ -292,6 +309,55 @@ export const ClientDashboardView = () => {
         const deliveredShotRequests = shotRequests.filter(sr => sr.process_point?.toLowerCase() === 'delivered')
         return Math.round((deliveredShotRequests.length / shotRequests.length) * 100)
     }, [shotRequests])
+
+    // Photographer availability calculation
+    const photographerAvailability = useMemo(() => {
+        if (!personnel.length || !events.length) return []
+        
+        const targetDate = selectedDate || new Date().toISOString().split('T')[0]
+        
+        return personnel
+            .filter(person => person.role === 'photographer')
+            .map(photographer => {
+                // Get events assigned to this photographer on the target date
+                const assignedEvents = events.filter(event => 
+                    event.date === targetDate && 
+                    event.photographer_ids && 
+                    event.photographer_ids.includes(photographer.id)
+                )
+                
+                // Calculate total hours worked
+                const totalHours = assignedEvents.reduce((total, event) => {
+                    if (!event.start_time || !event.end_time) return total
+                    
+                    const startTime = new Date(`${event.date}T${event.start_time}`)
+                    const endTime = new Date(`${event.date}T${event.end_time}`)
+                    const hours = (endTime - startTime) / (1000 * 60 * 60)
+                    
+                    return total + hours
+                }, 0)
+                
+                // Determine availability status
+                const isAvailable = totalHours < 8
+                const status = isAvailable ? 'available' : 'busy'
+                const hoursRemaining = Math.max(0, 8 - totalHours)
+                
+                return {
+                    ...photographer,
+                    totalHours: Math.round(totalHours * 10) / 10, // Round to 1 decimal
+                    hoursRemaining: Math.round(hoursRemaining * 10) / 10,
+                    status,
+                    assignedEvents: assignedEvents.length
+                }
+            })
+            .sort((a, b) => {
+                // Sort by availability first, then by hours remaining
+                if (a.status !== b.status) {
+                    return a.status === 'available' ? -1 : 1
+                }
+                return b.hoursRemaining - a.hoursRemaining
+            })
+    }, [personnel, events, selectedDate])
 
     // Events progress percentage (completed vs total events)
     const eventsProgress = useMemo(() => {
@@ -508,7 +574,42 @@ export const ClientDashboardView = () => {
                     </div>
                 </div>
 
-                {/* 2. Current Events */}
+                {/* 2. Photographer Availability */}
+                <div className="client-dashboard-panel client-photographer-availability">
+                    <h3>Photographer Availability</h3>
+                    <div className="client-photographer-list">
+                        {photographerAvailability.length > 0 ? (
+                            photographerAvailability.map(photographer => (
+                                <div key={photographer.id} className={`client-photographer-card ${photographer.status}`}>
+                                    <div className="client-photographer-header">
+                                        <div className="client-photographer-name">{photographer.name}</div>
+                                        <div className={`client-photographer-status ${photographer.status}`}>
+                                            {photographer.status === 'available' ? 'Available' : 'Busy'}
+                                        </div>
+                                    </div>
+                                    <div className="client-photographer-details">
+                                        <div className="client-photographer-hours">
+                                            <span className="client-hours-label">Hours Worked:</span>
+                                            <span className="client-hours-value">{photographer.totalHours}/8</span>
+                                        </div>
+                                        <div className="client-photographer-hours">
+                                            <span className="client-hours-label">Hours Remaining:</span>
+                                            <span className="client-hours-value">{photographer.hoursRemaining}</span>
+                                        </div>
+                                        <div className="client-photographer-events">
+                                            <span className="client-events-label">Events Assigned:</span>
+                                            <span className="client-events-value">{photographer.assignedEvents}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="client-empty-state">No photographers found</div>
+                        )}
+                    </div>
+                </div>
+
+                {/* 3. Current Events */}
                 <div className="client-dashboard-panel">
                     <h3>Current Events</h3>
                     <div className="client-panel-toggle">
