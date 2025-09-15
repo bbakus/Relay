@@ -18,6 +18,7 @@ export const PhotographerDashboardView = () => {
     const [selectedEvent, setSelectedEvent] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
+    const [searchQuery, setSearchQuery] = useState('')
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -114,11 +115,28 @@ export const PhotographerDashboardView = () => {
             // Check if photographer is assigned to this event
             if (!event.assigned_personnel || !Array.isArray(event.assigned_personnel)) return false
 
-            return event.assigned_personnel.some(person => 
+            const isAssigned = event.assigned_personnel.some(person => 
                 person.personnel_id === currentPhotographer.id
             )
+            if (!isAssigned) return false
+
+            // Apply search filter if search query exists
+            if (searchQuery.trim()) {
+                const query = searchQuery.toLowerCase().trim()
+                const searchableText = [
+                    event.name || '',
+                    event.location || '',
+                    event.notes || '',
+                    event.start_time || '',
+                    event.end_time || ''
+                ].join(' ').toLowerCase()
+                
+                if (!searchableText.includes(query)) return false
+            }
+
+            return true
         })
-    }, [events, currentPhotographer, activeDate])
+    }, [events, currentPhotographer, activeDate, searchQuery])
 
     // Calculate event positions for the schedule grid - USING SAME LOGIC AS SCHEDULE.JS
     const eventsWithPositions = useMemo(() => {
@@ -314,6 +332,33 @@ export const PhotographerDashboardView = () => {
             </div>
 
             <div className="photographer-content-grid">
+                {/* Search Bar */}
+                <div className="photographer-search-section">
+                    <div className="photographer-search-container">
+                        <input
+                            type="text"
+                            placeholder="Search events by name, location, notes, or time..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="photographer-search-input"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="photographer-search-clear"
+                                title="Clear search"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+                    {searchQuery && (
+                        <div className="photographer-search-results">
+                            Found {photographerEvents.length} event{photographerEvents.length !== 1 ? 's' : ''} matching "{searchQuery}"
+                        </div>
+                    )}
+                </div>
+
                 {/* Personal Schedule Section - Using Schedule Grid Layout */}
                 <div className="photographer-schedule-section">
                     <div className="photographer-schedule-grid">

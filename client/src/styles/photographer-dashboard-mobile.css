@@ -20,6 +20,26 @@
     padding-bottom: 15px;
   }
 
+  /* Mobile Search Bar Styles */
+  .photographer-search-section {
+    margin-bottom: 15px;
+    padding: 0 5px;
+  }
+
+  .photographer-search-container {
+    max-width: 100%;
+  }
+
+  .photographer-search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 14px 40px 14px 16px;
+  }
+
+  .photographer-search-results {
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
   .photographer-header h1 {
     font-size: 1.8rem;
     margin-bottom: 8px;
