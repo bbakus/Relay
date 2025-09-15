@@ -18,6 +18,15 @@ export const NotificationProvider = ({ children }) => {
     shotRequests: new Set()
   })
 
+  // Clear all notifications on mount
+  useEffect(() => {
+    setNotifications([])
+    setNewItems({
+      events: new Set(),
+      shotRequests: new Set()
+    })
+  }, [])
+
   // Add notification
   const addNotification = (notification) => {
     const newNotification = {
@@ -56,7 +65,10 @@ export const NotificationProvider = ({ children }) => {
   // Clear all notifications
   const clearNotifications = () => {
     setNotifications([])
-    setNewItems({})
+    setNewItems({
+      events: new Set(),
+      shotRequests: new Set()
+    })
     setLastFetchTime(Date.now())
   }
 

@@ -1,21 +1,13 @@
-/* Notification Section - dedicated space below header */
+/* Notification Section - simple bar between header and content */
 .notification-section {
   background: rgba(15, 21, 34, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 16px 0;
+  padding: 12px 0;
   backdrop-filter: blur(10px);
-  z-index: 2000;
   width: 100%;
   box-sizing: border-box;
-  position: fixed;
-  top: 80px; /* Position below header */
-  left: 0;
-  right: 0;
-}
-
-/* Add padding to page content to account for fixed notification bar */
-.page-container {
-  padding-top: 60px; /* Space for notification bar */
+  position: relative;
+  z-index: 100;
 }
 
 .notification-container {
