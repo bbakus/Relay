@@ -13,6 +13,7 @@ import {
   ArcElement,
 } from 'chart.js'
 import { useAuth } from '../../context/AuthContext'
+import { useNotifications } from '../../context/NotificationContext'
 import { API_CONFIG } from '../../utils/apiConfig'
 import '../../styles/editor-dashboard.css'
 
@@ -31,6 +32,7 @@ ChartJS.register(
 
 export const EditorDashboardView = () => {
   const { user, selectedDate, selectedProjectId } = useAuth()
+  const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications()
   const [shotRequests, setShotRequests] = useState([])
   const [events, setEvents] = useState([])
   const [projects, setProjects] = useState([])
@@ -122,8 +124,13 @@ export const EditorDashboardView = () => {
         if (itemType === 'event') {
           return item.date === selectedDate
         } else if (itemType === 'shotRequest') {
-          // For shot requests, check if they're associated with events on the selected date
-          return item.events && item.events.some(event => event.date === selectedDate)
+          // For shot requests, show those that either:
+          // 1. Are associated with events on the selected date, OR
+          // 2. Have no events (independent shot requests)
+          const hasEventOnSelectedDate = item.events && item.events.length > 0 && 
+            item.events.some(event => event.date === selectedDate)
+          const isIndependent = !item.events || item.events.length === 0
+          return hasEventOnSelectedDate || isIndependent
         }
         return false
       })
@@ -240,6 +247,44 @@ export const EditorDashboardView = () => {
   useEffect(() => {
     fetchDashboardData()
   }, [])
+
+  // Detect new items and send notifications
+  useEffect(() => {
+    if (events.length > 0) {
+      const newEvents = events.filter(event => {
+        const eventTime = new Date(event.created_at || event.date).getTime()
+        return eventTime > lastFetchTime
+      })
+      
+      newEvents.forEach(event => {
+        markAsNew('events', event.id)
+        addNotification({
+          type: 'event',
+          title: 'New Event Added',
+          message: `"${event.name}" has been added to the schedule`
+        })
+      })
+    }
+
+    if (shotRequests.length > 0) {
+      const newShotRequests = shotRequests.filter(sr => {
+        const srTime = new Date(sr.created_at || sr.deadline).getTime()
+        return srTime > lastFetchTime
+      })
+      
+      newShotRequests.forEach(sr => {
+        markAsNew('shotRequests', sr.id)
+        addNotification({
+          type: 'shotRequest',
+          title: 'New Shot Request Added',
+          message: `"${sr.request}" has been added to the requests`
+        })
+      })
+    }
+
+    // Update last fetch time
+    setLastFetchTime(Date.now())
+  }, [events, shotRequests, lastFetchTime, addNotification, markAsNew, setLastFetchTime])
 
   const fetchDashboardData = async () => {
     try {
@@ -446,11 +491,14 @@ export const EditorDashboardView = () => {
         if (item.project_id) {
           return item.project_id === parseInt(selectedProjectId)
         }
-        // For shot requests, check if they're associated with events in the selected project
+        // For shot requests, show those that either:
+        // 1. Are associated with events in the selected project, OR
+        // 2. Have no events (independent shot requests)
         if (item.events && item.events.length > 0) {
           return item.events.some(event => event.project_id === parseInt(selectedProjectId))
         }
-        return false
+        // Independent shot requests (no events) should be shown
+        return true
       })
     }
 
@@ -593,7 +641,10 @@ export const EditorDashboardView = () => {
                         <div className="editor-card-header" onClick={() => toggleEventExpanded(event.id)}>
                           <div className="editor-card-title-row">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
-                            <span className="editor-event-name">{event.name}</span>
+                            <span className="editor-event-name">
+                              {event.name}
+                              {isNew('events', event.id) && <span className="new-badge">NEW</span>}
+                            </span>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                           <div className="editor-card-details-row">
@@ -675,7 +726,10 @@ export const EditorDashboardView = () => {
                         <div className="editor-card-header" onClick={() => toggleShotRequestExpanded(shotRequest.id)}>
                           <div className="editor-card-title-row">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
-                            <span className="editor-event-name">{shotRequest.request}</span>
+                            <span className="editor-event-name">
+                              {shotRequest.request}
+                              {isNew('shotRequests', shotRequest.id) && <span className="new-badge">NEW</span>}
+                            </span>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                           <div className="editor-card-details-row">

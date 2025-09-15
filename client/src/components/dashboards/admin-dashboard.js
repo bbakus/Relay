@@ -307,11 +307,15 @@ export const AdminDashboardView = () => {
       
       if (!hasProjectEvent) return false
       
-      // If global date is selected, only include shot requests with events on that date
+      // If global date is selected, include shot requests that either:
+      // 1. Have events on that date in the selected project, OR
+      // 2. Have no events (independent shot requests)
       if (selectedDate) {
-        return sr.events && sr.events.some(event => 
+        const hasEventOnSelectedDate = sr.events && sr.events.some(event => 
           event.project_id === parseInt(selectedProjectId) && event.date === selectedDate
         )
+        const isIndependent = !sr.events || sr.events.length === 0
+        return hasEventOnSelectedDate || isIndependent
       }
       
       return hasProjectEvent
@@ -898,7 +902,9 @@ export const AdminDashboardView = () => {
                       <div key={sr.id} className="shot-request-item">
                         <div className="shot-request-info">
                           <span className="shot-request-name">{sr.request}</span>
-                          <span className="shot-request-event">{event?.name || 'Unknown Event'}</span>
+                          <span className="shot-request-event">
+                            {event?.name || 'Independent Shot Request'}
+                          </span>
                         </div>
                         <span 
                           className="shot-request-process-point delivered"

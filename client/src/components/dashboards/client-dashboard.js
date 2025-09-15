@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
+import { useNotifications } from '../../context/NotificationContext'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js'
 import { Line, Pie } from 'react-chartjs-2'
 import { formatDateForHeader } from '../../utils/dateUtils'
@@ -10,6 +11,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export const ClientDashboardView = () => {
     const { user, selectedDate, selectedProjectId } = useAuth()
+    const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications()
     const [events, setEvents] = useState([])
     const [shotRequests, setShotRequests] = useState([])
     const [projects, setProjects] = useState([])
@@ -59,6 +61,44 @@ export const ClientDashboardView = () => {
         fetchProjects()
         fetchPersonnel()
     }, [])
+
+    // Detect new items and send notifications
+    useEffect(() => {
+        if (events.length > 0) {
+            const newEvents = events.filter(event => {
+                const eventTime = new Date(event.created_at || event.date).getTime()
+                return eventTime > lastFetchTime
+            })
+            
+            newEvents.forEach(event => {
+                markAsNew('events', event.id)
+                addNotification({
+                    type: 'event',
+                    title: 'New Event Added',
+                    message: `"${event.name}" has been added to the schedule`
+                })
+            })
+        }
+
+        if (shotRequests.length > 0) {
+            const newShotRequests = shotRequests.filter(sr => {
+                const srTime = new Date(sr.created_at || sr.deadline).getTime()
+                return srTime > lastFetchTime
+            })
+            
+            newShotRequests.forEach(sr => {
+                markAsNew('shotRequests', sr.id)
+                addNotification({
+                    type: 'shotRequest',
+                    title: 'New Shot Request Added',
+                    message: `"${sr.request}" has been added to the requests`
+                })
+            })
+        }
+
+        // Update last fetch time
+        setLastFetchTime(Date.now())
+    }, [events, shotRequests, lastFetchTime, addNotification, markAsNew, setLastFetchTime])
 
     const fetchEvents = async () => {
         try {
@@ -255,10 +295,14 @@ export const ClientDashboardView = () => {
         return shotRequests.filter(sr => {
             const isDelivered = sr.process_point?.toLowerCase() === 'delivered'
             
-            // If global date is selected, only show shot requests associated with events on that date
-            if (selectedDate && sr.events && sr.events.length > 0) {
-                const hasEventOnSelectedDate = sr.events.some(event => event.date === selectedDate)
-                return isDelivered && hasEventOnSelectedDate
+            // If global date is selected, show shot requests that either:
+            // 1. Are associated with events on that date, OR
+            // 2. Have no events (independent shot requests)
+            if (selectedDate) {
+                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                    sr.events.some(event => event.date === selectedDate)
+                const isIndependent = !sr.events || sr.events.length === 0
+                return isDelivered && (hasEventOnSelectedDate || isIndependent)
             }
             
             return isDelivered
@@ -670,7 +714,10 @@ export const ClientDashboardView = () => {
                                 return (
                                     <div key={event.id} className="client-event-card live" style={{ backgroundColor: '#31353d', borderLeft: `4px solid ${statusColor}` }}>
                                         <div className="client-event-name" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span>{event.name}</span>
+                                            <span>
+                                                {event.name}
+                                                {isNew('events', event.id) && <span className="new-badge">NEW</span>}
+                                            </span>
                                             <span className="event-status-badge" style={{ color: statusColor, borderColor: statusColor }}>
                                                 {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
                                             </span>
@@ -687,7 +734,10 @@ export const ClientDashboardView = () => {
                                 return (
                                     <div key={event.id} className="client-event-card upcoming" style={{ backgroundColor: '#31353d', borderLeft: `4px solid ${statusColor}` }}>
                                         <div className="client-event-name" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span>{event.name}</span>
+                                            <span>
+                                                {event.name}
+                                                {isNew('events', event.id) && <span className="new-badge">NEW</span>}
+                                            </span>
                                             <span className="event-status-badge" style={{ color: statusColor, borderColor: statusColor }}>
                                                 {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
                                             </span>
@@ -798,7 +848,10 @@ export const ClientDashboardView = () => {
                         {deliveredToggle === 'events' ? (
                             deliveredEvents.length ? deliveredEvents.map(event => (
                                 <div key={event.id} className="client-event-card delivered">
-                                    <div className="client-event-name">{event.name}</div>
+                                    <div className="client-event-name">
+                                        {event.name}
+                                        {isNew('events', event.id) && <span className="new-badge">NEW</span>}
+                                    </div>
                                     <div className="client-event-date">{formatDateForHeader(event.date)}</div>
                                     <div className="client-delivery-badge">✓ Delivered</div>
                                 </div>
@@ -806,7 +859,10 @@ export const ClientDashboardView = () => {
                         ) : (
                             deliveredShotRequests.length ? deliveredShotRequests.map(request => (
                                 <div key={request.id} className="client-shot-request-card" style={{ borderLeftColor: getProcessPointColor('delivered') }}>
-                                    <div className="client-request-text">{request.request}</div>
+                                    <div className="client-request-text">
+                                        {request.request}
+                                        {isNew('shotRequests', request.id) && <span className="new-badge">NEW</span>}
+                                    </div>
                                     <div className="client-request-status" style={{ color: getProcessPointColor('delivered') }}>Delivered</div>
                                     {request.deadline && (
                                         <div className="client-request-deadline">Deadline: {request.deadline}</div>

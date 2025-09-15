@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../../utils/apiConfig'
 import { useAuth } from '../../context/AuthContext'
+import { useNotifications } from '../../context/NotificationContext'
 import { formatDateForHeader } from '../../utils/dateUtils'
 import '../../styles/photographer-dashboard.css'
 import '../../styles/photographer-dashboard-mobile.css'
 
 export const PhotographerDashboardView = () => {
     const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
+    const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications()
 
     // State management
     const [events, setEvents] = useState([])
@@ -164,15 +166,19 @@ export const PhotographerDashboardView = () => {
         .sort((a, b) => a.position.height - b.position.height) // Sort by height - shorter events first for z-index priority
     }, [photographerEvents])
 
-    // Filter shot requests for photographer's assigned events
+    // Filter shot requests for photographer's assigned events OR independent shot requests
     const photographerShotRequests = useMemo(() => {
         if (!currentPhotographer || !shotRequests.length) return []
 
         const photographerEventIds = new Set(photographerEvents.map(event => event.id))
 
         return shotRequests.filter(sr => {
-            // Check if shot request has events assigned to this photographer
-            if (!sr.events || !Array.isArray(sr.events)) return false
+            // Show shot requests that either:
+            // 1. Have events assigned to this photographer, OR
+            // 2. Have no events (independent shot requests)
+            if (!sr.events || !Array.isArray(sr.events) || sr.events.length === 0) {
+                return true // Independent shot requests
+            }
 
             return sr.events.some(event => photographerEventIds.has(event.id))
         })
@@ -417,14 +423,17 @@ export const PhotographerDashboardView = () => {
                     <div className="photographer-shot-requests-list">
                         {photographerShotRequests.length === 0 ? (
                             <div className="photographer-no-shots">
-                                <p>No shot requests assigned to your events</p>
+                                <p>No shot requests available</p>
                             </div>
                         ) : (
                             photographerShotRequests.map(shotRequest => {
-                                // Get the event status from the associated event
+                                // Get the event status from the associated event (if any)
                                 const associatedEvent = shotRequest.events && shotRequest.events.length > 0 
                                     ? shotRequest.events.find(event => photographerEvents.some(pe => pe.id === event.id))
                                     : null
+                                
+                                // For independent shot requests, use the shot request's own deadline
+                                const isIndependent = !shotRequest.events || shotRequest.events.length === 0
                                 
                                 const eventStatus = associatedEvent ? getEventStatus(associatedEvent) : 'scheduled'
                                 const statusColor = getStatusColor(eventStatus)
@@ -466,6 +475,25 @@ export const PhotographerDashboardView = () => {
                                                     </span>
                                                 )}
                                             </div>
+
+                                            {/* Event Association Display */}
+                                            {isIndependent && (
+                                                <div style={{
+                                                    marginTop: '8px',
+                                                    padding: '4px 8px',
+                                                    backgroundColor: 'rgba(255, 184, 77, 0.1)',
+                                                    borderRadius: '4px',
+                                                    border: '1px solid rgba(255, 184, 77, 0.3)'
+                                                }}>
+                                                    <span style={{
+                                                        fontSize: '0.75rem',
+                                                        color: '#ffb84d',
+                                                        fontWeight: '500'
+                                                    }}>
+                                                        📸 Independent Shot Request
+                                                    </span>
+                                                </div>
+                                            )}
 
                                             {/* Process Point Display */}
                                             <div className="photographer-shot-process" style={{
