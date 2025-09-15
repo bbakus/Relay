@@ -60,9 +60,15 @@ export const ClientDashboardView = () => {
 
     // Detect new items and send notifications (only for truly new items)
     useEffect(() => {
-        // Only run this after initial data load
+        // Only run this after initial data load and only once per session
         if (lastFetchTime === 0) {
             setLastFetchTime(Date.now())
+            return
+        }
+
+        // Only check for new items if we have data and it's been more than 1 minute since last check
+        const timeSinceLastCheck = Date.now() - lastFetchTime
+        if (timeSinceLastCheck < 60000) { // 1 minute
             return
         }
 

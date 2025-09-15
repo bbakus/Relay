@@ -56,6 +56,8 @@ export const NotificationProvider = ({ children }) => {
   // Clear all notifications
   const clearNotifications = () => {
     setNotifications([])
+    setNewItems({})
+    setLastFetchTime(Date.now())
   }
 
   // Remove notification

@@ -1,4 +1,4 @@
-/* Notification Section - dedicated space like pending access requests */
+/* Notification Section - dedicated space below header */
 .notification-section {
   background: rgba(15, 21, 34, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -7,7 +7,15 @@
   z-index: 2000;
   width: 100%;
   box-sizing: border-box;
-  position: relative;
+  position: fixed;
+  top: 80px; /* Position below header */
+  left: 0;
+  right: 0;
+}
+
+/* Add padding to page content to account for fixed notification bar */
+.page-container {
+  padding-top: 60px; /* Space for notification bar */
 }
 
 .notification-container {

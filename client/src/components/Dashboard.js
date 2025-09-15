@@ -76,8 +76,11 @@ export const Dashboard = () => {
   }, [user])
 
   return (
-    <div className='page-container'>
-      <Nav />
+    <>
+      <div className='page-container'>
+        <Nav />
+        <View />
+      </div>
       {user?.access?.toLowerCase() !== 'client' && (
         <div className="notification-section">
           <div className="notification-container">
@@ -85,7 +88,6 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-      <View />
-    </div>
+    </>
   )
 }

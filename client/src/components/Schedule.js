@@ -672,16 +672,10 @@ export const Schedule = () => {
     }
 
     return (
-        <div className='page-container'>
-            <Nav />
-            {user?.access?.toLowerCase() !== 'client' && (
-                <div className="notification-section">
-                    <div className="notification-container">
-                        <NotificationCenter />
-                    </div>
-                </div>
-            )}
-            <div className='view-container'>
+        <>
+            <div className='page-container'>
+                <Nav />
+                <div className='view-container'>
                 <div className='schedule-container'>
                     <div className='schedule-header'>
                         <h1>Schedule</h1>
@@ -1190,8 +1184,16 @@ export const Schedule = () => {
                     </div>
                 </div>
             )}
+                </div>
             </div>
-        </div>
+            {user?.access?.toLowerCase() !== 'client' && (
+                <div className="notification-section">
+                    <div className="notification-container">
+                        <NotificationCenter />
+                    </div>
+                </div>
+            )}
+        </>
     )
 }
 
