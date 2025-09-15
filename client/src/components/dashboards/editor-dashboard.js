@@ -159,18 +159,40 @@ export const EditorDashboardView = () => {
     return filteredItems
   }
 
-  // Get live status for events (matching Events.js)
+  // Date parsing functions (matching Events.js exactly)
+  const parseDateLocal = (dateStr) => {
+    const [year, month, day] = (dateStr || '').split('-').map(Number)
+    if (!year || !month || !day) return null
+    return new Date(year, month - 1, day)
+  }
+
+  const parseDateTimeLocal = (dateStr, timeStr) => {
+    const [year, month, day] = (dateStr || '').split('-').map(Number)
+    const [hour = 0, minute = 0, second = 0] = (timeStr || '').split(':').map(Number)
+    if (!year || !month || !day) return null
+    return new Date(year, month - 1, day, hour, minute, second)
+  }
+
+  // Get live status for events (matching Events.js exactly)
   const getEventStatus = (event) => {
-    void currentTimeTick // Force recalculation for real-time status
-    
     if (!event.date || !event.start_time || !event.end_time) return 'scheduled'
     
+    void currentTimeTick // Force recalculation on tick
     const now = new Date()
-    const eventDate = new Date(event.date)
-    const startTime = new Date(`${event.date}T${event.start_time}`)
-    const endTime = new Date(`${event.date}T${event.end_time}`)
+    const eventDate = parseDateLocal(event.date)
+    const startTime = parseDateTimeLocal(event.date, event.start_time)
+    const endTime = parseDateTimeLocal(event.date, event.end_time)
+    
+    // Debug logging
+    console.log(`EVENT STATUS DEBUG for ${event.name}:`)
+    console.log(`  Event date: ${event.date}, start: ${event.start_time}, end: ${event.end_time}`)
+    console.log(`  Now: ${now.toISOString()}`)
+    console.log(`  Event date: ${eventDate?.toISOString()}`)
+    console.log(`  Start time: ${startTime?.toISOString()}`)
+    console.log(`  End time: ${endTime?.toISOString()}`)
     
     const isToday = now.toDateString() === eventDate.toDateString()
+    console.log(`  Is today: ${isToday}`)
     
     if (!isToday) {
       if (now < startTime) return 'scheduled'
@@ -181,13 +203,19 @@ export const EditorDashboardView = () => {
       const timeUntilStart = startTime - now
       const timeUntilEnd = endTime - now
       
+      console.log(`  Time until start: ${timeUntilStart}ms (${Math.round(timeUntilStart / 60000)} minutes)`)
+      console.log(`  Time until end: ${timeUntilEnd}ms (${Math.round(timeUntilEnd / 60000)} minutes)`)
+      
       if (timeUntilStart > 0) {
         if (timeUntilStart <= 15 * 60 * 1000) return 'starting-soon' // 15 minutes
         if (timeUntilStart <= 60 * 60 * 1000) return 'upcoming' // 1 hour
         return 'scheduled'
       }
       
-      if (timeUntilEnd > 0) return 'ongoing'
+      if (timeUntilEnd > 0) {
+        console.log(`  RETURNING: ongoing`)
+        return 'ongoing'
+      }
       return 'done'
     }
     
