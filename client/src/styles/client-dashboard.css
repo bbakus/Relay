@@ -659,17 +659,17 @@
 }
 
 .client-dashboard-panel {
-    animation: fadeInUp 0.3s ease-out forwards;
+    animation: fadeInUp 0.2s ease-out forwards;
 }
 
-.client-dashboard-panel:nth-child(1) { animation-delay: 0.05s; }
-.client-dashboard-panel:nth-child(2) { animation-delay: 0.1s; }
-.client-dashboard-panel:nth-child(3) { animation-delay: 0.15s; }
-.client-dashboard-panel:nth-child(4) { animation-delay: 0.2s; }
-.client-dashboard-panel:nth-child(5) { animation-delay: 0.25s; }
-.client-dashboard-panel:nth-child(6) { animation-delay: 0.3s; }
-.client-dashboard-panel:nth-child(7) { animation-delay: 0.35s; }
-.client-dashboard-panel:nth-child(8) { animation-delay: 0.4s; }
+.client-dashboard-panel:nth-child(1) { animation-delay: 0.02s; }
+.client-dashboard-panel:nth-child(2) { animation-delay: 0.04s; }
+.client-dashboard-panel:nth-child(3) { animation-delay: 0.06s; }
+.client-dashboard-panel:nth-child(4) { animation-delay: 0.08s; }
+.client-dashboard-panel:nth-child(5) { animation-delay: 0.1s; }
+.client-dashboard-panel:nth-child(6) { animation-delay: 0.12s; }
+.client-dashboard-panel:nth-child(7) { animation-delay: 0.14s; }
+.client-dashboard-panel:nth-child(8) { animation-delay: 0.16s; }
 
 /* Responsive Design */
 @media (max-width: 1200px) {

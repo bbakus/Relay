@@ -3,10 +3,8 @@ import { API_CONFIG } from '../utils/apiConfig'
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuth } from '../context/AuthContext'
 import { formatDateDisplay } from '../utils/dateUtils'
-import { NotificationCenter } from './NotificationCenter'
 import '../styles/nav.css'
 import '../styles/mobile-nav.css'
-import '../styles/notification-center.css'
 
 export const Nav = () => {
   const { user, setUser, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId, setGlobalCompany, setGlobalOrganization, setGlobalProject, setGlobalDate } = useAuth()
