@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
-import { NotificationCenter } from './NotificationCenter'
+// import { NotificationCenter } from './NotificationCenter' // Temporarily disabled
 import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/schedule.css'
 import '../styles/schedule-mobile.css'
@@ -187,6 +187,11 @@ export const Schedule = () => {
             case 'delivered': return {
                 backgroundColor: 'rgba(34, 197, 94, 0.15)',
                 borderColor: 'rgba(34, 197, 94, 1)'
+            }
+            case 'null': return {
+                backgroundColor: 'rgba(75, 85, 99, 0.1)',
+                borderColor: 'rgba(75, 85, 99, 0.3)',
+                opacity: 0.5
             }
             default: return {
                 backgroundColor: 'rgba(107, 114, 128, 0.15)',
@@ -674,13 +679,7 @@ export const Schedule = () => {
     return (
         <div className='page-container'>
             <Nav />
-            {user?.access?.toLowerCase() !== 'client' && (
-                <div className="notification-section">
-                    <div className="notification-container">
-                        <NotificationCenter />
-                    </div>
-                </div>
-            )}
+            {/* Notification system temporarily disabled to fix performance issues */}
             <div className='view-container'>
                 <div className='schedule-container'>
                     <div className='schedule-header'>
@@ -915,6 +914,7 @@ export const Schedule = () => {
                                     <option value="cull">Cull</option>
                                     <option value="color">Color</option>
                                     <option value="delivered">Delivered</option>
+                                    <option value="null">Not Shot</option>
                                 </select>
                             </div>
 

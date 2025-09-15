@@ -11,6 +11,17 @@
   overflow-x: hidden;
 }
 
+/* Grey out events with null process point */
+.admin-event-item.process-null {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+}
+
+.admin-event-item.process-null .admin-event-name,
+.admin-event-item.process-null .admin-event-detail-value {
+  color: #9ca3af !important;
+}
+
 /* Header */
 .dashboard-header {
   display: flex;

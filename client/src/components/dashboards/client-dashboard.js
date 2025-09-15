@@ -58,62 +58,8 @@ export const ClientDashboardView = () => {
         fetchPersonnel()
     }, [])
 
-    // Detect new items and send notifications (only for truly new items)
-    useEffect(() => {
-        // Only run this after initial data load and only once per session
-        if (lastFetchTime === 0) {
-            setLastFetchTime(Date.now())
-            return
-        }
-
-        // Only check for new items if we have data and it's been more than 1 minute since last check
-        const timeSinceLastCheck = Date.now() - lastFetchTime
-        if (timeSinceLastCheck < 60000) { // 1 minute
-            return
-        }
-
-        // Only check for new items if we have data
-        if (events.length > 0) {
-            const newEvents = events.filter(event => {
-                const eventTime = new Date(event.created_at || event.date).getTime()
-                return eventTime > lastFetchTime
-            })
-            
-            if (newEvents.length > 0) {
-                console.log('New events detected:', newEvents.length)
-                newEvents.forEach(event => {
-                    markAsNew('events', event.id)
-                    addNotification({
-                        type: 'event',
-                        title: 'New Event Added',
-                        message: `"${event.name}" has been added to the schedule`
-                    })
-                })
-            }
-        }
-
-        if (shotRequests.length > 0) {
-            const newShotRequests = shotRequests.filter(sr => {
-                const srTime = new Date(sr.created_at || sr.deadline).getTime()
-                return srTime > lastFetchTime
-            })
-            
-            if (newShotRequests.length > 0) {
-                console.log('New shot requests detected:', newShotRequests.length)
-                newShotRequests.forEach(sr => {
-                    markAsNew('shotRequests', sr.id)
-                    addNotification({
-                        type: 'shotRequest',
-                        title: 'New Shot Request Added',
-                        message: `"${sr.request}" has been added to the requests`
-                    })
-                })
-            }
-        }
-
-        // Update last fetch time
-        setLastFetchTime(Date.now())
-    }, [events, shotRequests, lastFetchTime, addNotification, markAsNew, setLastFetchTime])
+    // Notification system temporarily disabled to fix performance issues
+    // TODO: Re-implement with proper throttling and no infinite loops
 
     const fetchEvents = async () => {
         try {
@@ -215,6 +161,7 @@ export const ClientDashboardView = () => {
             case 'cull': return 'rgba(255, 122, 24, 0.9)'
             case 'color': return 'rgba(255, 64, 64, 0.9)'
             case 'delivered': return 'rgba(0, 190, 90, 0.9)'
+            case 'null': return 'rgba(75, 85, 99, 0.3)'
             default: return 'rgba(0, 255, 255, 0.9)'
         }
     }

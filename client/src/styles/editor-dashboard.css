@@ -10,6 +10,18 @@
               linear-gradient(160deg, #0b0f17, #0f1522);
 }
 
+/* Grey out events with null process point */
+.editor-item-card.process-null {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+}
+
+.editor-item-card.process-null .editor-event-name,
+.editor-item-card.process-null .editor-card-details-row,
+.editor-item-card.process-null .editor-card-details {
+  color: #9ca3af !important;
+}
+
 /* Header */
 .editor-dashboard-header {
   display: flex;

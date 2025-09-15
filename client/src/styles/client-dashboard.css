@@ -8,6 +8,17 @@
                 linear-gradient(160deg, #0b0f17, #0f1522);
 }
 
+/* Grey out events with null process point */
+.client-event-item.process-null {
+    opacity: 0.5;
+    filter: grayscale(0.3);
+}
+
+.client-event-item.process-null .client-event-name,
+.client-event-item.process-null .client-event-details {
+    color: #9ca3af !important;
+}
+
 .client-dashboard-header {
     display: flex;
     justify-content: space-between;

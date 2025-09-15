@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { API_CONFIG } from '../utils/apiConfig'
 import { useParams } from "react-router-dom";
 import { Nav } from "./Nav";
-import { NotificationCenter } from "./NotificationCenter";
+// import { NotificationCenter } from "./NotificationCenter"; // Temporarily disabled
 import { useAuth } from '../context/AuthContext'
 import { AdminDashboardView } from "./dashboards/admin-dashboard";
 import { ClientDashboardView } from "./dashboards/client-dashboard";
@@ -78,13 +78,7 @@ export const Dashboard = () => {
   return (
     <div className='page-container'>
       <Nav />
-      {user?.access?.toLowerCase() !== 'client' && (
-        <div className="notification-section">
-          <div className="notification-container">
-            <NotificationCenter />
-          </div>
-        </div>
-      )}
+      {/* Notification system temporarily disabled to fix performance issues */}
       <View />
     </div>
   )

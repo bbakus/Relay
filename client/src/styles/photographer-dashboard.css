@@ -11,6 +11,18 @@
     min-height: 100vh;
 }
 
+/* Grey out events with null process point */
+.photographer-dashboard-event-card.process-null {
+    opacity: 0.5;
+    filter: grayscale(0.3);
+}
+
+.photographer-dashboard-event-card.process-null .photographer-event-name,
+.photographer-dashboard-event-card.process-null .photographer-event-time,
+.photographer-dashboard-event-card.process-null .photographer-event-location {
+    color: #9ca3af !important;
+}
+
 /* Header Section */
 .photographer-header {
     display: flex;

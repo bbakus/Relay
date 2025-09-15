@@ -13,7 +13,7 @@ import {
   ArcElement,
 } from 'chart.js'
 import { useAuth } from '../../context/AuthContext'
-import { useNotifications } from '../../context/NotificationContext'
+// import { useNotifications } from '../../context/NotificationContext' // Temporarily disabled
 import { API_CONFIG } from '../../utils/apiConfig'
 import '../../styles/editor-dashboard.css'
 
@@ -32,7 +32,7 @@ ChartJS.register(
 
 export const EditorDashboardView = () => {
   const { user, selectedDate, selectedProjectId } = useAuth()
-  const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications()
+  // const { addNotification, markAsNew, isNew, lastFetchTime, setLastFetchTime } = useNotifications() // Temporarily disabled
   const [shotRequests, setShotRequests] = useState([])
   const [events, setEvents] = useState([])
   const [projects, setProjects] = useState([])
@@ -54,7 +54,7 @@ export const EditorDashboardView = () => {
   }, [])
 
   // Process point options for global use
-  const processPoints = ['idle', 'ingest', 'cull', 'color', 'delivered']
+  const processPoints = ['idle', 'ingest', 'cull', 'color', 'delivered', 'null']
 
   // Process point colors (global variables)
   const getProcessPointColor = (processPoint) => {
@@ -83,6 +83,12 @@ export const EditorDashboardView = () => {
         backgroundColor: 'rgba(34, 197, 94, 0.15)',
         borderColor: 'rgba(34, 197, 94, 1)',
         chartColor: 'rgba(34, 197, 94, 0.8)'
+      }
+      case 'null': return {
+        backgroundColor: 'rgba(75, 85, 99, 0.1)',
+        borderColor: 'rgba(75, 85, 99, 0.3)',
+        chartColor: 'rgba(75, 85, 99, 0.3)',
+        opacity: 0.5
       }
       default: return {
         backgroundColor: 'rgba(107, 114, 128, 0.15)',
@@ -250,56 +256,8 @@ export const EditorDashboardView = () => {
     fetchDashboardData()
   }, [])
 
-    // Detect new items and send notifications (only for truly new items)
-    useEffect(() => {
-        // Only run this after initial data load
-        if (lastFetchTime === 0) {
-            setLastFetchTime(Date.now())
-            return
-        }
-
-        // Only check for new items if we have data
-        if (events.length > 0) {
-            const newEvents = events.filter(event => {
-                const eventTime = new Date(event.created_at || event.date).getTime()
-                return eventTime > lastFetchTime
-            })
-            
-            if (newEvents.length > 0) {
-                console.log('New events detected:', newEvents.length)
-                newEvents.forEach(event => {
-                    markAsNew('events', event.id)
-                    addNotification({
-                        type: 'event',
-                        title: 'New Event Added',
-                        message: `"${event.name}" has been added to the schedule`
-                    })
-                })
-            }
-        }
-
-        if (shotRequests.length > 0) {
-            const newShotRequests = shotRequests.filter(sr => {
-                const srTime = new Date(sr.created_at || sr.deadline).getTime()
-                return srTime > lastFetchTime
-            })
-            
-            if (newShotRequests.length > 0) {
-                console.log('New shot requests detected:', newShotRequests.length)
-                newShotRequests.forEach(sr => {
-                    markAsNew('shotRequests', sr.id)
-                    addNotification({
-                        type: 'shotRequest',
-                        title: 'New Shot Request Added',
-                        message: `"${sr.request}" has been added to the requests`
-                    })
-                })
-            }
-        }
-
-        // Update last fetch time
-        setLastFetchTime(Date.now())
-    }, [events, shotRequests, lastFetchTime, addNotification, markAsNew, setLastFetchTime])
+    // Notification system temporarily disabled to fix performance issues
+    // TODO: Re-implement with proper throttling and no infinite loops
 
   const fetchDashboardData = async () => {
     try {
@@ -684,7 +642,7 @@ export const EditorDashboardView = () => {
                     const isExpanded = expandedEvents.has(event.id)
                     
                     return (
-                      <div key={event.id} className="editor-item-card" style={{ 
+                      <div key={event.id} className={`editor-item-card ${event.process_point === 'null' ? 'process-null' : ''}`} style={{ 
                         borderLeftColor: processColor.borderColor,
                         backgroundColor: processColor.backgroundColor 
                       }}>
@@ -769,7 +727,7 @@ export const EditorDashboardView = () => {
                     const isExpanded = expandedShotRequests.has(shotRequest.id)
                     
                     return (
-                      <div key={shotRequest.id} className="editor-item-card" style={{ 
+                      <div key={shotRequest.id} className={`editor-item-card ${shotRequest.process_point === 'null' ? 'process-null' : ''}`} style={{ 
                         borderLeftColor: processColor.borderColor,
                         backgroundColor: processColor.backgroundColor 
                       }}>

@@ -594,6 +594,7 @@ export const AdminDashboardView = () => {
       case 'cull': return 'rgba(255, 122, 24, 0.9)'
       case 'color': return 'rgba(255, 64, 64, 0.9)'
       case 'delivered': return 'rgba(0, 190, 90, 0.9)'
+      case 'null': return 'rgba(75, 85, 99, 0.3)'
       default: return 'rgba(0, 255, 255, 0.9)'
     }
   }
