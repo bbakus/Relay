@@ -326,45 +326,25 @@ export const ClientDashboardView = () => {
         const targetDate = selectedDate || new Date().toISOString().split('T')[0]
         console.log('Target date for calculations:', targetDate)
         
-        const photographers = personnel.filter(person => person.role === 'photographer')
+        // Check what roles exist in the data
+        const allRoles = [...new Set(personnel.map(p => p.role))]
+        console.log('All available roles in personnel data:', allRoles)
+        
+        // Try different possible role values for photographers
+        const photographers = personnel.filter(person => {
+            const role = person.role?.toLowerCase() || ''
+            return role === 'photographer' || 
+                   role.includes('photographer') ||
+                   role.includes('photo') ||
+                   role === 'camera' ||
+                   role === 'shooter'
+        })
         console.log('Filtered photographers:', photographers)
         
-        // If no photographers found, show all personnel for debugging
+        // If no photographers found, return empty array
         if (photographers.length === 0) {
-            console.log('No photographers found, showing all personnel roles:', personnel.map(p => ({ name: p.name, role: p.role })))
-            // For now, let's show all personnel to debug the role issue
-            return personnel.map(person => {
-                const assignedEvents = events.filter(event => 
-                    event.date === targetDate && 
-                    event.photographer_ids && 
-                    event.photographer_ids.includes(person.id)
-                )
-                
-                const totalHours = assignedEvents.reduce((total, event) => {
-                    if (!event.start_time || !event.end_time) return total
-                    const startTime = new Date(`${event.date}T${event.start_time}`)
-                    const endTime = new Date(`${event.date}T${event.end_time}`)
-                    const hours = (endTime - startTime) / (1000 * 60 * 60)
-                    return total + hours
-                }, 0)
-                
-                const isAvailable = totalHours < 8
-                const status = isAvailable ? 'available' : 'busy'
-                const hoursRemaining = Math.max(0, 8 - totalHours)
-                
-                return {
-                    ...person,
-                    totalHours: Math.round(totalHours * 10) / 10,
-                    hoursRemaining: Math.round(hoursRemaining * 10) / 10,
-                    status,
-                    assignedEvents: assignedEvents.length
-                }
-            }).sort((a, b) => {
-                if (a.status !== b.status) {
-                    return a.status === 'available' ? -1 : 1
-                }
-                return b.hoursRemaining - a.hoursRemaining
-            })
+            console.log('No photographers found. Available roles:', allRoles)
+            return []
         }
         
         return photographers.map(photographer => {
@@ -638,12 +618,7 @@ export const ClientDashboardView = () => {
                             photographerAvailability.map(photographer => (
                                 <div key={photographer.id} className={`client-photographer-card ${photographer.status}`}>
                                     <div className="client-photographer-header">
-                                        <div className="client-photographer-name">
-                                            {photographer.name}
-                                            <span style={{fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginLeft: '8px'}}>
-                                                ({photographer.role})
-                                            </span>
-                                        </div>
+                                        <div className="client-photographer-name">{photographer.name}</div>
                                         <div className={`client-photographer-status ${photographer.status}`}>
                                             {photographer.status === 'available' ? 'Available' : 'Busy'}
                                         </div>
