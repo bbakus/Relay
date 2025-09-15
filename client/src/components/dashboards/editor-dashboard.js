@@ -441,11 +441,14 @@ export const EditorDashboardView = () => {
     return filteredEvents
   }
 
-  // Calculate project progress for current project only
+  // Calculate project progress for current project and selected date only
   const getProjectProgress = () => {
     if (!currentProject) return []
     
-    const projectEvents = events.filter(event => event.project_id === currentProject.id)
+    const targetDate = selectedDate || new Date().toISOString().split('T')[0]
+    const projectEvents = events.filter(event => 
+      event.project_id === currentProject.id && event.date === targetDate
+    )
     const deliveredEvents = projectEvents.filter(event => event.process_point === 'delivered')
     const progress = projectEvents.length > 0 ? (deliveredEvents.length / projectEvents.length) * 100 : 0
     
