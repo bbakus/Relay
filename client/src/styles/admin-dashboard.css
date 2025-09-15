@@ -410,12 +410,65 @@
 }
 
 .admin-event-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
+}
+
+.admin-event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-event-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 4px;
+  margin: -4px;
+}
+
+.admin-expand-icon {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+}
+
+.admin-event-details {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-event-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.admin-event-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.admin-event-detail-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 500;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.admin-event-detail-value {
+  color: #ffffff;
+  font-size: 0.85rem;
+  text-align: right;
+  word-break: break-word;
+  flex: 1;
 }
 
 .admin-event-item:last-child {
@@ -428,6 +481,7 @@
   padding: 12px;
   margin: 4px 0;
   position: relative;
+  border-bottom: none;
 }
 
 .admin-event-item.in-process {
@@ -435,7 +489,7 @@
   border-radius: 6px;
   padding: 12px;
   margin: 4px 0;
-  justify-content: space-between;
+  border-bottom: none;
 }
 
 .admin-event-item.live {
@@ -445,6 +499,7 @@
   padding: 12px;
   margin: 4px 0;
   position: relative;
+  border-bottom: none;
 }
 
 .delivered-indicator {

@@ -50,6 +50,20 @@ export const AdminDashboardView = () => {
   const [selectedStaffForAssignment, setSelectedStaffForAssignment] = useState(null)
   const [showEventForm, setShowEventForm] = useState(false)
   const [showShotRequestForm, setShowShotRequestForm] = useState(false)
+  const [expandedCards, setExpandedCards] = useState(new Set())
+  
+  // Toggle card expansion
+  const toggleCardExpansion = (cardId) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(cardId)) {
+        newSet.delete(cardId)
+      } else {
+        newSet.add(cardId)
+      }
+      return newSet
+    })
+  }
   
   // Form states for creating new events and shot requests
   const [eventForm, setEventForm] = useState({
@@ -831,13 +845,44 @@ export const AdminDashboardView = () => {
               // Events Tab
               <div className="admin-events-list">
                 {deliveredEvents.length > 0 ? (
-                  deliveredEvents.map(event => (
-                    <div key={event.id} className="admin-event-item delivered">
-                      <div className="delivered-indicator">✓</div>
-                      <span className="admin-event-name">{event.name}</span>
-                      <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
-                    </div>
-                  ))
+                  deliveredEvents.map(event => {
+                    const isExpanded = expandedCards.has(`delivered-${event.id}`)
+                    return (
+                      <div key={event.id} className="admin-event-item delivered">
+                        <div className="admin-event-header" onClick={() => toggleCardExpansion(`delivered-${event.id}`)}>
+                          <div className="delivered-indicator">✓</div>
+                          <span className="admin-event-name">{event.name}</span>
+                          <span className="admin-expand-icon">{isExpanded ? '▼' : '▶'}</span>
+                        </div>
+                        {isExpanded && (
+                          <div className="admin-event-details">
+                            <div className="admin-event-detail-row">
+                              <span className="admin-event-detail-label">Date:</span>
+                              <span className="admin-event-detail-value">{formatDateForHeader(event.date)}</span>
+                            </div>
+                            {event.start_time && event.end_time && (
+                              <div className="admin-event-detail-row">
+                                <span className="admin-event-detail-label">Time:</span>
+                                <span className="admin-event-detail-value">{event.start_time} - {event.end_time}</span>
+                              </div>
+                            )}
+                            {event.location && (
+                              <div className="admin-event-detail-row">
+                                <span className="admin-event-detail-label">Location:</span>
+                                <span className="admin-event-detail-value">{event.location}</span>
+                              </div>
+                            )}
+                            {event.notes && (
+                              <div className="admin-event-detail-row">
+                                <span className="admin-event-detail-label">Notes:</span>
+                                <span className="admin-event-detail-value">{event.notes}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
                 ) : (
                   <p className="no-data">No delivered events for {selectedDate ? formatDateForHeader(selectedDate) : 'today'}</p>
                 )}
@@ -1028,17 +1073,52 @@ export const AdminDashboardView = () => {
           <h3>In Process Events ({inProcessEvents.length})</h3>
           <div className="admin-events-list">
             {inProcessEvents.length > 0 ? (
-              inProcessEvents.map(event => (
-                <div key={event.id} className="admin-event-item in-process">
-                  <span className="admin-event-name">{event.name}</span>
-                  <span 
-                    className="admin-event-process-point"
-                    style={{ color: getProcessPointColor(event.process_point) }}
-                  >
-                    {event.process_point}
-                  </span>
-                </div>
-              ))
+              inProcessEvents.map(event => {
+                const isExpanded = expandedCards.has(`inprocess-${event.id}`)
+                return (
+                  <div key={event.id} className="admin-event-item in-process">
+                    <div className="admin-event-header" onClick={() => toggleCardExpansion(`inprocess-${event.id}`)}>
+                      <span className="admin-event-name">{event.name}</span>
+                      <span className="admin-expand-icon">{isExpanded ? '▼' : '▶'}</span>
+                    </div>
+                    {isExpanded && (
+                      <div className="admin-event-details">
+                        <div className="admin-event-detail-row">
+                          <span className="admin-event-detail-label">Process Point:</span>
+                          <span 
+                            className="admin-event-detail-value"
+                            style={{ color: getProcessPointColor(event.process_point) }}
+                          >
+                            {event.process_point}
+                          </span>
+                        </div>
+                        <div className="admin-event-detail-row">
+                          <span className="admin-event-detail-label">Date:</span>
+                          <span className="admin-event-detail-value">{formatDateForHeader(event.date)}</span>
+                        </div>
+                        {event.start_time && event.end_time && (
+                          <div className="admin-event-detail-row">
+                            <span className="admin-event-detail-label">Time:</span>
+                            <span className="admin-event-detail-value">{event.start_time} - {event.end_time}</span>
+                          </div>
+                        )}
+                        {event.location && (
+                          <div className="admin-event-detail-row">
+                            <span className="admin-event-detail-label">Location:</span>
+                            <span className="admin-event-detail-value">{event.location}</span>
+                          </div>
+                        )}
+                        {event.notes && (
+                          <div className="admin-event-detail-row">
+                            <span className="admin-event-detail-label">Notes:</span>
+                            <span className="admin-event-detail-value">{event.notes}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })
             ) : (
               <p className="no-data">No events in process</p>
             )}
@@ -1050,16 +1130,38 @@ export const AdminDashboardView = () => {
           <h3>Live Events ({liveEvents.length})</h3>
           <div className="admin-events-list">
             {liveEvents.length > 0 ? (
-              liveEvents.map(event => (
-                <div key={event.id} className="admin-event-item live">
-                  <div className="live-indicator">●</div>
-                  <span className="admin-event-name">{event.name}</span>
-                  <span className="admin-event-time">
-                    {event.start_time ? `${event.start_time} - ${event.end_time}` : 'No time specified'}
-                  </span>
-                  <span className="admin-event-location">{event.location || 'No location'}</span>
-                </div>
-              ))
+              liveEvents.map(event => {
+                const isExpanded = expandedCards.has(`live-${event.id}`)
+                return (
+                  <div key={event.id} className="admin-event-item live">
+                    <div className="admin-event-header" onClick={() => toggleCardExpansion(`live-${event.id}`)}>
+                      <div className="live-indicator">●</div>
+                      <span className="admin-event-name">{event.name}</span>
+                      <span className="admin-expand-icon">{isExpanded ? '▼' : '▶'}</span>
+                    </div>
+                    {isExpanded && (
+                      <div className="admin-event-details">
+                        <div className="admin-event-detail-row">
+                          <span className="admin-event-detail-label">Time:</span>
+                          <span className="admin-event-detail-value">
+                            {event.start_time ? `${event.start_time} - ${event.end_time}` : 'No time specified'}
+                          </span>
+                        </div>
+                        <div className="admin-event-detail-row">
+                          <span className="admin-event-detail-label">Location:</span>
+                          <span className="admin-event-detail-value">{event.location || 'No location'}</span>
+                        </div>
+                        {event.notes && (
+                          <div className="admin-event-detail-row">
+                            <span className="admin-event-detail-label">Notes:</span>
+                            <span className="admin-event-detail-value">{event.notes}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })
             ) : (
               <p className="no-data">No live events currently</p>
             )}
