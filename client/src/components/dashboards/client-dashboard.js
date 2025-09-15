@@ -17,7 +17,7 @@ export const ClientDashboardView = () => {
     const [projects, setProjects] = useState([])
     const [personnel, setPersonnel] = useState([])
     const [loading, setLoading] = useState(true)
-    const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
+    // Removed currentTimeTick for performance
     
     // Modal states
     const [showAddEventModal, setShowAddEventModal] = useState(false)
@@ -48,11 +48,7 @@ export const ClientDashboardView = () => {
         event_id: ''
     })
 
-    // Real-time updates
-    useEffect(() => {
-        const intervalId = setInterval(() => setCurrentTimeTick(Date.now()), 30000)
-        return () => clearInterval(intervalId)
-    }, [])
+    // Removed real-time updates for performance
 
     // Fetch data
     useEffect(() => {
@@ -272,7 +268,7 @@ export const ClientDashboardView = () => {
             const endTime = new Date(`${event.date}T${event.end_time}`)
             return now >= startTime && now <= endTime
         })
-    }, [projectEvents, currentTimeTick, selectedDate])
+    }, [projectEvents, selectedDate])
 
     const upcomingEvents = useMemo(() => {
         const now = new Date()
@@ -284,7 +280,7 @@ export const ClientDashboardView = () => {
             const startTime = new Date(`${event.date}T${event.start_time}`)
             return startTime > now && startTime <= oneHourFromNow
         })
-    }, [projectEvents, currentTimeTick, selectedDate])
+    }, [projectEvents, selectedDate])
 
     const scheduledEvents = useMemo(() => {
         const now = new Date()
@@ -295,7 +291,7 @@ export const ClientDashboardView = () => {
             const startTime = new Date(`${event.date}T${event.start_time}`)
             return startTime > now
         }).sort((a, b) => new Date(`${a.date}T${a.start_time}`) - new Date(`${b.date}T${b.start_time}`))
-    }, [projectEvents, currentTimeTick, selectedDate])
+    }, [projectEvents, selectedDate])
 
     const deliveredEvents = useMemo(() => {
         const eventsToFilter = selectedDate 
@@ -475,7 +471,7 @@ export const ClientDashboardView = () => {
             }
             return b.hoursRemaining - a.hoursRemaining
         })
-    }, [personnel, events, selectedDate, currentTimeTick])
+    }, [personnel, events, selectedDate])
 
     // Debug the final result
     console.log('Final photographer availability result:', photographerAvailability)
@@ -489,7 +485,7 @@ export const ClientDashboardView = () => {
             return eventDate < now || event.process_point === 'delivered'
         })
         return Math.round((completedEvents.length / projectEvents.length) * 100)
-    }, [projectEvents, currentTimeTick])
+    }, [projectEvents])
 
     // Events in progress pie chart
     const eventsInProgress = useMemo(() => {
@@ -711,7 +707,7 @@ export const ClientDashboardView = () => {
                                     <div className="client-photographer-details">
                                         <div className="client-photographer-hours">
                                             <span className="client-hours-label">Hours Worked:</span>
-                                            <span className="client-hours-value">{photographer.totalHours}/8</span>
+                                            <span className="client-hours-value">{photographer.hoursWorked}/8</span>
                                         </div>
                                         <div className="client-photographer-hours">
                                             <span className="client-hours-label">Hours Remaining:</span>
@@ -801,6 +797,7 @@ export const ClientDashboardView = () => {
                             options={{
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                animation: false, // Disable animations for performance
                                 plugins: { legend: { display: false } },
                                 scales: {
                                     y: { 
@@ -845,6 +842,7 @@ export const ClientDashboardView = () => {
                                 options={{
                                     responsive: true,
                                     maintainAspectRatio: false,
+                                    animation: false, // Disable animations for performance
                                     plugins: {
                                         legend: {
                                             display: false
