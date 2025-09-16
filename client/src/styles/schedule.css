@@ -506,6 +506,33 @@
     color: #ff7a18;
 }
 
+/* Notes display in event modal */
+.notes-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.note-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: rgba(255, 122, 24, 0.1);
+    border: 1px solid rgba(255, 122, 24, 0.3);
+    border-radius: 4px;
+    color: #ff7a18;
+    font-size: 12px;
+    font-weight: 500;
+    position: relative;
+}
+
+.note-tag::before {
+    content: "✓";
+    margin-right: 4px;
+    font-weight: bold;
+}
+
 .modal-content {
     background: #1a1a1a;
     border-radius: 12px;

@@ -887,7 +887,13 @@ export const Schedule = () => {
                             {selectedEvent.notes && (
                                 <div className="event-detail-row">
                                     <label>Notes:</label>
-                                    <span>{selectedEvent.notes}</span>
+                                    <div className="notes-display">
+                                        {selectedEvent.notes.split(', ').map((note, index) => (
+                                            <span key={index} className="note-tag">
+                                                {note.trim()}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                             
