@@ -651,7 +651,7 @@ export const PhotographerDashboardView = () => {
                                 <div className="photographer-event-detail-row">
                                     <label>Notes:</label>
                                     <div className="notes-checkboxes-display">
-                                        {selectedEvent.notes.split(', ').map((note, index) => (
+                                        {selectedEvent.notes.split(',').map((note, index) => (
                                             <label key={index} className="checkbox-display-label">
                                                 <input
                                                     type="checkbox"

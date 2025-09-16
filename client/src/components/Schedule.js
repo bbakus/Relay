@@ -307,7 +307,26 @@ export const Schedule = () => {
     // Function to check if a note option should be pre-selected
     const isNoteSelected = (noteValue) => {
         if (!editingEvent?.notes) return false
-        return editingEvent.notes.includes(noteValue)
+        // Split by comma and check for exact matches (trimmed)
+        const notes = editingEvent.notes.split(',').map(note => note.trim())
+        return notes.includes(noteValue)
+    }
+
+    // Function to get custom notes (notes that aren't in the predefined list)
+    const getCustomNotes = () => {
+        if (!editingEvent?.notes) return ''
+        const predefinedNotes = [
+            'Equipment needed', 'Special lighting', 'Backup location', 
+            'Weather dependent', 'Client on-site', 'Multiple photographers', 
+            'Video required', 'Drone shots'
+        ]
+        
+        const allNotes = editingEvent.notes.split(',').map(note => note.trim())
+        const customNotes = allNotes.filter(note => 
+            !predefinedNotes.includes(note)
+        )
+        
+        return customNotes.join(', ')
     }
 
     const handleUpdateEvent = async (e, eventId) => {
@@ -317,7 +336,13 @@ export const Schedule = () => {
         
         // Process checkboxes for notes
         const selectedNotes = formData.getAll('notes').filter(note => note.trim() !== '')
-        const notesString = selectedNotes.join(', ')
+        const customNotes = formData.get('custom_notes') || ''
+        
+        // Combine checkbox notes and custom notes
+        let notesString = selectedNotes.join(',')
+        if (customNotes.trim()) {
+            notesString = notesString ? `${notesString},${customNotes.trim()}` : customNotes.trim()
+        }
         
         const eventData = {
             name: formData.get('name'),
@@ -888,7 +913,7 @@ export const Schedule = () => {
                                 <div className="event-detail-row">
                                     <label>Notes:</label>
                                     <div className="notes-checkboxes-display">
-                                        {selectedEvent.notes.split(', ').map((note, index) => (
+                                        {selectedEvent.notes.split(',').map((note, index) => (
                                             <label key={index} className="checkbox-display-label">
                                                 <input
                                                     type="checkbox"
@@ -1178,6 +1203,17 @@ export const Schedule = () => {
                                             Drone shots
                                         </label>
                                     </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Custom Notes:</label>
+                                    <textarea
+                                        name="custom_notes"
+                                        defaultValue={getCustomNotes()}
+                                        placeholder="Add any additional custom notes..."
+                                        rows="3"
+                                        className="custom-notes-input"
+                                    />
                                 </div>
                                 
                                 <div className="form-group">
