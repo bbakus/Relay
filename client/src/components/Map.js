@@ -164,7 +164,7 @@ export const Map = () => {
                     >
                         <img
                             ref={mapRef}
-                            src='/images/map/Screenshot 2025-09-16 at 11.39.33 AM.png'
+                            src='/images/map/map-screenshot.png'
                             alt='Location Map'
                             className='map-image'
                             style={{

@@ -338,7 +338,7 @@ export const Nav = () => {
     Deliver: '/images/icons/deliver.png',
     Schedule: '/images/icons/schedule.png',
     Settings: '/images/icons/settings.png',
-    Map: '/images/map/Screenshot 2025-09-16 at 11.39.33 AM.png'
+    Map: '/images/icons/schedule.png' // Temporary map icon using schedule icon
   }
 
   const items = useMemo(() => {
