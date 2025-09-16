@@ -304,16 +304,27 @@ export const Schedule = () => {
         setEditingEvent(null)
     }
 
+    // Function to check if a note option should be pre-selected
+    const isNoteSelected = (noteValue) => {
+        if (!editingEvent?.notes) return false
+        return editingEvent.notes.includes(noteValue)
+    }
+
     const handleUpdateEvent = async (e, eventId) => {
         e.preventDefault()
         
         const formData = new FormData(e.target)
+        
+        // Process checkboxes for notes
+        const selectedNotes = formData.getAll('notes').filter(note => note.trim() !== '')
+        const notesString = selectedNotes.join(', ')
+        
         const eventData = {
             name: formData.get('name'),
             start_time: formData.get('start_time'),
             end_time: formData.get('end_time'),
             location: formData.get('location'),
-            notes: formData.get('notes'),
+            notes: notesString,
             quick_turn: formData.get('quick_turn') === 'on'
         }
         
@@ -1080,12 +1091,81 @@ export const Schedule = () => {
                                 </div>
                                 
                                 <div className="form-group">
-                                    <label>Notes:</label>
-                                    <textarea
-                                        name="notes"
-                                        defaultValue={editingEvent.notes}
-                                        rows="3"
-                                    />
+                                    <label>Notes (check all that apply):</label>
+                                    <div className="notes-checkboxes">
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Equipment needed"
+                                                defaultChecked={isNoteSelected("Equipment needed")}
+                                            />
+                                            Equipment needed
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Special lighting"
+                                                defaultChecked={isNoteSelected("Special lighting")}
+                                            />
+                                            Special lighting
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Backup location"
+                                                defaultChecked={isNoteSelected("Backup location")}
+                                            />
+                                            Backup location
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Weather dependent"
+                                                defaultChecked={isNoteSelected("Weather dependent")}
+                                            />
+                                            Weather dependent
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Client on-site"
+                                                defaultChecked={isNoteSelected("Client on-site")}
+                                            />
+                                            Client on-site
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Multiple photographers"
+                                                defaultChecked={isNoteSelected("Multiple photographers")}
+                                            />
+                                            Multiple photographers
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Video required"
+                                                defaultChecked={isNoteSelected("Video required")}
+                                            />
+                                            Video required
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="notes"
+                                                value="Drone shots"
+                                                defaultChecked={isNoteSelected("Drone shots")}
+                                            />
+                                            Drone shots
+                                        </label>
+                                    </div>
                                 </div>
                                 
                                 <div className="form-group">

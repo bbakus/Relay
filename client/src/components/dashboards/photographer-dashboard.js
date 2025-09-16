@@ -19,6 +19,7 @@ export const PhotographerDashboardView = () => {
     const [showModal, setShowModal] = useState(false)
     const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
     const [searchQuery, setSearchQuery] = useState('')
+    const [photographerNotes, setPhotographerNotes] = useState('')
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -214,6 +215,40 @@ export const PhotographerDashboardView = () => {
     const closeModal = () => {
         setShowModal(false)
         setSelectedEvent(null)
+        setPhotographerNotes('')
+    }
+
+    const handleSavePhotographerNotes = async () => {
+        if (!selectedEvent || !photographerNotes.trim()) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${selectedEvent.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    photographer_notes: photographerNotes.trim()
+                })
+            })
+
+            if (response.ok) {
+                // Update the event in local state
+                setEvents(prev => prev.map(event => 
+                    event.id === selectedEvent.id 
+                        ? { ...event, photographer_notes: photographerNotes.trim() }
+                        : event
+                ))
+                setSelectedEvent(prev => ({ ...prev, photographer_notes: photographerNotes.trim() }))
+                setPhotographerNotes('')
+                alert('Notes saved successfully!')
+            } else {
+                alert('Failed to save notes. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error saving photographer notes:', error)
+            alert('Error saving notes. Please try again.')
+        }
     }
 
     // Get real-time event status
@@ -640,6 +675,33 @@ export const PhotographerDashboardView = () => {
                                     {getEventStatus(selectedEvent).charAt(0).toUpperCase() + getEventStatus(selectedEvent).slice(1).replace('-', ' ')}
                                 </span>
                             </div>
+
+                            {/* Photographer Notes Section */}
+                            <div className="photographer-notes-section">
+                                <label>Notes for Editors & Staff:</label>
+                                <textarea
+                                    value={photographerNotes}
+                                    onChange={(e) => setPhotographerNotes(e.target.value)}
+                                    placeholder="Add notes for editors and other staff members..."
+                                    rows="3"
+                                    className="photographer-notes-input"
+                                />
+                                <button 
+                                    className="photographer-save-notes-btn"
+                                    onClick={handleSavePhotographerNotes}
+                                    disabled={!photographerNotes.trim()}
+                                >
+                                    Save Notes
+                                </button>
+                            </div>
+
+                            {/* Display existing photographer notes */}
+                            {selectedEvent.photographer_notes && (
+                                <div className="photographer-event-detail-row">
+                                    <label>Current Notes:</label>
+                                    <span className="photographer-existing-notes">{selectedEvent.photographer_notes}</span>
+                                </div>
+                            )}
                         </div>
                         
                         <div className="photographer-modal-footer">

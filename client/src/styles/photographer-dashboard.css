@@ -96,6 +96,78 @@
     font-style: italic;
 }
 
+/* Photographer Notes Section */
+.photographer-notes-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photographer-notes-section label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.photographer-notes-input {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 60px;
+    margin-bottom: 10px;
+}
+
+.photographer-notes-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.photographer-notes-input:focus {
+    outline: none;
+    border-color: rgba(255, 122, 24, 0.8);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.photographer-save-notes-btn {
+    background: #ff7a18;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.photographer-save-notes-btn:hover:not(:disabled) {
+    background: #e66a0a;
+    transform: translateY(-1px);
+}
+
+.photographer-save-notes-btn:disabled {
+    background: rgba(255, 122, 24, 0.3);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.photographer-existing-notes {
+    background: rgba(255, 122, 24, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border-left: 3px solid #ff7a18;
+    font-style: italic;
+    color: #ff7a18;
+}
+
 .photographer-header h1 {
     color: #ffffff;
     font-size: 2.5rem;
