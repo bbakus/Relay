@@ -887,11 +887,17 @@ export const Schedule = () => {
                             {selectedEvent.notes && (
                                 <div className="event-detail-row">
                                     <label>Notes:</label>
-                                    <div className="notes-display">
+                                    <div className="notes-checkboxes-display">
                                         {selectedEvent.notes.split(', ').map((note, index) => (
-                                            <span key={index} className="note-tag">
-                                                {note.trim()}
-                                            </span>
+                                            <label key={index} className="checkbox-display-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={true}
+                                                    readOnly
+                                                    disabled
+                                                />
+                                                <span>{note.trim()}</span>
+                                            </label>
                                         ))}
                                     </div>
                                 </div>

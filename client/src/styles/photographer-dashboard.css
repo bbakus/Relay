@@ -168,6 +168,38 @@
     color: #ff7a18;
 }
 
+/* Notes checkboxes display in photographer modal */
+.notes-checkboxes-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.checkbox-display-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 122, 24, 0.1);
+    border: 1px solid rgba(255, 122, 24, 0.3);
+    border-radius: 6px;
+    cursor: default;
+    font-size: 14px;
+    color: #ff7a18;
+}
+
+.checkbox-display-label input[type="checkbox"] {
+    margin: 0;
+    accent-color: #ff7a18;
+    cursor: default;
+}
+
+.checkbox-display-label input[type="checkbox"]:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
 .photographer-header h1 {
     color: #ffffff;
     font-size: 2.5rem;

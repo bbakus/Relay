@@ -650,7 +650,19 @@ export const PhotographerDashboardView = () => {
                             {selectedEvent.notes && (
                                 <div className="photographer-event-detail-row">
                                     <label>Notes:</label>
-                                    <span>{selectedEvent.notes}</span>
+                                    <div className="notes-checkboxes-display">
+                                        {selectedEvent.notes.split(', ').map((note, index) => (
+                                            <label key={index} className="checkbox-display-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={true}
+                                                    readOnly
+                                                    disabled
+                                                />
+                                                <span>{note.trim()}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                             

@@ -506,31 +506,36 @@
     color: #ff7a18;
 }
 
-/* Notes display in event modal */
-.notes-display {
+/* Notes checkboxes display in event modal */
+.notes-checkboxes-display {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 4px;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
 }
 
-.note-tag {
-    display: inline-flex;
+.checkbox-display-label {
+    display: flex;
     align-items: center;
-    padding: 4px 8px;
+    gap: 8px;
+    padding: 8px 12px;
     background: rgba(255, 122, 24, 0.1);
     border: 1px solid rgba(255, 122, 24, 0.3);
-    border-radius: 4px;
+    border-radius: 6px;
+    cursor: default;
+    font-size: 14px;
     color: #ff7a18;
-    font-size: 12px;
-    font-weight: 500;
-    position: relative;
 }
 
-.note-tag::before {
-    content: "✓";
-    margin-right: 4px;
-    font-weight: bold;
+.checkbox-display-label input[type="checkbox"] {
+    margin: 0;
+    accent-color: #ff7a18;
+    cursor: default;
+}
+
+.checkbox-display-label input[type="checkbox"]:disabled {
+    opacity: 1;
+    cursor: default;
 }
 
 .modal-content {
