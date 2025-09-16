@@ -206,6 +206,13 @@ export const PhotographerDashboardView = () => {
         })
     }, [shotRequests, currentPhotographer, photographerEvents])
 
+    // Get shot requests for a specific event
+    const getShotRequestsForEvent = (eventId) => {
+        return shotRequests.filter(sr => 
+            sr.events && sr.events.some(event => event.id === eventId)
+        )
+    }
+
     // Event click handler
     const handleEventClick = (event) => {
         setSelectedEvent(event)
@@ -712,6 +719,40 @@ export const PhotographerDashboardView = () => {
                                 <div className="photographer-event-detail-row">
                                     <label>Current Notes:</label>
                                     <span className="photographer-existing-notes">{selectedEvent.photographer_notes}</span>
+                                </div>
+                            )}
+
+                            {/* Shot Requests Section */}
+                            {getShotRequestsForEvent(selectedEvent.id).length > 0 && (
+                                <div className="photographer-event-detail-row">
+                                    <label>Shot Requests:</label>
+                                    <div className="photographer-shot-requests-list">
+                                        {getShotRequestsForEvent(selectedEvent.id).map((shotRequest, index) => (
+                                            <div key={shotRequest.id || index} className="photographer-shot-request-item">
+                                                <div className="shot-request-header">
+                                                    <span className="shot-request-title">{shotRequest.request || shotRequest.description}</span>
+                                                    <span className={`shot-request-priority priority-${shotRequest.priority || 'medium'}`}>
+                                                        {shotRequest.priority || 'Medium'}
+                                                    </span>
+                                                </div>
+                                                {shotRequest.notes && (
+                                                    <div className="shot-request-notes">
+                                                        {shotRequest.notes}
+                                                    </div>
+                                                )}
+                                                {shotRequest.deadline && (
+                                                    <div className="shot-request-deadline">
+                                                        <strong>Deadline:</strong> {shotRequest.deadline}
+                                                    </div>
+                                                )}
+                                                {shotRequest.special_instructions && (
+                                                    <div className="shot-request-instructions">
+                                                        <strong>Special Instructions:</strong> {shotRequest.special_instructions}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

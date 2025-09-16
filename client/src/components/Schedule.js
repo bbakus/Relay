@@ -321,6 +321,10 @@ export const Schedule = () => {
         }
         
         setQuickTurn(event.quick_turn || false)
+        
+        console.log('Opening edit modal for event:', event.name)
+        console.log('Event notes:', event.notes)
+        console.log('Initial selectedNotes:', selectedNotes)
     }
 
     const closeEditModal = () => {
@@ -333,12 +337,13 @@ export const Schedule = () => {
 
     // Handle checkbox changes
     const handleNoteToggle = (noteValue) => {
+        console.log('Toggling note:', noteValue)
         setSelectedNotes(prev => {
-            if (prev.includes(noteValue)) {
-                return prev.filter(note => note !== noteValue)
-            } else {
-                return [...prev, noteValue]
-            }
+            const newNotes = prev.includes(noteValue) 
+                ? prev.filter(note => note !== noteValue)
+                : [...prev, noteValue]
+            console.log('New notes:', newNotes)
+            return newNotes
         })
     }
 
