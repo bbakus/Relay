@@ -35,6 +35,7 @@ export const Schedule = () => {
     })
     const [selectedNotes, setSelectedNotes] = useState([])
     const [customNotes, setCustomNotes] = useState('')
+    const [quickTurn, setQuickTurn] = useState(false)
 
     // Generate time slots in 15-minute intervals from 6 AM to 11 PM
     const generateTimeSlots = () => {
@@ -300,7 +301,7 @@ export const Schedule = () => {
         setEditingEvent(event)
         setShowEditModal(true)
         
-        // Initialize selected notes and custom notes
+        // Initialize selected notes, custom notes, and quick turn
         if (event.notes) {
             const predefinedNotes = [
                 'Equipment needed', 'Special lighting', 'Backup location', 
@@ -318,6 +319,8 @@ export const Schedule = () => {
             setSelectedNotes([])
             setCustomNotes('')
         }
+        
+        setQuickTurn(event.quick_turn || false)
     }
 
     const closeEditModal = () => {
@@ -325,6 +328,7 @@ export const Schedule = () => {
         setEditingEvent(null)
         setSelectedNotes([])
         setCustomNotes('')
+        setQuickTurn(false)
     }
 
     // Handle checkbox changes
@@ -360,7 +364,7 @@ export const Schedule = () => {
             end_time: formData.get('end_time'),
             location: formData.get('location'),
             notes: notesString,
-            quick_turn: formData.get('quick_turn') === 'on'
+            quick_turn: quickTurn
         }
         
         try {
@@ -1222,8 +1226,8 @@ export const Schedule = () => {
                                     <label>Quick Turn:</label>
                                     <input
                                         type="checkbox"
-                                        name="quick_turn"
-                                        defaultChecked={editingEvent.quick_turn || false}
+                                        checked={quickTurn}
+                                        onChange={(e) => setQuickTurn(e.target.checked)}
                                     />
                                 </div>
                                 
