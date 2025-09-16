@@ -713,6 +713,22 @@ export const ClientDashboardView = () => {
                                         </div>
                                         <div className="client-event-time">{event.start_time} - {event.end_time}</div>
                                         <div className="client-event-location">{event.location}</div>
+                                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                            <div className="client-event-photographers">
+                                                <strong>Photographers: </strong>
+                                                {event.assigned_personnel
+                                                    .filter(person => 
+                                                        person.role && (
+                                                            person.role.toLowerCase().includes('photographer') || 
+                                                            person.role.toLowerCase().includes('camera') ||
+                                                            person.role.toLowerCase().includes('shooter') ||
+                                                            person.role.toLowerCase().includes('video')
+                                                        )
+                                                    )
+                                                    .map(person => person.name)
+                                                    .join(', ') || 'No photographers assigned'}
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             }) : <div className="client-empty-state">No live events</div>
@@ -732,6 +748,22 @@ export const ClientDashboardView = () => {
                                         </div>
                                         <div className="client-event-time">{event.start_time} - {event.end_time}</div>
                                         <div className="client-event-location">{event.location}</div>
+                                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                            <div className="client-event-photographers">
+                                                <strong>Photographers: </strong>
+                                                {event.assigned_personnel
+                                                    .filter(person => 
+                                                        person.role && (
+                                                            person.role.toLowerCase().includes('photographer') || 
+                                                            person.role.toLowerCase().includes('camera') ||
+                                                            person.role.toLowerCase().includes('shooter') ||
+                                                            person.role.toLowerCase().includes('video')
+                                                        )
+                                                    )
+                                                    .map(person => person.name)
+                                                    .join(', ') || 'No photographers assigned'}
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             }) : <div className="client-empty-state">No upcoming events</div>

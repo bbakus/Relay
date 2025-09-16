@@ -1158,6 +1158,24 @@ export const AdminDashboardView = () => {
                           <span className="admin-event-detail-label">Location:</span>
                           <span className="admin-event-detail-value">{event.location || 'No location'}</span>
                         </div>
+                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                          <div className="admin-event-detail-row">
+                            <span className="admin-event-detail-label">Assigned Photographers:</span>
+                            <span className="admin-event-detail-value">
+                              {event.assigned_personnel
+                                .filter(person => 
+                                  person.role && (
+                                    person.role.toLowerCase().includes('photographer') || 
+                                    person.role.toLowerCase().includes('camera') ||
+                                    person.role.toLowerCase().includes('shooter') ||
+                                    person.role.toLowerCase().includes('video')
+                                  )
+                                )
+                                .map(person => person.name)
+                                .join(', ') || 'No photographers assigned'}
+                            </span>
+                          </div>
+                        )}
                         {event.notes && (
                           <div className="admin-event-detail-row">
                             <span className="admin-event-detail-label">Notes:</span>

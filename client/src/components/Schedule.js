@@ -33,6 +33,8 @@ export const Schedule = () => {
         deadline: '',
         special_instructions: ''
     })
+    const [selectedNotes, setSelectedNotes] = useState([])
+    const [customNotes, setCustomNotes] = useState('')
 
     // Generate time slots in 15-minute intervals from 6 AM to 11 PM
     const generateTimeSlots = () => {
@@ -297,36 +299,48 @@ export const Schedule = () => {
         setSelectedEvent(null)
         setEditingEvent(event)
         setShowEditModal(true)
+        
+        // Initialize selected notes and custom notes
+        if (event.notes) {
+            const predefinedNotes = [
+                'Equipment needed', 'Special lighting', 'Backup location', 
+                'Weather dependent', 'Client on-site', 'Multiple photographers', 
+                'Video required', 'Drone shots'
+            ]
+            
+            const allNotes = event.notes.split(',').map(note => note.trim())
+            const selected = allNotes.filter(note => predefinedNotes.includes(note))
+            const custom = allNotes.filter(note => !predefinedNotes.includes(note))
+            
+            setSelectedNotes(selected)
+            setCustomNotes(custom.join(', '))
+        } else {
+            setSelectedNotes([])
+            setCustomNotes('')
+        }
     }
 
     const closeEditModal = () => {
         setShowEditModal(false)
         setEditingEvent(null)
+        setSelectedNotes([])
+        setCustomNotes('')
     }
 
-    // Function to check if a note option should be pre-selected
-    const isNoteSelected = (noteValue) => {
-        if (!editingEvent?.notes) return false
-        // Split by comma and check for exact matches (trimmed)
-        const notes = editingEvent.notes.split(',').map(note => note.trim())
-        return notes.includes(noteValue)
+    // Handle checkbox changes
+    const handleNoteToggle = (noteValue) => {
+        setSelectedNotes(prev => {
+            if (prev.includes(noteValue)) {
+                return prev.filter(note => note !== noteValue)
+            } else {
+                return [...prev, noteValue]
+            }
+        })
     }
 
-    // Function to get custom notes (notes that aren't in the predefined list)
-    const getCustomNotes = () => {
-        if (!editingEvent?.notes) return ''
-        const predefinedNotes = [
-            'Equipment needed', 'Special lighting', 'Backup location', 
-            'Weather dependent', 'Client on-site', 'Multiple photographers', 
-            'Video required', 'Drone shots'
-        ]
-        
-        const allNotes = editingEvent.notes.split(',').map(note => note.trim())
-        const customNotes = allNotes.filter(note => 
-            !predefinedNotes.includes(note)
-        )
-        
-        return customNotes.join(', ')
+    // Handle custom notes change
+    const handleCustomNotesChange = (e) => {
+        setCustomNotes(e.target.value)
     }
 
     const handleUpdateEvent = async (e, eventId) => {
@@ -334,11 +348,7 @@ export const Schedule = () => {
         
         const formData = new FormData(e.target)
         
-        // Process checkboxes for notes
-        const selectedNotes = formData.getAll('notes').filter(note => note.trim() !== '')
-        const customNotes = formData.get('custom_notes') || ''
-        
-        // Combine checkbox notes and custom notes
+        // Combine selected notes and custom notes
         let notesString = selectedNotes.join(',')
         if (customNotes.trim()) {
             notesString = notesString ? `${notesString},${customNotes.trim()}` : customNotes.trim()
@@ -1133,72 +1143,64 @@ export const Schedule = () => {
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Equipment needed"
-                                                defaultChecked={isNoteSelected("Equipment needed")}
+                                                checked={selectedNotes.includes("Equipment needed")}
+                                                onChange={() => handleNoteToggle("Equipment needed")}
                                             />
                                             Equipment needed
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Special lighting"
-                                                defaultChecked={isNoteSelected("Special lighting")}
+                                                checked={selectedNotes.includes("Special lighting")}
+                                                onChange={() => handleNoteToggle("Special lighting")}
                                             />
                                             Special lighting
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Backup location"
-                                                defaultChecked={isNoteSelected("Backup location")}
+                                                checked={selectedNotes.includes("Backup location")}
+                                                onChange={() => handleNoteToggle("Backup location")}
                                             />
                                             Backup location
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Weather dependent"
-                                                defaultChecked={isNoteSelected("Weather dependent")}
+                                                checked={selectedNotes.includes("Weather dependent")}
+                                                onChange={() => handleNoteToggle("Weather dependent")}
                                             />
                                             Weather dependent
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Client on-site"
-                                                defaultChecked={isNoteSelected("Client on-site")}
+                                                checked={selectedNotes.includes("Client on-site")}
+                                                onChange={() => handleNoteToggle("Client on-site")}
                                             />
                                             Client on-site
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Multiple photographers"
-                                                defaultChecked={isNoteSelected("Multiple photographers")}
+                                                checked={selectedNotes.includes("Multiple photographers")}
+                                                onChange={() => handleNoteToggle("Multiple photographers")}
                                             />
                                             Multiple photographers
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Video required"
-                                                defaultChecked={isNoteSelected("Video required")}
+                                                checked={selectedNotes.includes("Video required")}
+                                                onChange={() => handleNoteToggle("Video required")}
                                             />
                                             Video required
                                         </label>
                                         <label className="checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                name="notes"
-                                                value="Drone shots"
-                                                defaultChecked={isNoteSelected("Drone shots")}
+                                                checked={selectedNotes.includes("Drone shots")}
+                                                onChange={() => handleNoteToggle("Drone shots")}
                                             />
                                             Drone shots
                                         </label>
@@ -1208,8 +1210,8 @@ export const Schedule = () => {
                                 <div className="form-group">
                                     <label>Custom Notes:</label>
                                     <textarea
-                                        name="custom_notes"
-                                        defaultValue={getCustomNotes()}
+                                        value={customNotes}
+                                        onChange={handleCustomNotesChange}
                                         placeholder="Add any additional custom notes..."
                                         rows="3"
                                         className="custom-notes-input"
