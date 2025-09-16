@@ -337,7 +337,8 @@ export const Nav = () => {
     Requests: '/images/icons/requests.png',
     Deliver: '/images/icons/deliver.png',
     Schedule: '/images/icons/schedule.png',
-    Settings: '/images/icons/settings.png'
+    Settings: '/images/icons/settings.png',
+    Map: '/images/map/Screenshot 2025-09-16 at 11.39.33 AM.png'
   }
 
   const items = useMemo(() => {
@@ -358,6 +359,7 @@ export const Nav = () => {
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Map', to: `/${userId}/map` },
         { label: 'Settings', to: `/${userId}/settings`},
       ]
     }
@@ -366,6 +368,7 @@ export const Nav = () => {
       return [...base,
         { label: 'Schedule', to:`/${userId}/schedule`},
         { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Map', to: `/${userId}/map` },
       ]
     }
 
@@ -376,12 +379,14 @@ export const Nav = () => {
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Personnel', to: `/${userId}/personnel` },
         { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Map', to: `/${userId}/map` },
       ]
     }
 
     if (access === 'photographer' || access === 'videographer') {
       return [...base,
         { label: 'Schedule', to:`/${userId}/schedule`},
+        { label: 'Map', to: `/${userId}/map` },
       ]
     }
 
@@ -391,6 +396,7 @@ export const Nav = () => {
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Map', to: `/${userId}/map` },
       ]
     }
 
