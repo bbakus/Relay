@@ -150,6 +150,7 @@ class ShotRequest(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     request = Column(String, nullable=False)
     notes = Column(String)
+    details = Column(String)  # New field for specific individual references
     quick_turn = Column(Boolean)
     start_time = Column(String)
     end_time = Column(String)

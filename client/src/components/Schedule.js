@@ -31,7 +31,8 @@ export const Schedule = () => {
         description: '',
         priority: 'medium',
         deadline: '',
-        special_instructions: ''
+        special_instructions: '',
+        details: ''
     })
     const [selectedNotes, setSelectedNotes] = useState([])
     const [customNotes, setCustomNotes] = useState('')
@@ -415,7 +416,8 @@ export const Schedule = () => {
             description: '',
             priority: 'medium',
             deadline: '',
-            special_instructions: ''
+            special_instructions: '',
+            details: ''
         })
     }
 
@@ -1313,6 +1315,17 @@ export const Schedule = () => {
                                         onChange={(e) => setShotRequestForm({...shotRequestForm, special_instructions: e.target.value})}
                                         rows="2"
                                         placeholder="Any specific requirements or notes..."
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Details:</label>
+                                    <textarea
+                                        name="details"
+                                        value={shotRequestForm.details}
+                                        onChange={(e) => setShotRequestForm({...shotRequestForm, details: e.target.value})}
+                                        rows="3"
+                                        placeholder="Add specific individual references, names, or detailed requirements..."
                                     />
                                 </div>
                                 

@@ -24,6 +24,7 @@ export const ShotRequest = () => {
     const [formData, setFormData] = useState({
         request: '',
         notes: '',
+        details: '',
         quick_turn: false,
         start_time: '',
         end_time: '',
@@ -322,6 +323,7 @@ export const ShotRequest = () => {
                 setFormData({
                     request: '',
                     notes: '',
+                    details: '',
                     quick_turn: false,
                     start_time: '',
                     end_time: '',
@@ -483,6 +485,7 @@ export const ShotRequest = () => {
             setEditFormData({
                 request: shotRequest.request,
                 notes: shotRequest.notes || '',
+                details: shotRequest.details || '',
                 quick_turn: shotRequest.quick_turn || false,
                 start_time: shotRequest.start_time || '',
                 end_time: shotRequest.end_time || '',
@@ -587,6 +590,16 @@ export const ShotRequest = () => {
                                 </div>
                                 
                                 <div className="sr-form-group">
+                                    <label>Details:</label>
+                                    <textarea
+                                        value={editFormData.details}
+                                        onChange={(e) => setEditFormData(prev => ({...prev, details: e.target.value}))}
+                                        rows={3}
+                                        placeholder="Add specific individual references, names, or detailed requirements..."
+                                    />
+                                </div>
+                                
+                                <div className="sr-form-group">
                                     <label>
                                         <input
                                             type="checkbox"
@@ -637,32 +650,64 @@ export const ShotRequest = () => {
                                 </div>
                             </form>
                         ) : (
-                            /* Simple Controls */
-                            <div className="sr-simple-controls">
-                                <div className="sr-controls-row">
-                                    <div className="sr-process-group">
-                                        <label>Process Point:</label>
-                                        <select 
-                                            value={shotRequest.process_point || 'idle'} 
-                                            onChange={handleProcessPointChange}
-                                            className="sr-process-select"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <option value="idle">Idle</option>
-                                            <option value="ingest">Ingest</option>
-                                            <option value="cull">Cull</option>
-                                            <option value="color">Color</option>
-                                            <option value="delivered">Delivered</option>
-                                        </select>
+                            /* Read-only Details and Controls */
+                            <div className="sr-details-display">
+                                {/* Display shot request details */}
+                                {shotRequest.notes && (
+                                    <div className="sr-detail-item">
+                                        <label>Notes:</label>
+                                        <p>{shotRequest.notes}</p>
                                     </div>
-                                    
-                                    <div className="sr-card-actions">
-                                        <button onClick={handleEditClick} className="sr-edit-btn">
-                                            Edit
-                                        </button>
-                                        <button onClick={handleDeleteClick} className="sr-delete-btn">
-                                            Delete
-                                        </button>
+                                )}
+                                
+                                {shotRequest.details && (
+                                    <div className="sr-detail-item">
+                                        <label>Details:</label>
+                                        <p>{shotRequest.details}</p>
+                                    </div>
+                                )}
+                                
+                                {shotRequest.deadline && (
+                                    <div className="sr-detail-item">
+                                        <label>Deadline:</label>
+                                        <p>{shotRequest.deadline}</p>
+                                    </div>
+                                )}
+                                
+                                {(shotRequest.start_time || shotRequest.end_time) && (
+                                    <div className="sr-detail-item">
+                                        <label>Time Range:</label>
+                                        <p>{shotRequest.start_time} - {shotRequest.end_time}</p>
+                                    </div>
+                                )}
+                                
+                                {/* Simple Controls */}
+                                <div className="sr-simple-controls">
+                                    <div className="sr-controls-row">
+                                        <div className="sr-process-group">
+                                            <label>Process Point:</label>
+                                            <select 
+                                                value={shotRequest.process_point || 'idle'} 
+                                                onChange={handleProcessPointChange}
+                                                className="sr-process-select"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <option value="idle">Idle</option>
+                                                <option value="ingest">Ingest</option>
+                                                <option value="cull">Cull</option>
+                                                <option value="color">Color</option>
+                                                <option value="delivered">Delivered</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div className="sr-card-actions">
+                                            <button onClick={handleEditClick} className="sr-edit-btn">
+                                                Edit
+                                            </button>
+                                            <button onClick={handleDeleteClick} className="sr-delete-btn">
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -855,6 +900,16 @@ export const ShotRequest = () => {
                                     value={formData.notes}
                                     onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
                                     rows="3"
+                                />
+                            </div>
+                            
+                            <div className="shot-request-form-group">
+                                <label>Details:</label>
+                                <textarea
+                                    value={formData.details}
+                                    onChange={(e) => setFormData(prev => ({...prev, details: e.target.value}))}
+                                    rows="3"
+                                    placeholder="Add specific individual references, names, or detailed requirements..."
                                 />
                             </div>
                             

@@ -74,6 +74,7 @@ export const Events = () => {
     const [shotRequestForm, setShotRequestForm] = useState({
         request: '',
         notes: '',
+        details: '',
         quick_turn: false,
         start_time: '',
         end_time: '',
@@ -622,6 +623,7 @@ export const Events = () => {
                 setShotRequestForm({
                     request: '',
                     notes: '',
+                    details: '',
                     quick_turn: false,
                     start_time: '',
                     end_time: '',
@@ -1333,6 +1335,16 @@ export const Events = () => {
                                         onChange={(e) => setShotRequestForm({...shotRequestForm, notes: e.target.value})}
                                         rows="3"
                                         placeholder="Additional notes..."
+                                    />
+                                </div>
+                                
+                                <div className="events-form-group">
+                                    <label>Details:</label>
+                                    <textarea
+                                        value={shotRequestForm.details}
+                                        onChange={(e) => setShotRequestForm({...shotRequestForm, details: e.target.value})}
+                                        rows="3"
+                                        placeholder="Add specific individual references, names, or detailed requirements..."
                                     />
                                 </div>
                                 

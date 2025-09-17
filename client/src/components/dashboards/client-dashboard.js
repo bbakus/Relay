@@ -41,6 +41,7 @@ export const ClientDashboardView = () => {
     const [shotRequestForm, setShotRequestForm] = useState({
         request: '',
         notes: '',
+        details: '',
         quick_turn: false,
         start_time: '',
         end_time: '',
@@ -533,7 +534,7 @@ export const ClientDashboardView = () => {
             if (response.ok) {
                 setShowAddShotRequestModal(false)
                 setShotRequestForm({
-                    request: '', notes: '', quick_turn: false,
+                    request: '', notes: '', details: '', quick_turn: false,
                     start_time: '', end_time: '', deadline: '', event_id: ''
                 })
                 fetchShotRequests()
@@ -1014,6 +1015,15 @@ export const ClientDashboardView = () => {
                                     value={shotRequestForm.notes}
                                     onChange={(e) => setShotRequestForm({...shotRequestForm, notes: e.target.value})}
                                     rows={3}
+                                />
+                            </div>
+                            <div className="client-form-group">
+                                <label>Details:</label>
+                                <textarea
+                                    value={shotRequestForm.details}
+                                    onChange={(e) => setShotRequestForm({...shotRequestForm, details: e.target.value})}
+                                    rows={3}
+                                    placeholder="Add specific individual references, names, or detailed requirements..."
                                 />
                             </div>
                             <div className="client-form-row">

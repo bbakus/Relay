@@ -740,6 +740,11 @@ export const PhotographerDashboardView = () => {
                                                         {shotRequest.notes}
                                                     </div>
                                                 )}
+                                                {shotRequest.details && (
+                                                    <div className="shot-request-details">
+                                                        <strong>Details:</strong> {shotRequest.details}
+                                                    </div>
+                                                )}
                                                 {shotRequest.deadline && (
                                                     <div className="shot-request-deadline">
                                                         <strong>Deadline:</strong> {shotRequest.deadline}
