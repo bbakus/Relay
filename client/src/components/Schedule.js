@@ -37,6 +37,7 @@ export const Schedule = () => {
     const [selectedNotes, setSelectedNotes] = useState([])
     const [customNotes, setCustomNotes] = useState('')
     const [quickTurn, setQuickTurn] = useState(false)
+    const [completedNotes, setCompletedNotes] = useState([])
 
     // Generate time slots in 15-minute intervals from 6 AM to 11 PM
     const generateTimeSlots = () => {
@@ -688,6 +689,16 @@ export const Schedule = () => {
     const closeModal = () => {
         setShowModal(false)
         setSelectedEvent(null)
+        setCompletedNotes([]) // Reset completed notes when closing modal
+    }
+    
+    // Handle completed note toggle
+    const handleCompletedNoteToggle = (noteValue) => {
+        setCompletedNotes(prev => {
+            return prev.includes(noteValue) 
+                ? prev.filter(note => note !== noteValue)
+                : [...prev, noteValue]
+        })
     }
 
     // Get personnel assigned to the selected event
@@ -934,17 +945,20 @@ export const Schedule = () => {
                                 <div className="event-detail-row">
                                     <label>Notes:</label>
                                     <div className="notes-checkboxes-display">
-                                        {selectedEvent.notes.split(',').map((note, index) => (
-                                            <label key={index} className="checkbox-display-label">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={true}
-                                                    readOnly
-                                                    disabled
-                                                />
-                                                <span>{note.trim()}</span>
-                                            </label>
-                                        ))}
+                                        {selectedEvent.notes.split(',').map((note, index) => {
+                                            const noteValue = note.trim();
+                                            const isCompleted = completedNotes.includes(noteValue);
+                                            return (
+                                                <label key={index} className="checkbox-display-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isCompleted}
+                                                        onChange={() => handleCompletedNoteToggle(noteValue)}
+                                                    />
+                                                    <span>{noteValue}</span>
+                                                </label>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}

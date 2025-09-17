@@ -20,6 +20,7 @@ export const PhotographerDashboardView = () => {
     const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
     const [searchQuery, setSearchQuery] = useState('')
     const [photographerNotes, setPhotographerNotes] = useState('')
+    const [completedNotes, setCompletedNotes] = useState([])
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -223,6 +224,16 @@ export const PhotographerDashboardView = () => {
         setShowModal(false)
         setSelectedEvent(null)
         setPhotographerNotes('')
+        setCompletedNotes([]) // Reset completed notes when closing modal
+    }
+    
+    // Handle completed note toggle
+    const handleCompletedNoteToggle = (noteValue) => {
+        setCompletedNotes(prev => {
+            return prev.includes(noteValue) 
+                ? prev.filter(note => note !== noteValue)
+                : [...prev, noteValue]
+        })
     }
 
     const handleSavePhotographerNotes = async () => {
@@ -658,17 +669,20 @@ export const PhotographerDashboardView = () => {
                                 <div className="photographer-event-detail-row">
                                     <label>Notes:</label>
                                     <div className="notes-checkboxes-display">
-                                        {selectedEvent.notes.split(',').map((note, index) => (
-                                            <label key={index} className="checkbox-display-label">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={true}
-                                                    readOnly
-                                                    disabled
-                                                />
-                                                <span>{note.trim()}</span>
-                                            </label>
-                                        ))}
+                                        {selectedEvent.notes.split(',').map((note, index) => {
+                                            const noteValue = note.trim();
+                                            const isCompleted = completedNotes.includes(noteValue);
+                                            return (
+                                                <label key={index} className="checkbox-display-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isCompleted}
+                                                        onChange={() => handleCompletedNoteToggle(noteValue)}
+                                                    />
+                                                    <span>{noteValue}</span>
+                                                </label>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
