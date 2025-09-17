@@ -483,18 +483,28 @@ export const AdminDashboardView = () => {
     return availableStaff
   }, [personnel, events])
   
-  // Image count for delivered events
-  const deliveredEventImages = useMemo(() => {
-    const deliveredEventsWithImages = deliveredEvents.map(event => {
-      const eventImages = images.filter(img => img.event_id === event.id)
-      return {
-        ...event,
-        imageCount: eventImages.length
-      }
-    }).sort((a, b) => b.imageCount - a.imageCount)
+  // Unassigned Events - events with no personnel assigned
+  const unassignedEvents = useMemo(() => {
+    const futureEvents = events.filter(event => {
+      const eventDate = new Date(event.date)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return eventDate >= today // Only show future events (including today)
+    })
     
-    return deliveredEventsWithImages
-  }, [deliveredEvents, images])
+    const unassigned = futureEvents.filter(event => {
+      // Check if event has any assigned personnel
+      const hasAssignedPersonnel = event.assigned_personnel && 
+                                  Array.isArray(event.assigned_personnel) && 
+                                  event.assigned_personnel.length > 0
+      return !hasAssignedPersonnel
+    }).sort((a, b) => {
+      // Sort by date (soonest first)
+      return new Date(a.date) - new Date(b.date)
+    })
+    
+    return unassigned
+  }, [events])
   
   // Live/Ongoing Events - events that are currently happening
   const liveEvents = useMemo(() => {
@@ -1193,24 +1203,39 @@ export const AdminDashboardView = () => {
           </div>
         </div>
         
-        {/* Image Count for Delivered Events */}
-        <div className="dashboard-card">
-          <h3>Delivered Event Images</h3>
-          <div className="admin-image-counts-list">
-            {deliveredEventImages.length > 0 ? (
-              deliveredEventImages.map(event => (
-                <div key={event.id} className="admin-image-count-item">
+        {/* Unassigned Events Alert Panel */}
+        <div className="dashboard-card alert-card">
+          <h3>⚠️ Unassigned Events Alert</h3>
+          <div className="admin-unassigned-events-list">
+            {unassignedEvents.length > 0 ? (
+              unassignedEvents.map(event => (
+                <div key={event.id} className="admin-unassigned-event-item">
                   <div className="admin-event-info">
                     <span className="admin-event-name">{event.name}</span>
+                    <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
+                    <span className="admin-event-time">
+                      {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                    </span>
+                    {event.location && (
+                      <span className="admin-event-location">{event.location}</span>
+                    )}
                   </div>
-                  <div className="admin-image-count">
-                    <span className="count-number">{event.imageCount}</span>
-                    <span className="count-label">images</span>
+                  <div className="admin-event-actions">
+                    <button 
+                      className="assign-staff-btn"
+                      onClick={() => openAssignmentModal(event)}
+                      title="Assign staff to this event"
+                    >
+                      Assign Staff
+                    </button>
+                    <span className="days-until">
+                      {getDaysUntilEvent(event.date)} days
+                    </span>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="no-data">No delivered events with images</p>
+              <p className="no-data">✅ All events have staff assigned</p>
             )}
           </div>
         </div>

@@ -125,6 +125,7 @@ class Events(Base, SerializerMixin):
     location = Column(String)
     notes = Column(String)
     photographer_notes = Column(String)  # Notes from photographers for editors and staff
+    completed_notes = Column(JSON, default=list)  # Array of completed note items
     quick_turn = Column(Boolean)
     deadline = Column(String)
     # Pipeline/process point for coloring the schedule card

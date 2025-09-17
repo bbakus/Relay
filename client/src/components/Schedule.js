@@ -657,6 +657,8 @@ export const Schedule = () => {
         console.log('Event clicked:', event.name) // DEBUG
         setSelectedEvent(event)
         setShowModal(true)
+        // Load completed notes from the event data
+        setCompletedNotes(event.completed_notes || [])
     }
 
     const closeModal = () => {
@@ -665,13 +667,46 @@ export const Schedule = () => {
         setCompletedNotes([]) // Reset completed notes when closing modal
     }
     
-    // Handle completed note toggle
-    const handleCompletedNoteToggle = (noteValue) => {
-        setCompletedNotes(prev => {
-            return prev.includes(noteValue) 
-                ? prev.filter(note => note !== noteValue)
-                : [...prev, noteValue]
-        })
+    // Handle completed note toggle - save to database
+    const handleCompletedNoteToggle = async (noteValue) => {
+        if (!selectedEvent) return
+
+        const newCompletedNotes = completedNotes.includes(noteValue) 
+            ? completedNotes.filter(note => note !== noteValue)
+            : [...completedNotes, noteValue]
+
+        // Update local state immediately for responsive UI
+        setCompletedNotes(newCompletedNotes)
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${selectedEvent.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    completed_notes: newCompletedNotes
+                })
+            })
+
+            if (response.ok) {
+                // Update the event in local state
+                setEvents(prev => prev.map(event => 
+                    event.id === selectedEvent.id 
+                        ? { ...event, completed_notes: newCompletedNotes }
+                        : event
+                ))
+                setSelectedEvent(prev => ({ ...prev, completed_notes: newCompletedNotes }))
+            } else {
+                // Revert local state if save failed
+                setCompletedNotes(selectedEvent.completed_notes || [])
+                console.error('Failed to save completed notes')
+            }
+        } catch (error) {
+            // Revert local state if save failed
+            setCompletedNotes(selectedEvent.completed_notes || [])
+            console.error('Error saving completed notes:', error)
+        }
     }
 
     // Get personnel assigned to the selected event
