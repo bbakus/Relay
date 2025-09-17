@@ -21,6 +21,9 @@ export const PhotographerDashboardView = () => {
     const [searchQuery, setSearchQuery] = useState('')
     const [photographerNotes, setPhotographerNotes] = useState('')
     const [completedNotes, setCompletedNotes] = useState([])
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [editingNotes, setEditingNotes] = useState('')
+    const [newNoteInput, setNewNoteInput] = useState('')
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -225,6 +228,9 @@ export const PhotographerDashboardView = () => {
         setSelectedEvent(null)
         setPhotographerNotes('')
         setCompletedNotes([]) // Reset completed notes when closing modal
+        setIsEditMode(false)
+        setEditingNotes('')
+        setNewNoteInput('')
     }
     
     // Handle completed note toggle
@@ -267,6 +273,63 @@ export const PhotographerDashboardView = () => {
             console.error('Error saving photographer notes:', error)
             alert('Error saving notes. Please try again.')
         }
+    }
+
+    const handleEditNotes = () => {
+        setIsEditMode(true)
+        setEditingNotes(selectedEvent.notes || '')
+    }
+
+    const handleSaveEditedNotes = async () => {
+        if (!selectedEvent) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${selectedEvent.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    notes: editingNotes.trim()
+                })
+            })
+
+            if (response.ok) {
+                // Update the event in local state
+                setEvents(prev => prev.map(event => 
+                    event.id === selectedEvent.id 
+                        ? { ...event, notes: editingNotes.trim() }
+                        : event
+                ))
+                setSelectedEvent(prev => ({ ...prev, notes: editingNotes.trim() }))
+                setIsEditMode(false)
+                setEditingNotes('')
+                alert('Notes updated successfully!')
+            } else {
+                alert('Failed to update notes. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error updating notes:', error)
+            alert('Error updating notes. Please try again.')
+        }
+    }
+
+    const handleAddNewNote = () => {
+        if (!newNoteInput.trim()) return
+        
+        const currentNotes = editingNotes.trim()
+        const updatedNotes = currentNotes 
+            ? `${currentNotes}, ${newNoteInput.trim()}`
+            : newNoteInput.trim()
+        
+        setEditingNotes(updatedNotes)
+        setNewNoteInput('')
+    }
+
+    const handleCancelEdit = () => {
+        setIsEditMode(false)
+        setEditingNotes('')
+        setNewNoteInput('')
     }
 
     // Get real-time event status
@@ -665,25 +728,141 @@ export const PhotographerDashboardView = () => {
                                 <span>{selectedEvent.location}</span>
                             </div>
                             
-                            {selectedEvent.notes && (
+                            {(selectedEvent.notes || isEditMode) && (
                                 <div className="photographer-event-detail-row">
-                                    <label>Notes:</label>
-                                    <div className="notes-checkboxes-display">
-                                        {selectedEvent.notes.split(',').map((note, index) => {
-                                            const noteValue = note.trim();
-                                            const isCompleted = completedNotes.includes(noteValue);
-                                            return (
-                                                <label key={index} className="checkbox-display-label">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isCompleted}
-                                                        onChange={() => handleCompletedNoteToggle(noteValue)}
-                                                    />
-                                                    <span>{noteValue}</span>
-                                                </label>
-                                            );
-                                        })}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <label>Notes:</label>
+                                        {!isEditMode && (
+                                            <button 
+                                                onClick={handleEditNotes}
+                                                className="photographer-edit-notes-btn"
+                                                style={{
+                                                    padding: '4px 8px',
+                                                    fontSize: '0.8rem',
+                                                    backgroundColor: '#007bff',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Edit
+                                            </button>
+                                        )}
                                     </div>
+                                    
+                                    {isEditMode ? (
+                                        <div className="notes-edit-mode">
+                                            <div style={{ marginBottom: '12px' }}>
+                                                <textarea
+                                                    value={editingNotes}
+                                                    onChange={(e) => setEditingNotes(e.target.value)}
+                                                    placeholder="Enter notes separated by commas (each will become a checkbox item)..."
+                                                    rows="3"
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '8px',
+                                                        border: '1px solid #ccc',
+                                                        borderRadius: '4px',
+                                                        fontSize: '0.9rem',
+                                                        fontFamily: 'inherit'
+                                                    }}
+                                                />
+                                            </div>
+                                            
+                                            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                                <input
+                                                    type="text"
+                                                    value={newNoteInput}
+                                                    onChange={(e) => setNewNoteInput(e.target.value)}
+                                                    placeholder="Add new note item..."
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '6px',
+                                                        border: '1px solid #ccc',
+                                                        borderRadius: '4px',
+                                                        fontSize: '0.9rem'
+                                                    }}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleAddNewNote()
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    onClick={handleAddNewNote}
+                                                    disabled={!newNoteInput.trim()}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        backgroundColor: '#28a745',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '4px',
+                                                        cursor: newNoteInput.trim() ? 'pointer' : 'not-allowed',
+                                                        opacity: newNoteInput.trim() ? 1 : 0.6
+                                                    }}
+                                                >
+                                                    Add
+                                                </button>
+                                            </div>
+                                            
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    onClick={handleSaveEditedNotes}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        backgroundColor: '#007bff',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    Save Changes
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        backgroundColor: '#6c757d',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="notes-checkboxes-display">
+                                            {selectedEvent.notes && selectedEvent.notes.split(',').map((note, index) => {
+                                                const noteValue = note.trim();
+                                                const isCompleted = completedNotes.includes(noteValue);
+                                                return (
+                                                    <label key={index} className="checkbox-display-label" style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        marginBottom: '6px',
+                                                        cursor: 'pointer'
+                                                    }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isCompleted}
+                                                            onChange={() => handleCompletedNoteToggle(noteValue)}
+                                                            style={{ cursor: 'pointer' }}
+                                                        />
+                                                        <span style={{
+                                                            textDecoration: isCompleted ? 'line-through' : 'none',
+                                                            opacity: isCompleted ? 0.7 : 1
+                                                        }}>{noteValue}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             
