@@ -553,6 +553,37 @@ export const AdminDashboardView = () => {
     }
   }
 
+  // Helper function to format time to 12-hour format
+  const formatTimeTo12Hour = (time24) => {
+    if (!time24) return ''
+    const [hours, minutes] = time24.split(':').map(Number)
+    const period = hours >= 12 ? 'PM' : 'AM'
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+  }
+
+  // Helper function to calculate days until event
+  const getDaysUntilEvent = (eventDate) => {
+    const today = new Date()
+    const event = new Date(eventDate)
+    const timeDiff = event.getTime() - today.getTime()
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+    return daysDiff
+  }
+
+  // Helper function to open assignment modal for an event
+  const openAssignmentModal = (event) => {
+    // For now, we'll create a basic staff assignment for the event
+    // This could be expanded to show available staff for the event
+    const eventStaff = {
+      id: 'event-' + event.id,
+      name: `Staff for ${event.name}`,
+      event_ids: [event.id]
+    }
+    setSelectedStaffForAssignment(eventStaff)
+    setAssignmentModalOpen(true)
+  }
+
   // Event distribution for selected date by hour
   const eventDistribution = useMemo(() => {
     // ONLY show data when a global date is explicitly selected
