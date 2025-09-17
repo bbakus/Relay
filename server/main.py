@@ -605,6 +605,7 @@ class UserSchedule(Resource):
                 'end_time': event.end_time,
                 'location': event.location,
                 'notes': event.notes,
+                'photographer_notes': getattr(event, 'photographer_notes', None),
                 'quick_turn': event.quick_turn,
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
@@ -890,9 +891,11 @@ class EventsResource(Resource):
                 'end_time': event.end_time,
                 'location': event.location,
                 'notes': event.notes,
+                'photographer_notes': getattr(event, 'photographer_notes', None),
                 'quick_turn': event.quick_turn,
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
+                'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                 'column_number': getattr(event, 'column_number', 0),
                 'project_id': event.project_id,
                 'assigned_personnel': [{'personnel_id': p.id, 'name': p.name, 'role': p.role} for p in event.personnels]
@@ -1048,8 +1051,12 @@ class EventDetail(Resource):
                     'end_time': event.end_time,
                     'location': event.location,
                     'notes': event.notes,
+                    'photographer_notes': getattr(event, 'photographer_notes', None),
                     'quick_turn': event.quick_turn,
                     'deadline': event.deadline,
+                    'process_point': getattr(event, 'process_point', 'idle'),
+                    'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
+                    'column_number': getattr(event, 'column_number', 0),
                     'project_id': event.project_id
                 }, 200
             return {'error': 'Event not found'}, 404
@@ -1123,9 +1130,11 @@ class EventDetail(Resource):
                 'end_time': event.end_time,
                 'location': event.location,
                 'notes': event.notes,
+                'photographer_notes': getattr(event, 'photographer_notes', None),
                 'quick_turn': event.quick_turn,
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
+                'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                 'column_number': getattr(event, 'column_number', 0),
                 'project_id': event.project_id,
                 'assigned_personnel': getattr(event, 'assigned_personnel', [])
