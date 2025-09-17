@@ -34,8 +34,8 @@ export const Schedule = () => {
         special_instructions: '',
         details: ''
     })
-    const [selectedNotes, setSelectedNotes] = useState([])
-    const [customNotes, setCustomNotes] = useState('')
+    const [editingNotes, setEditingNotes] = useState('')
+    const [newNoteInput, setNewNoteInput] = useState('')
     const [quickTurn, setQuickTurn] = useState(false)
     const [completedNotes, setCompletedNotes] = useState([])
 
@@ -303,55 +303,34 @@ export const Schedule = () => {
         setEditingEvent(event)
         setShowEditModal(true)
         
-        // Initialize selected notes, custom notes, and quick turn
-        if (event.notes) {
-            const predefinedNotes = [
-                'Equipment needed', 'Special lighting', 'Backup location', 
-                'Weather dependent', 'Client on-site', 'Multiple photographers', 
-                'Video required', 'Drone shots'
-            ]
-            
-            const allNotes = event.notes.split(',').map(note => note.trim())
-            const selected = allNotes.filter(note => predefinedNotes.includes(note))
-            const custom = allNotes.filter(note => !predefinedNotes.includes(note))
-            
-            setSelectedNotes(selected)
-            setCustomNotes(custom.join(', '))
-        } else {
-            setSelectedNotes([])
-            setCustomNotes('')
-        }
-        
+        // Initialize editing notes and quick turn
+        setEditingNotes(event.notes || '')
         setQuickTurn(event.quick_turn || false)
+        setNewNoteInput('')
         
         console.log('Opening edit modal for event:', event.name)
         console.log('Event notes:', event.notes)
-        console.log('Initial selectedNotes:', selectedNotes)
     }
 
     const closeEditModal = () => {
         setShowEditModal(false)
         setEditingEvent(null)
-        setSelectedNotes([])
-        setCustomNotes('')
+        setEditingNotes('')
+        setNewNoteInput('')
         setQuickTurn(false)
     }
 
-    // Handle checkbox changes
-    const handleNoteToggle = (noteValue) => {
-        console.log('Toggling note:', noteValue)
-        setSelectedNotes(prev => {
-            const newNotes = prev.includes(noteValue) 
-                ? prev.filter(note => note !== noteValue)
-                : [...prev, noteValue]
-            console.log('New notes:', newNotes)
-            return newNotes
-        })
-    }
-
-    // Handle custom notes change
-    const handleCustomNotesChange = (e) => {
-        setCustomNotes(e.target.value)
+    // Handle adding new note to the editing notes
+    const handleAddNewNote = () => {
+        if (!newNoteInput.trim()) return
+        
+        const currentNotes = editingNotes.trim()
+        const updatedNotes = currentNotes 
+            ? `${currentNotes}, ${newNoteInput.trim()}`
+            : newNoteInput.trim()
+        
+        setEditingNotes(updatedNotes)
+        setNewNoteInput('')
     }
 
     const handleUpdateEvent = async (e, eventId) => {
@@ -359,18 +338,12 @@ export const Schedule = () => {
         
         const formData = new FormData(e.target)
         
-        // Combine selected notes and custom notes
-        let notesString = selectedNotes.join(',')
-        if (customNotes.trim()) {
-            notesString = notesString ? `${notesString},${customNotes.trim()}` : customNotes.trim()
-        }
-        
         const eventData = {
             name: formData.get('name'),
             start_time: formData.get('start_time'),
             end_time: formData.get('end_time'),
             location: formData.get('location'),
-            notes: notesString,
+            notes: editingNotes.trim(),
             quick_turn: quickTurn
         }
         
@@ -1163,84 +1136,61 @@ export const Schedule = () => {
                                 </div>
                                 
                                 <div className="form-group">
-                                    <label>Notes (check all that apply):</label>
-                                    <div className="notes-checkboxes">
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Equipment needed")}
-                                                onChange={() => handleNoteToggle("Equipment needed")}
-                                            />
-                                            Equipment needed
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Special lighting")}
-                                                onChange={() => handleNoteToggle("Special lighting")}
-                                            />
-                                            Special lighting
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Backup location")}
-                                                onChange={() => handleNoteToggle("Backup location")}
-                                            />
-                                            Backup location
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Weather dependent")}
-                                                onChange={() => handleNoteToggle("Weather dependent")}
-                                            />
-                                            Weather dependent
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Client on-site")}
-                                                onChange={() => handleNoteToggle("Client on-site")}
-                                            />
-                                            Client on-site
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Multiple photographers")}
-                                                onChange={() => handleNoteToggle("Multiple photographers")}
-                                            />
-                                            Multiple photographers
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Video required")}
-                                                onChange={() => handleNoteToggle("Video required")}
-                                            />
-                                            Video required
-                                        </label>
-                                        <label className="checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedNotes.includes("Drone shots")}
-                                                onChange={() => handleNoteToggle("Drone shots")}
-                                            />
-                                            Drone shots
-                                        </label>
+                                    <label>Notes:</label>
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <textarea
+                                            value={editingNotes}
+                                            onChange={(e) => setEditingNotes(e.target.value)}
+                                            placeholder="Enter notes separated by commas (each will become a checkbox item)..."
+                                            rows="3"
+                                            style={{
+                                                width: '100%',
+                                                padding: '8px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '0.9rem',
+                                                fontFamily: 'inherit',
+                                                resize: 'vertical'
+                                            }}
+                                        />
                                     </div>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Custom Notes:</label>
-                                    <textarea
-                                        value={customNotes}
-                                        onChange={handleCustomNotesChange}
-                                        placeholder="Add any additional custom notes..."
-                                        rows="3"
-                                        className="custom-notes-input"
-                                    />
+                                    
+                                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                        <input
+                                            type="text"
+                                            value={newNoteInput}
+                                            onChange={(e) => setNewNoteInput(e.target.value)}
+                                            placeholder="Add new note item..."
+                                            style={{
+                                                flex: 1,
+                                                padding: '6px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '0.9rem'
+                                            }}
+                                            onKeyPress={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleAddNewNote()
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleAddNewNote}
+                                            disabled={!newNoteInput.trim()}
+                                            style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: newNoteInput.trim() ? 'pointer' : 'not-allowed',
+                                                opacity: newNoteInput.trim() ? 1 : 0.6
+                                            }}
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div className="form-group">
