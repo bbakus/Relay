@@ -416,8 +416,9 @@
 }
 
 .admin-events-list {
-  max-height: none;
-  overflow-y: visible;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .admin-event-item {
@@ -893,6 +894,12 @@
 
 .delivered-tab-content {
   min-height: 200px;
+}
+
+.shot-requests-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 /* Responsive design for tabs */
