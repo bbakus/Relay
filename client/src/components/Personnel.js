@@ -25,6 +25,7 @@ export const Personnel = () => {
   const [eventAssignModalOpen, setEventAssignModalOpen] = useState(false)
   const [selectedEventForAssign, setSelectedEventForAssign] = useState(null)
   const [selectedPersonnelForEvent, setSelectedPersonnelForEvent] = useState([])
+  const [unassignedEventsModalOpen, setUnassignedEventsModalOpen] = useState(false)
 
   const getRoleClass = (role) => {
     const r = (role || '').toLowerCase()
@@ -524,7 +525,7 @@ export const Personnel = () => {
                       <div className='metric-number'>{personnel.length}</div>
                       <div className='metric-label'>Total Crew</div>
                     </div>
-                    <div className='personnel-metric-card'>
+                    <div className='personnel-metric-card clickable' onClick={() => setUnassignedEventsModalOpen(true)}>
                       <div className='metric-number'>{metricsEvents.filter(e => {
                         const assigned = projectTeam.filter(m => (m.event_ids || []).includes(e.id))
                         return assigned.length === 0
@@ -967,6 +968,75 @@ export const Personnel = () => {
                     onClick={handleEventAssignment}
                   >
                     Save Assignments
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Unassigned Events Modal */}
+          {unassignedEventsModalOpen && (
+            <div className='personnel-assign-modal-overlay' onClick={() => setUnassignedEventsModalOpen(false)}>
+              <div className='personnel-assign-modal' onClick={(e) => e.stopPropagation()}>
+                <div className='personnel-assign-modal-header'>
+                  <h3>Unassigned Events</h3>
+                  <button 
+                    className='personnel-assign-modal-close'
+                    onClick={() => setUnassignedEventsModalOpen(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div className='personnel-assign-modal-body'>
+                  <div className='unassigned-events-list'>
+                    {(() => {
+                      const unassignedEvents = metricsEvents.filter(e => {
+                        const assigned = projectTeam.filter(m => (m.event_ids || []).includes(e.id))
+                        return assigned.length === 0
+                      })
+                      
+                      if (unassignedEvents.length === 0) {
+                        return (
+                          <div className='no-unassigned-events'>
+                            <p>All events are assigned! 🎉</p>
+                          </div>
+                        )
+                      }
+                      
+                      return unassignedEvents.map(event => (
+                        <div key={event.id} className='unassigned-event-item'>
+                          <div className='unassigned-event-info'>
+                            <h4>{event.name}</h4>
+                            <p><strong>Date:</strong> {formatDateForHeader(event.date)}</p>
+                            {event.start_time && event.end_time && (
+                              <p><strong>Time:</strong> {event.start_time} - {event.end_time}</p>
+                            )}
+                            {event.location && (
+                              <p><strong>Location:</strong> {event.location}</p>
+                            )}
+                          </div>
+                          <button 
+                            className='assign-personnel-btn'
+                            onClick={() => {
+                              setUnassignedEventsModalOpen(false)
+                              openEventAssignModal(event)
+                            }}
+                          >
+                            Assign Personnel
+                          </button>
+                        </div>
+                      ))
+                    })()}
+                  </div>
+                </div>
+                
+                <div className='personnel-assign-modal-footer'>
+                  <button 
+                    className='personnel-assign-modal-done'
+                    onClick={() => setUnassignedEventsModalOpen(false)}
+                  >
+                    Close
                   </button>
                 </div>
               </div>
