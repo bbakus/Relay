@@ -666,7 +666,25 @@ export const Settings = () => {
             if (response.ok) {
                 const result = await response.json()
                 alert(editingItem ? 'Project updated successfully!' : 'Project created successfully!')
-                fetchProjects()
+                
+                // Refresh data for the current company context
+                if (user?.is_super_admin && selectedCompanyId) {
+                    const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+                    if (selectedCompany && !selectedCompany.is_super_admin) {
+                        // Refresh company data for non-Relay companies
+                        fetchCompanyData(selectedCompanyId)
+                    } else {
+                        // For Relay company, just fetch projects
+                        fetchProjects()
+                    }
+                } else if (!user?.is_super_admin && user?.company_id) {
+                    // For regular admins, refresh their company data
+                    fetchCompanyData(user.company_id.toString())
+                } else {
+                    // Fallback
+                    fetchProjects()
+                }
+                
                 resetProjectForm()
                 setShowProjectForm(false)
                 setEditingItem(null)
@@ -711,7 +729,25 @@ export const Settings = () => {
             if (response.ok) {
                 const result = await response.json()
                 alert(editingItem ? 'Organization updated successfully!' : 'Organization created successfully!')
-                fetchOrganizations()
+                
+                // Refresh data for the current company context
+                if (user?.is_super_admin && selectedCompanyId) {
+                    const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+                    if (selectedCompany && !selectedCompany.is_super_admin) {
+                        // Refresh company data for non-Relay companies
+                        fetchCompanyData(selectedCompanyId)
+                    } else {
+                        // For Relay company, just fetch organizations
+                        fetchOrganizations()
+                    }
+                } else if (!user?.is_super_admin && user?.company_id) {
+                    // For regular admins, refresh their company data
+                    fetchCompanyData(user.company_id.toString())
+                } else {
+                    // Fallback
+                    fetchOrganizations()
+                }
+                
                 resetOrgForm()
                 setShowOrgForm(false)
                 setEditingItem(null)
@@ -787,8 +823,26 @@ export const Settings = () => {
                     }
                 }
                 
-                await fetchPersonnel() // Make sure fetch completes
-                await fetchUsers() // Refresh users list
+                // Refresh data for the current company context
+                if (user?.is_super_admin && selectedCompanyId) {
+                    const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+                    if (selectedCompany && !selectedCompany.is_super_admin) {
+                        // Refresh company data for non-Relay companies
+                        fetchCompanyData(selectedCompanyId)
+                    } else {
+                        // For Relay company, just fetch personnel and users
+                        await fetchPersonnel()
+                        await fetchUsers()
+                    }
+                } else if (!user?.is_super_admin && user?.company_id) {
+                    // For regular admins, refresh their company data
+                    fetchCompanyData(user.company_id.toString())
+                } else {
+                    // Fallback
+                    await fetchPersonnel()
+                    await fetchUsers()
+                }
+                
                 resetPersonnelForm()
                 setEditingItem(null) // Clear editing state
                 
