@@ -707,14 +707,14 @@ export const Settings = () => {
             // Include company_id when creating organizations
             const submitData = { ...orgForm }
             if (!editingItem) {
-                if (user?.company_id) {
-                    // For company admins, use their company_id
-                    submitData.company_id = user.company_id
-                    console.log('🔍 Organization creation - using user company_id:', user.company_id)
-                } else if (user?.is_super_admin && selectedCompanyId) {
+                if (user?.is_super_admin && selectedCompanyId) {
                     // For super admins, use the currently selected company
                     submitData.company_id = parseInt(selectedCompanyId)
                     console.log('🔍 Organization creation - using selected company_id:', selectedCompanyId, '->', parseInt(selectedCompanyId))
+                } else if (user?.company_id && !user?.is_super_admin) {
+                    // For regular company admins, use their company_id
+                    submitData.company_id = user.company_id
+                    console.log('🔍 Organization creation - using user company_id:', user.company_id)
                 } else {
                     console.log('🔍 Organization creation - NO company_id set! User:', user?.is_super_admin, 'selectedCompanyId:', selectedCompanyId)
                 }
