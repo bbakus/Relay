@@ -176,9 +176,11 @@ export const Settings = () => {
                 let companyOrgs = []
                 if (orgsResponse.ok) {
                     companyOrgs = await orgsResponse.json()
-                    console.log('🔍 Company orgs response:', companyOrgs)
+                    console.log('🔍 Company orgs response for company', companyId, ':', companyOrgs)
                     setOrganizations(companyOrgs)
                     console.log('🔍 Set company organizations:', companyOrgs.length)
+                } else {
+                    console.log('🔍 Failed to fetch organizations for company', companyId, 'Status:', orgsResponse.status)
                 }
                 
                 if (personnelResponse.ok) {
@@ -239,6 +241,25 @@ export const Settings = () => {
             }
         }
     }, [user?.is_super_admin, selectedCompanyId, companies.length, setGlobalCompany])
+    
+    // Initial data load for super admin when companies are loaded
+    useEffect(() => {
+        if (user?.is_super_admin && companies.length > 0) {
+            if (selectedCompanyId) {
+                const selectedCompany = companies.find(c => c.id === parseInt(selectedCompanyId))
+                if (selectedCompany) {
+                    if (selectedCompany.is_super_admin) {
+                        // Load Relay data
+                        fetchUsers()
+                        fetchPersonnel()
+                    } else {
+                        // Load company data
+                        fetchCompanyData(selectedCompanyId)
+                    }
+                }
+            }
+        }
+    }, [companies, user?.is_super_admin, selectedCompanyId])
 
 
 
@@ -264,7 +285,7 @@ export const Settings = () => {
                 }
             }
         }
-    }, [selectedCompanyId, companies, user?.is_super_admin])
+    }, [selectedCompanyId, user?.is_super_admin])
     
     // Effect for regular admin - always load their company's data
     useEffect(() => {
@@ -395,7 +416,8 @@ export const Settings = () => {
     useEffect(() => {
         fetchEvents()
         fetchProjects()
-        fetchOrganizations()
+        // Don't call fetchOrganizations() here - it conflicts with fetchCompanyData()
+        // Organizations are fetched by fetchCompanyData() based on selected company
         fetchPersonnel()
         fetchAccessRequests()
         // For super admins, also fetch users for the selected company
@@ -631,6 +653,9 @@ export const Settings = () => {
             // Projects are linked to organizations, which are linked to companies
             // No need to set company_id directly on projects
             const submitData = { ...projectForm }
+            console.log('🔍 Project creation - available organizations:', organizations)
+            console.log('🔍 Project creation - selected organization_id:', projectForm.organization_id)
+            console.log('🔍 Project creation - current company context:', user?.is_super_admin ? selectedCompanyId : user?.company_id)
             
             const response = await fetch(url, {
                 method,
@@ -667,9 +692,13 @@ export const Settings = () => {
                 if (user?.company_id) {
                     // For company admins, use their company_id
                     submitData.company_id = user.company_id
+                    console.log('🔍 Organization creation - using user company_id:', user.company_id)
                 } else if (user?.is_super_admin && selectedCompanyId) {
                     // For super admins, use the currently selected company
                     submitData.company_id = parseInt(selectedCompanyId)
+                    console.log('🔍 Organization creation - using selected company_id:', selectedCompanyId, '->', parseInt(selectedCompanyId))
+                } else {
+                    console.log('🔍 Organization creation - NO company_id set! User:', user?.is_super_admin, 'selectedCompanyId:', selectedCompanyId)
                 }
             }
             
