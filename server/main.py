@@ -676,6 +676,10 @@ class ProjectsResource(Resource):
                 org = session.query(Organization).filter_by(id=org_id).first()
                 if not org:
                     return {'error': 'Organization not found'}, 400
+                
+                # Additional validation: ensure organization exists and is valid
+                if not org.company_id:
+                    return {'error': 'Organization is not associated with any company'}, 400
 
             new_project = ProjectModel(
                 name=data['name'],

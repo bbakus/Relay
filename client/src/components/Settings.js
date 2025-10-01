@@ -274,6 +274,17 @@ export const Settings = () => {
         }
     }, [user?.company_id, user?.is_super_admin])
     
+    // Reset forms when company changes (for super admin)
+    useEffect(() => {
+        if (user?.is_super_admin && selectedCompanyId) {
+            // Reset all forms when switching companies to prevent cross-company data
+            resetProjectForm()
+            resetOrgForm()
+            resetPersonnelForm()
+            resetEventForm()
+        }
+    }, [selectedCompanyId, user?.is_super_admin])
+    
     // Get current company info for conditional rendering
     const currentCompanyId = user?.is_super_admin ? selectedCompanyId : user?.company_id?.toString()
     const currentCompany = companies.find(c => c.id === parseInt(currentCompanyId || '0'))
