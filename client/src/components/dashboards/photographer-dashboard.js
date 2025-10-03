@@ -872,7 +872,7 @@ export const PhotographerDashboardView = () => {
                                         </div>
                                     ) : (
                                         <div className="notes-checkboxes-display">
-                                            {selectedEvent.notes && selectedEvent.notes.split(',').map((note, index) => {
+                                            {selectedEvent.notes && selectedEvent.notes.split(/[,-]/).map((note, index) => {
                                                 const noteValue = note.trim();
                                                 const isCompleted = completedNotes.includes(noteValue);
                                                 return (
