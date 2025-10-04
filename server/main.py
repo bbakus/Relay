@@ -1504,6 +1504,7 @@ class ShotRequests(Resource):
                 'deadline': request.deadline,
                 'process_point': getattr(request, 'process_point', 'idle'),
                 'process_point_updated_by_name': getattr(request, 'process_point_updated_by_name', None),
+                'status': getattr(request, 'status', 'open'),
                 'events': [{
                     'id': event.id,
                     'name': event.name,
@@ -1600,6 +1601,7 @@ class ShotRequestDetail(Resource):
                     'end_time': shot_request.end_time,
                     'deadline': shot_request.deadline,
                     'process_point': getattr(shot_request, 'process_point', 'idle'),
+                    'status': getattr(shot_request, 'status', 'open'),
                     'events': [{
                         'id': event.id,
                         'name': event.name,

@@ -961,7 +961,22 @@ export const ShotRequest = () => {
                                                     onClick={() => group.personnel.id === 'unassigned' ? handleAssignmentClick(sr) : null}
                                                     style={{ cursor: group.personnel.id === 'unassigned' ? 'pointer' : 'default' }}
                                                 >
-                                                    <span className="sr-title">{sr.request}</span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                                                        <span className="sr-title">{sr.request}</span>
+                                                        <span 
+                                                            className="shot-status"
+                                                            style={{
+                                                                fontSize: '10px',
+                                                                fontWeight: '600',
+                                                                padding: '2px 6px',
+                                                                borderRadius: '10px',
+                                                                backgroundColor: sr.status === 'shot' ? '#28a745' : '#6c757d',
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            {sr.status === 'shot' ? 'SHOT' : 'OPEN'}
+                                                        </span>
+                                                    </div>
                                                     <span className="sr-process">{(sr.process_point || 'idle').toUpperCase()}</span>
                                                     {group.personnel.id === 'unassigned' && (
                                                         <span className="assign-hint" style={{ fontSize: '11px', color: 'rgba(255, 122, 24, 0.7)', fontStyle: 'italic' }}>

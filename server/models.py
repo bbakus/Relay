@@ -159,6 +159,8 @@ class ShotRequest(Base, SerializerMixin):
     process_point = Column(String, default='idle')
     # Track who last updated the process point (simple name field)
     process_point_updated_by_name = Column(String)
+    # Shot request status: 'open' or 'shot'
+    status = Column(String, default='open')
 
     # Relationships
     events = relationship('Events', secondary=event_request_association_table, back_populates='shot_requests')

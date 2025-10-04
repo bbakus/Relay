@@ -193,12 +193,16 @@ export const PhotographerDashboardView = () => {
     }, [photographerEvents])
 
     // Filter shot requests for photographer's assigned events OR independent shot requests
+    // Only show open shot requests (exclude completed ones)
     const photographerShotRequests = useMemo(() => {
         if (!currentPhotographer || !shotRequests.length) return []
 
         const photographerEventIds = new Set(photographerEvents.map(event => event.id))
 
         return shotRequests.filter(sr => {
+            // Only show open shot requests
+            if (sr.status === 'shot') return false
+
             // Show shot requests that either:
             // 1. Have events assigned to this photographer, OR
             // 2. Have no events (independent shot requests)
@@ -365,6 +369,38 @@ export const PhotographerDashboardView = () => {
         setIsEditMode(false)
         setEditingNotes('')
         setNewNoteInput('')
+    }
+
+    // Handle marking shot request as complete
+    const handleMarkShotRequestComplete = async (shotRequestId) => {
+        if (!window.confirm('Mark this shot request as complete?')) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    status: 'shot'
+                })
+            })
+
+            if (response.ok) {
+                // Update local state - remove from shot requests list
+                setShotRequests(prev => prev.map(sr => 
+                    sr.id === shotRequestId 
+                        ? { ...sr, status: 'shot' }
+                        : sr
+                ))
+                alert('Shot request marked as complete!')
+            } else {
+                alert('Failed to mark shot request as complete. Please try again.')
+            }
+        } catch (error) {
+            console.error('Error marking shot request as complete:', error)
+            alert('Error marking shot request as complete. Please try again.')
+        }
     }
 
     // Get real-time event status
@@ -621,6 +657,34 @@ export const PhotographerDashboardView = () => {
                                                         </span>
                                                     )}
                                                 </span>
+                                            </div>
+
+                                            {/* Complete Button - Only show for photographers */}
+                                            <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                                                <button
+                                                    onClick={() => handleMarkShotRequestComplete(shotRequest.id)}
+                                                    style={{
+                                                        padding: '6px 16px',
+                                                        backgroundColor: '#28a745',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = '#218838'
+                                                        e.target.style.transform = 'translateY(-1px)'
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = '#28a745'
+                                                        e.target.style.transform = 'translateY(0)'
+                                                    }}
+                                                >
+                                                    Mark Complete
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
