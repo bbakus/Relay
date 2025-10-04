@@ -880,6 +880,17 @@
     transform: translateY(-2px);
 }
 
+.sr-assign-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: #ffffff;
+}
+
+.sr-assign-btn:hover {
+    background: linear-gradient(135deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
 /* Edit Form */
 .sr-edit-form {
     display: flex;

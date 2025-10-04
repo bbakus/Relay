@@ -5,7 +5,7 @@ import { Nav } from './Nav'
 import '../styles/shot_request.css'
 
 export const ShotRequest = () => {
-    const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
+    const { user, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId } = useAuth()
     const [shotRequests, setShotRequests] = useState([])
     const [events, setEvents] = useState([])
     const [projects, setProjects] = useState([])
@@ -371,6 +371,12 @@ export const ShotRequest = () => {
         return Object.values(grouped)
     }, [projectShotRequests])
 
+    // Filter personnel by selected company
+    const companyPersonnel = useMemo(() => {
+        if (!selectedCompanyId) return personnel
+        return personnel.filter(person => person.company_id === parseInt(selectedCompanyId))
+    }, [personnel, selectedCompanyId])
+
     const handleCreateShotRequest = async (e) => {
         e.preventDefault()
         try {
@@ -555,8 +561,7 @@ export const ShotRequest = () => {
                 quick_turn: shotRequest.quick_turn || false,
                 start_time: shotRequest.start_time || '',
                 end_time: shotRequest.end_time || '',
-                deadline: shotRequest.deadline || '',
-                personnel_ids: shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : []
+                deadline: shotRequest.deadline || ''
             })
         }
 
@@ -748,36 +753,6 @@ export const ShotRequest = () => {
                                     />
                                 </div>
                                 
-                                <div className="sr-form-group">
-                                    <label>Assigned Personnel:</label>
-                                    <select
-                                        multiple
-                                        value={editFormData.personnel_ids || []}
-                                        onChange={(e) => {
-                                            const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value))
-                                            setEditFormData(prev => ({...prev, personnel_ids: selectedIds}))
-                                        }}
-                                        style={{
-                                            background: 'rgba(255, 255, 255, 0.05)',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                                            borderRadius: '6px',
-                                            padding: '10px 12px',
-                                            color: '#ffffff',
-                                            fontSize: '14px',
-                                            minHeight: '100px'
-                                        }}
-                                    >
-                                        {personnel.map(person => (
-                                            <option key={person.id} value={person.id}>
-                                                {person.name} ({person.role || 'No role'})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
-                                        Hold Ctrl/Cmd to select multiple personnel
-                                    </small>
-                                </div>
-                                
                                 <div className="sr-form-actions">
                                     <button type="button" onClick={handleCancelEdit} className="sr-cancel-btn">
                                         Cancel
@@ -844,6 +819,9 @@ export const ShotRequest = () => {
                                             </button>
                                             <button onClick={handleDeleteClick} className="sr-delete-btn">
                                                 Delete
+                                            </button>
+                                            <button onClick={() => handleAssignmentClick(shotRequest)} className="sr-assign-btn">
+                                                Assign
                                             </button>
                                         </div>
                                     </div>
@@ -1216,7 +1194,7 @@ export const ShotRequest = () => {
                                         minHeight: '120px'
                                     }}
                                 >
-                                    {personnel.map(person => (
+                                    {companyPersonnel.map(person => (
                                         <option key={person.id} value={person.id}>
                                             {person.name} ({person.role || 'No role'})
                                         </option>
