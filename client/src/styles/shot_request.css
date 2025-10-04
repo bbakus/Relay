@@ -206,7 +206,7 @@
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    max-height: 900px;
+    max-height: 800px;
 }
 
 .shot-request-no-items {
@@ -617,7 +617,7 @@
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 122, 24, 0.5);
     height: auto;
-    min-height: auto;
+    min-height: 80px;
 }
 
 /* Card Header */
@@ -1391,7 +1391,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 900px;
+    max-height: 800px;
     overflow-y: auto;
 }
 
