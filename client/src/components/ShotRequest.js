@@ -24,6 +24,7 @@ export const ShotRequest = () => {
     // Filter states (use global selectedDate for date filtering)
     const [filterQuickTurn, setFilterQuickTurn] = useState('all')
     const [filterProcessPoint, setFilterProcessPoint] = useState('all')
+    const [filterDate, setFilterDate] = useState('selected') // 'selected' or 'all'
     
     // Form state
     const [formData, setFormData] = useState({
@@ -205,7 +206,7 @@ export const ShotRequest = () => {
         let filtered = projectShotRequests
         
         // Filter by date (based on associated events) - use global selectedDate
-        if (selectedDate) {
+        if (selectedDate && filterDate === 'selected') {
             filtered = filtered.filter(sr => {
                 const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
                     sr.events.some(ev => ev.date === selectedDate)
@@ -230,7 +231,7 @@ export const ShotRequest = () => {
         }
         
         return filtered
-    }, [projectShotRequests, selectedDate, filterQuickTurn, filterProcessPoint, events])
+    }, [projectShotRequests, selectedDate, filterDate, filterQuickTurn, filterProcessPoint, events])
 
     // Date parsing helpers (moved here to be available for getShotRequestStatus)
     const parseDateLocal = (dateStr) => {
@@ -346,7 +347,7 @@ export const ShotRequest = () => {
     const shotRequestsByPersonnel = useMemo(() => {
         const grouped = {}
         
-        projectShotRequests.forEach(sr => {
+        filteredShotRequests.forEach(sr => {
             if (sr.personnels && sr.personnels.length > 0) {
                 sr.personnels.forEach(person => {
                     if (!grouped[person.id]) {
@@ -370,7 +371,7 @@ export const ShotRequest = () => {
         })
         
         return Object.values(grouped)
-    }, [projectShotRequests])
+    }, [filteredShotRequests])
 
     // Filter personnel by selected company
     const companyPersonnel = useMemo(() => {
@@ -894,6 +895,18 @@ export const ShotRequest = () => {
                         {/* Filters */}
                         <div className="shot-request-sr-filters">
                             <div className="shot-request-filter-group">
+                                <label>Date:</label>
+                                <select 
+                                    value={filterDate} 
+                                    onChange={(e) => setFilterDate(e.target.value)}
+                                    className="shot-request-filter-select"
+                                >
+                                    <option value="selected">Selected Date</option>
+                                    <option value="all">All Dates</option>
+                                </select>
+                            </div>
+                            
+                            <div className="shot-request-filter-group">
                                 <label>Quick Turn:</label>
                                 <select 
                                     value={filterQuickTurn} 
@@ -955,7 +968,7 @@ export const ShotRequest = () => {
                     <div className="sr-section">
                         <div className="shot-request-section-header">
                             <h2>By Personnel</h2>
-                            <span className="sr-count">{shotRequestsByPersonnel.length}</span>
+                            <span className="sr-count">{shotRequestsByPersonnel.reduce((total, group) => total + group.shotRequests.length, 0)}</span>
                         </div>
                         <div className="shot-request-sr-list">
                             {shotRequestsByPersonnel.length === 0 ? (
