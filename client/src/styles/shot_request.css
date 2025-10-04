@@ -205,7 +205,6 @@
     gap: 15px;
     flex: 1;
     overflow-y: auto;
-    min-height: 0;
     max-height: 800px;
 }
 
@@ -599,10 +598,10 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     margin-bottom: 16px;
-    overflow: hidden;
+    overflow: visible;
     transition: all 0.3s ease;
     position: relative;
-    min-height: 120px;
+    min-height: 140px;
     height: auto;
 }
 
@@ -617,16 +616,16 @@
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 122, 24, 0.5);
     height: auto;
-    min-height: 120px;
+    min-height: 400px;
 }
 
 /* Card Header */
 .sr-card-header {
-    padding: 20px;
+    padding: 24px;
     cursor: pointer;
     user-select: none;
     transition: background-color 0.2s ease;
-    min-height: 80px;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -709,11 +708,12 @@
 /* Card Details */
 .sr-card-details {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 20px;
+    padding: 24px;
     background: rgba(0, 0, 0, 0.1);
-    min-height: 200px;
+    min-height: 300px;
     display: flex;
     flex-direction: column;
+    flex: 1;
 }
 
 /* Simple event info */
