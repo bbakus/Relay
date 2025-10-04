@@ -213,10 +213,14 @@ export const CoordinatorDashboardView = () => {
         return shotRequests.filter(sr => {
             const isDelivered = sr.process_point?.toLowerCase() === 'delivered'
             
-            // If global date is selected, only show shot requests associated with events on that date
-            if (selectedDate && sr.events && sr.events.length > 0) {
-                const hasEventOnSelectedDate = sr.events.some(event => event.date === selectedDate)
-                return isDelivered && hasEventOnSelectedDate
+            // If global date is selected, show shot requests that either:
+            // 1. Are associated with events on that date, OR
+            // 2. Have no events (independent shot requests)
+            if (selectedDate) {
+                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                    sr.events.some(event => event.date === selectedDate)
+                const isIndependent = !sr.events || sr.events.length === 0
+                return isDelivered && (hasEventOnSelectedDate || isIndependent)
             }
             
             return isDelivered

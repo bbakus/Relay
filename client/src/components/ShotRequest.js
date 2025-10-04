@@ -273,8 +273,14 @@ export const ShotRequest = () => {
         return projectShotRequests.filter(shotRequest => {
             // First, check if shot request matches global date (if one is selected)
             if (selectedDate) {
-                const event = events.find(e => shotRequest.events?.some(ev => ev.id === e.id))
-                if (!event || event.date !== selectedDate) {
+                const hasEventOnSelectedDate = shotRequest.events && shotRequest.events.length > 0 && 
+                    shotRequest.events.some(ev => ev.date === selectedDate)
+                const isIndependent = !shotRequest.events || shotRequest.events.length === 0
+                
+                // Show shot requests that either:
+                // 1. Have events on the selected date, OR
+                // 2. Are independent (no events)
+                if (!hasEventOnSelectedDate && !isIndependent) {
                     return false
                 }
             }
@@ -293,8 +299,14 @@ export const ShotRequest = () => {
         return projectShotRequests.filter(shotRequest => {
             // First, check if shot request matches global date (if one is selected)
             if (selectedDate) {
-                const event = events.find(e => shotRequest.events?.some(ev => ev.id === e.id))
-                if (!event || event.date !== selectedDate) {
+                const hasEventOnSelectedDate = shotRequest.events && shotRequest.events.length > 0 && 
+                    shotRequest.events.some(ev => ev.date === selectedDate)
+                const isIndependent = !shotRequest.events || shotRequest.events.length === 0
+                
+                // Show shot requests that either:
+                // 1. Have events on the selected date, OR
+                // 2. Are independent (no events)
+                if (!hasEventOnSelectedDate && !isIndependent) {
                     return false
                 }
             }
@@ -860,7 +872,7 @@ export const ShotRequest = () => {
                             </div>
                             
                             <div className="shot-request-form-group">
-                                <label>Event:</label>
+                                <label>Event (Optional):</label>
                                 <div className="custom-dropdown-container">
                                     <input
                                         type="text"
@@ -868,12 +880,22 @@ export const ShotRequest = () => {
                                         onChange={handleEventSearchChange}
                                         onFocus={handleEventSearchFocus}
                                         onBlur={() => setTimeout(() => setShowEventDropdown(false), 200)}
-                                        placeholder="Click to select or type to search events..."
-                                        required
+                                        placeholder="Click to select or type to search events (optional)..."
                                         className="searchable-dropdown"
                                     />
                                     {showEventDropdown && (
                                         <div className="custom-dropdown-options">
+                                            <div
+                                                className="custom-dropdown-option"
+                                                onClick={() => {
+                                                    setFormData(prev => ({...prev, event_id: ''}))
+                                                    setEventSearchText('')
+                                                    setShowEventDropdown(false)
+                                                }}
+                                                style={{ fontStyle: 'italic', color: '#666' }}
+                                            >
+                                                None (Independent Shot Request)
+                                            </div>
                                             {filteredEvents.length > 0 ? (
                                                 filteredEvents.map(event => (
                                                     <div
