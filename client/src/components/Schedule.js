@@ -5,6 +5,7 @@ import { Nav } from './Nav'
 // import { NotificationCenter } from './NotificationCenter' // Temporarily disabled
 import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/schedule.css'
+import '../styles/quick-turn-dot.css'
 import '../styles/schedule-mobile.css'
 
 export const Schedule = () => {
@@ -847,7 +848,7 @@ export const Schedule = () => {
                                                     >
                                                         <div className='event-header'>
                                                             <h3>{event.name}</h3>
-                                                            {event.quick_turn && <span className='quick-turn'>⚡</span>}
+                                                            {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                         </div>
                                                         <div className='event-time'>
                                                             {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
@@ -900,7 +901,7 @@ export const Schedule = () => {
                                                     >
                                                         <div className='event-header'>
                                                             <h3>{event.name}</h3>
-                                                            {event.quick_turn && <span className='quick-turn'>⚡</span>}
+                                                            {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                         </div>
                                                         <div className='event-time'>
                                                             {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
@@ -981,7 +982,7 @@ export const Schedule = () => {
                                         onChange={(e) => handleQuickTurnChange(selectedEvent.id, e.target.checked)}
                                     />
                                     <label htmlFor="quick-turn-checkbox">
-                                        {selectedEvent.quick_turn ? 'Yes ⚡' : 'No'}
+                                        {selectedEvent.quick_turn ? <>Yes <span className="quick-turn-dot"></span></> : 'No'}
                                     </label>
                                 </div>
                             </div>

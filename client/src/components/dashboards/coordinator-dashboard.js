@@ -4,6 +4,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { Line, Pie } from 'react-chartjs-2'
 import { formatDateForHeader } from '../../utils/dateUtils'
 import '../../styles/coordinator-dashboard.css'
+import '../../styles/quick-turn-dot.css'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement)
 
@@ -728,7 +729,7 @@ export const CoordinatorDashboardView = () => {
                                         checked={eventForm.quick_turn}
                                         onChange={(e) => setEventForm({...eventForm, quick_turn: e.target.checked})}
                                     />
-                                    Quick Turn ⚡
+                                    <span className="quick-turn-text">Quick Turn</span> <span className="quick-turn-dot"></span>
                                 </label>
                             </div>
                             <div className="coordinator-form-actions">
@@ -820,7 +821,7 @@ export const CoordinatorDashboardView = () => {
                                         checked={shotRequestForm.quick_turn}
                                         onChange={(e) => setShotRequestForm({...shotRequestForm, quick_turn: e.target.checked})}
                                     />
-                                    Quick Turn ⚡
+                                    <span className="quick-turn-text">Quick Turn</span> <span className="quick-turn-dot"></span>
                                 </label>
                             </div>
                             <div className="coordinator-form-actions">

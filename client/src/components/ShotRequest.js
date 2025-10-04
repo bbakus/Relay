@@ -3,6 +3,7 @@ import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import '../styles/shot_request.css'
+import '../styles/quick-turn-dot.css'
 
 export const ShotRequest = () => {
     const { user, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId } = useAuth()
@@ -645,7 +646,7 @@ export const ShotRequest = () => {
                             </span>
                         </div>
                         <div className="sr-header-right">
-                            {shotRequest.quick_turn && <span className="quick-turn">⚡</span>}
+                            {shotRequest.quick_turn && <span className="quick-turn-dot"></span>}
                             <span className="expand-icon">{isExpanded ? '▼' : '▶'}</span>
                         </div>
                     </div>
@@ -718,7 +719,7 @@ export const ShotRequest = () => {
                                             checked={editFormData.quick_turn}
                                             onChange={(e) => setEditFormData(prev => ({...prev, quick_turn: e.target.checked}))}
                                         />
-                                        Quick Turn ⚡
+                                        <span className="quick-turn-text">Quick Turn</span> <span className="quick-turn-dot"></span>
                                     </label>
                                 </div>
                                 

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { formatDateForHeader } from '../../utils/dateUtils'
 import '../../styles/photographer-dashboard.css'
 import '../../styles/photographer-dashboard-mobile.css'
+import '../../styles/quick-turn-dot.css'
 
 export const PhotographerDashboardView = () => {
     const { user, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
@@ -595,8 +596,8 @@ export const PhotographerDashboardView = () => {
                                                 <span className={`photographer-shot-priority ${shotRequest.quick_turn ? 'quick-turnaround' : 'normal-priority'}`}>
                                                     {shotRequest.quick_turn ? (
                                                         <>
-                                                            <span className="lightning-bolt">⚡</span>
-                                                            Quick Turnaround
+                                                            <span className="quick-turn-dot"></span>
+                                                            <span className="quick-turn-text">Quick Turnaround</span>
                                                         </>
                                                     ) : (
                                                         'Priority: Normal'
@@ -756,7 +757,7 @@ export const PhotographerDashboardView = () => {
                                                     <div className='photographer-dashboard-event-header'>
                                                         <h3 className='photographer-dashboard-event-title'>{event.name}</h3>
                                                         <div className='photographer-dashboard-event-status-container'>
-                                                            {event.quick_turn && <span className='photographer-dashboard-quick-turn'>⚡</span>}
+                                                            {event.quick_turn && <span className='photographer-dashboard-quick-turn'><span className="quick-turn-dot"></span></span>}
                                                             <span 
                                                                 className='photographer-dashboard-event-status'
                                                                 style={{ color: getStatusColor(eventStatus) }}
@@ -967,7 +968,7 @@ export const PhotographerDashboardView = () => {
                             
                             <div className="photographer-event-detail-row">
                                 <label>Quick Turn:</label>
-                                <span>{selectedEvent.quick_turn ? 'Yes ⚡' : 'No'}</span>
+                                <span>{selectedEvent.quick_turn ? <>Yes <span className="quick-turn-dot"></span></> : 'No'}</span>
                             </div>
                             
                             {selectedEvent.deadline && (

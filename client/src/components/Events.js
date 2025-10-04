@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { Nav } from './Nav'
 import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/events.css'
+import '../styles/quick-turn-dot.css'
 
 export const Events = () => {
     const { user, selectedCompanyId, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
@@ -659,7 +660,7 @@ export const Events = () => {
             >
                 <div className="events-card-basic-info">
                     <div className='events-card-header'>
-                        <h3>{event.name} {event.quick_turn && <span style={{color: '#ff7a18'}}>⚡ Quick Turn</span>}</h3>
+                        <h3>{event.name} {event.quick_turn && <span className="quick-turn-text"><span className="quick-turn-dot"></span> Quick Turn</span>}</h3>
 
                     </div>
                     

@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext'
 // import { useNotifications } from '../../context/NotificationContext' // Temporarily disabled
 import { API_CONFIG } from '../../utils/apiConfig'
 import '../../styles/editor-dashboard.css'
+import '../../styles/quick-turn-dot.css'
 
 // Register Chart.js components
 ChartJS.register(
@@ -658,7 +659,7 @@ export const EditorDashboardView = () => {
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                           <div className="editor-card-details-row">
-                            {event.quick_turn && <span className="editor-quick-turn-badge">⚡ Quick Turn</span>}
+                            {event.quick_turn && <span className="editor-quick-turn-badge"><span className="quick-turn-dot"></span> <span className="quick-turn-text">Quick Turn</span></span>}
                             {event.start_time && event.end_time && (
                               <span className="editor-time-badge">{event.start_time} - {event.end_time}</span>
                             )}
@@ -742,7 +743,7 @@ export const EditorDashboardView = () => {
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                           <div className="editor-card-details-row">
-                            {shotRequest.quick_turn && <span className="editor-quick-turn-badge">⚡ Quick Turn</span>}
+                            {shotRequest.quick_turn && <span className="editor-quick-turn-badge"><span className="quick-turn-dot"></span> <span className="quick-turn-text">Quick Turn</span></span>}
                             {shotRequest.deadline && (
                               <span className="editor-time-badge">{new Date(shotRequest.deadline).toLocaleDateString()}</span>
                             )}
