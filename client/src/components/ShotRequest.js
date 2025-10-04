@@ -572,6 +572,7 @@ export const ShotRequest = () => {
     }
 
 
+
     const handleAssignmentClick = (shotRequest) => {
         setAssignmentTarget(shotRequest)
         setAssignmentPersonnelIds(shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : [])
@@ -604,12 +605,6 @@ export const ShotRequest = () => {
         } catch (error) {
             console.error('Error updating shot request assignment:', error)
         }
-    }
-
-    const handleAssignmentCancel = () => {
-        setShowAssignmentModal(false)
-        setAssignmentTarget(null)
-        setAssignmentPersonnelIds([])
     }
 
         const handleDeleteClick = async (e) => {
