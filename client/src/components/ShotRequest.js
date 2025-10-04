@@ -601,6 +601,12 @@ export const ShotRequest = () => {
         }
     }
 
+    const handleAssignmentCancel = () => {
+        setShowAssignmentModal(false)
+        setAssignmentTarget(null)
+        setAssignmentPersonnelIds([])
+    }
+
         const handleDeleteClick = async (e) => {
             e.stopPropagation()
             if (window.confirm('Are you sure you want to delete this shot request?')) {
