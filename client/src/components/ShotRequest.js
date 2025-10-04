@@ -9,6 +9,7 @@ export const ShotRequest = () => {
     const [shotRequests, setShotRequests] = useState([])
     const [events, setEvents] = useState([])
     const [projects, setProjects] = useState([])
+    const [personnel, setPersonnel] = useState([])
     const [loading, setLoading] = useState(true)
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [expandedShotRequests, setExpandedShotRequests] = useState(new Set())
@@ -30,7 +31,8 @@ export const ShotRequest = () => {
         end_time: '',
         deadline: '',
         event_id: '',
-        project_id: ''
+        project_id: '',
+        personnel_ids: []
     })
 
     // Event search state
@@ -83,6 +85,7 @@ export const ShotRequest = () => {
         fetchShotRequests()
         fetchEvents()
         fetchProjects()
+        fetchPersonnel()
     }, [])
 
     const fetchShotRequests = async () => {
@@ -121,6 +124,18 @@ export const ShotRequest = () => {
             }
         } catch (error) {
             console.error('Error fetching projects:', error)
+        }
+    }
+
+    const fetchPersonnel = async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
+            if (response.ok) {
+                const data = await response.json()
+                setPersonnel(data)
+            }
+        } catch (error) {
+            console.error('Error fetching personnel:', error)
         }
     }
 
@@ -317,6 +332,36 @@ export const ShotRequest = () => {
         })
     }, [projectShotRequests, selectedDate, events, currentTimeTick])
 
+    // Group shot requests by assigned personnel for the future panel
+    const shotRequestsByPersonnel = useMemo(() => {
+        const grouped = {}
+        
+        projectShotRequests.forEach(sr => {
+            if (sr.personnels && sr.personnels.length > 0) {
+                sr.personnels.forEach(person => {
+                    if (!grouped[person.id]) {
+                        grouped[person.id] = {
+                            personnel: person,
+                            shotRequests: []
+                        }
+                    }
+                    grouped[person.id].shotRequests.push(sr)
+                })
+            } else {
+                // Unassigned shot requests
+                if (!grouped['unassigned']) {
+                    grouped['unassigned'] = {
+                        personnel: { id: 'unassigned', name: 'Unassigned', role: null },
+                        shotRequests: []
+                    }
+                }
+                grouped['unassigned'].shotRequests.push(sr)
+            }
+        })
+        
+        return Object.values(grouped)
+    }, [projectShotRequests])
+
     const handleCreateShotRequest = async (e) => {
         e.preventDefault()
         try {
@@ -501,7 +546,8 @@ export const ShotRequest = () => {
                 quick_turn: shotRequest.quick_turn || false,
                 start_time: shotRequest.start_time || '',
                 end_time: shotRequest.end_time || '',
-                deadline: shotRequest.deadline || ''
+                deadline: shotRequest.deadline || '',
+                personnel_ids: shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : []
             })
         }
 
@@ -650,6 +696,36 @@ export const ShotRequest = () => {
                                         onChange={(e) => setEditFormData(prev => ({...prev, deadline: e.target.value}))}
                                         placeholder="e.g., End of day, ASAP, etc."
                                     />
+                                </div>
+                                
+                                <div className="sr-form-group">
+                                    <label>Assigned Personnel:</label>
+                                    <select
+                                        multiple
+                                        value={editFormData.personnel_ids || []}
+                                        onChange={(e) => {
+                                            const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                                            setEditFormData(prev => ({...prev, personnel_ids: selectedIds}))
+                                        }}
+                                        style={{
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            borderRadius: '6px',
+                                            padding: '10px 12px',
+                                            color: '#ffffff',
+                                            fontSize: '14px',
+                                            minHeight: '100px'
+                                        }}
+                                    >
+                                        {personnel.map(person => (
+                                            <option key={person.id} value={person.id}>
+                                                {person.name} ({person.role || 'No role'})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
+                                        Hold Ctrl/Cmd to select multiple personnel
+                                    </small>
                                 </div>
                                 
                                 <div className="sr-form-actions">
@@ -833,14 +909,34 @@ export const ShotRequest = () => {
                         </div>
                     </div>
                     
-                    {/* Future Panel - Bottom Right */}
+                    {/* Personnel Assignment Panel - Bottom Right */}
                     <div className="sr-section">
                         <div className="shot-request-section-header">
-                            <h2>Future Panel</h2>
-                            <span className="sr-count">0</span>
+                            <h2>By Personnel</h2>
+                            <span className="sr-count">{shotRequestsByPersonnel.length}</span>
                         </div>
                         <div className="shot-request-sr-list">
-                            <p className="shot-request-no-items">Panel reserved for future use</p>
+                            {shotRequestsByPersonnel.length === 0 ? (
+                                <p className="shot-request-no-items">No personnel assignments</p>
+                            ) : (
+                                shotRequestsByPersonnel.map(group => (
+                                    <div key={group.personnel.id} className="personnel-group">
+                                        <div className="personnel-header">
+                                            <h4>{group.personnel.name}</h4>
+                                            <span className="personnel-role">{group.personnel.role || 'No role'}</span>
+                                            <span className="personnel-count">{group.shotRequests.length} shot request{group.shotRequests.length !== 1 ? 's' : ''}</span>
+                                        </div>
+                                        <div className="personnel-shot-requests">
+                                            {group.shotRequests.map(sr => (
+                                                <div key={sr.id} className="personnel-shot-request-item">
+                                                    <span className="sr-title">{sr.request}</span>
+                                                    <span className="sr-process">{(sr.process_point || 'idle').toUpperCase()}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
@@ -963,6 +1059,36 @@ export const ShotRequest = () => {
                                     onChange={(e) => setFormData(prev => ({...prev, deadline: e.target.value}))}
                                     placeholder="e.g., End of day, Next week"
                                 />
+                            </div>
+                            
+                            <div className="shot-request-form-group">
+                                <label>Assign Personnel (Optional):</label>
+                                <select
+                                    multiple
+                                    value={formData.personnel_ids || []}
+                                    onChange={(e) => {
+                                        const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                                        setFormData(prev => ({...prev, personnel_ids: selectedIds}))
+                                    }}
+                                    style={{
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '6px',
+                                        padding: '10px 12px',
+                                        color: '#ffffff',
+                                        fontSize: '14px',
+                                        minHeight: '100px'
+                                    }}
+                                >
+                                    {personnel.map(person => (
+                                        <option key={person.id} value={person.id}>
+                                            {person.name} ({person.role || 'No role'})
+                                        </option>
+                                    ))}
+                                </select>
+                                <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
+                                    Hold Ctrl/Cmd to select multiple personnel
+                                </small>
                             </div>
                             
                             <div className="shot-request-form-group checkbox-group">

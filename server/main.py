@@ -1512,7 +1512,13 @@ class ShotRequests(Resource):
                     'end_time': event.end_time,
                     'location': event.location,
                     'project_id': event.project_id
-                } for event in request.events]
+                } for event in request.events],
+                'personnels': [{
+                    'id': person.id,
+                    'name': person.name,
+                    'email': person.email,
+                    'role': person.role
+                } for person in request.personnels]
             } for request in shot_requests], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -1550,6 +1556,13 @@ class ShotRequests(Resource):
                 event = session.query(EventModel).filter_by(id=event_id).first()
                 if event:
                     new_request.events.append(event)
+            
+            # If personnel_ids are provided, associate with personnel
+            personnel_ids = data.get('personnel_ids', [])
+            for personnel_id in personnel_ids:
+                personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
+                if personnel:
+                    new_request.personnels.append(personnel)
             
             session.commit()
             
@@ -1595,7 +1608,13 @@ class ShotRequestDetail(Resource):
                         'end_time': event.end_time,
                         'location': event.location,
                         'project_id': event.project_id
-                    } for event in shot_request.events]
+                    } for event in shot_request.events],
+                    'personnels': [{
+                        'id': person.id,
+                        'name': person.name,
+                        'email': person.email,
+                        'role': person.role
+                    } for person in shot_request.personnels]
                 }, 200
             return {'error': 'Shot request not found'}, 404
         except Exception as e:
@@ -1619,8 +1638,19 @@ class ShotRequestDetail(Resource):
                 user_name = request.headers.get('X-User-Name', 'Unknown')
                 shot_request.process_point_updated_by_name = user_name
             
+            # Handle personnel assignments
+            if 'personnel_ids' in data:
+                personnel_ids = data['personnel_ids']
+                # Clear existing personnel associations
+                shot_request.personnels.clear()
+                # Add new personnel associations
+                for personnel_id in personnel_ids:
+                    personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
+                    if personnel:
+                        shot_request.personnels.append(personnel)
+            
             for key, value in data.items():
-                if hasattr(shot_request, key):
+                if hasattr(shot_request, key) and key != 'personnel_ids':
                     setattr(shot_request, key, value)
             
             session.commit()
