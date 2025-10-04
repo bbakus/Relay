@@ -1005,49 +1005,27 @@ export const ShotRequest = () => {
                                                     onClick={() => group.personnel.id === 'unassigned' ? handleAssignmentClick(sr) : null}
                                                     style={{ cursor: group.personnel.id === 'unassigned' ? 'pointer' : 'default' }}
                                                 >
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-                                                        <span className="sr-title" style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                            {sr.request}
-                                                        </span>
-                                                        <span 
-                                                            className="shot-status"
-                                                            style={{
-                                                                fontSize: '10px',
-                                                                fontWeight: '600',
-                                                                padding: '2px 6px',
-                                                                borderRadius: '10px',
-                                                                backgroundColor: sr.status === 'shot' ? '#28a745' : '#6c757d',
-                                                                color: 'white',
-                                                                flexShrink: 0
-                                                            }}
-                                                        >
-                                                            {sr.status === 'shot' ? 'SHOT' : 'OPEN'}
-                                                        </span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                                                        <span className="sr-process" style={{ 
-                                                            color: 'rgba(255, 255, 255, 0.7)',
-                                                            fontSize: '11px',
-                                                            fontWeight: '600',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px',
-                                                            padding: '2px 6px',
-                                                            background: 'rgba(255, 255, 255, 0.1)',
-                                                            borderRadius: '4px',
-                                                            whiteSpace: 'nowrap'
-                                                        }}>
-                                                            {(sr.process_point || 'idle').toUpperCase()}
-                                                        </span>
-                                                        {group.personnel.id === 'unassigned' && (
-                                                            <span className="assign-hint" style={{ 
-                                                                fontSize: '11px', 
-                                                                color: 'rgba(255, 122, 24, 0.7)', 
-                                                                fontStyle: 'italic',
-                                                                whiteSpace: 'nowrap' 
-                                                            }}>
-                                                                Click to assign
+                                                    <div className="personnel-item-content">
+                                                        <div className="personnel-item-left">
+                                                            <span className="personnel-item-title">
+                                                                {sr.request}
                                                             </span>
-                                                        )}
+                                                            <span 
+                                                                className={`personnel-item-status ${sr.status === 'shot' ? 'status-shot' : 'status-open'}`}
+                                                            >
+                                                                {sr.status === 'shot' ? 'SHOT' : 'OPEN'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="personnel-item-right">
+                                                            <span className="personnel-item-process">
+                                                                {(sr.process_point || 'idle').toUpperCase()}
+                                                            </span>
+                                                            {group.personnel.id === 'unassigned' && (
+                                                                <span className="personnel-assign-hint">
+                                                                    Click to assign
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
