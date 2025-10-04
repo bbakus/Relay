@@ -1186,63 +1186,91 @@ export const ShotRequest = () => {
             {/* Assignment Modal */}
             {showAssignmentModal && assignmentTarget && (
                 <div className="shot-request-modal-overlay" onClick={handleAssignmentCancel}>
-                    <div className="shot-request-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="shot-request-modal-header">
+                    <div className="assignment-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="assignment-modal-header">
                             <h2>Assign Personnel</h2>
                             <button 
-                                className="shot-request-close-btn"
+                                className="assignment-close-btn"
                                 onClick={handleAssignmentCancel}
                             >
                                 ×
                             </button>
                         </div>
                         
-                        <div className="sr-form">
-                            <div className="shot-request-form-group">
-                                <label>Shot Request:</label>
-                                <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: '600', margin: '8px 0' }}>
-                                    {assignmentTarget.request}
-                                </p>
+                        <div className="assignment-modal-body">
+                            <div className="assignment-shot-request-info">
+                                <h3>Shot Request</h3>
+                                <p className="assignment-request-title">{assignmentTarget.request}</p>
                             </div>
-                            
-                            <div className="shot-request-form-group">
-                                <label>Assign Personnel:</label>
-                                <select
-                                    multiple
-                                    value={assignmentPersonnelIds}
-                                    onChange={(e) => {
-                                        const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value))
-                                        setAssignmentPersonnelIds(selectedIds)
-                                    }}
-                                    style={{
-                                        background: 'rgba(255, 255, 255, 0.05)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                        borderRadius: '6px',
-                                        padding: '10px 12px',
-                                        color: '#ffffff',
-                                        fontSize: '14px',
-                                        minHeight: '120px'
-                                    }}
-                                >
-                                    {companyPersonnel.map(person => (
-                                        <option key={person.id} value={person.id}>
-                                            {person.name} ({person.role || 'No role'})
-                                        </option>
-                                    ))}
-                                </select>
-                                <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
-                                    Hold Ctrl/Cmd to select multiple personnel
-                                </small>
+
+                            {/* Current Assignments */}
+                            {assignmentTarget.personnels && assignmentTarget.personnels.length > 0 && (
+                                <div className="assignment-current-section">
+                                    <h4>Currently Assigned:</h4>
+                                    <div className="assignment-current-list">
+                                        {assignmentTarget.personnels.map(person => (
+                                            <div key={person.id} className="assignment-current-item">
+                                                <span className="assignment-person-name">{person.name}</span>
+                                                <span className="assignment-person-role">{person.role || 'No role'}</span>
+                                                <span className="assignment-remove-btn" onClick={() => {
+                                                    const newIds = assignmentPersonnelIds.filter(id => id !== person.id)
+                                                    setAssignmentPersonnelIds(newIds)
+                                                }}>×</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Available Personnel */}
+                            <div className="assignment-available-section">
+                                <h4>Available Personnel:</h4>
+                                <div className="assignment-personnel-grid">
+                                    {companyPersonnel.map(person => {
+                                        const isSelected = assignmentPersonnelIds.includes(person.id)
+                                        const isCurrentlyAssigned = assignmentTarget.personnels && 
+                                            assignmentTarget.personnels.some(p => p.id === person.id)
+                                        
+                                        return (
+                                            <div 
+                                                key={person.id}
+                                                className={`assignment-personnel-item ${isSelected ? 'selected' : ''}`}
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        setAssignmentPersonnelIds(prev => prev.filter(id => id !== person.id))
+                                                    } else {
+                                                        setAssignmentPersonnelIds(prev => [...prev, person.id])
+                                                    }
+                                                }}
+                                            >
+                                                <div className="assignment-personnel-checkbox">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={isSelected}
+                                                        onChange={() => {}} // Handled by parent div click
+                                                    />
+                                                </div>
+                                                <div className="assignment-personnel-info">
+                                                    <span className="assignment-personnel-name">{person.name}</span>
+                                                    <span className="assignment-personnel-role">{person.role || 'No role'}</span>
+                                                </div>
+                                                {isCurrentlyAssigned && (
+                                                    <span className="assignment-currently-badge">Current</span>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
-                            
-                            <div className="shot-request-form-actions">
-                                <button type="button" onClick={handleAssignmentCancel}>
-                                    Cancel
-                                </button>
-                                <button type="button" onClick={handleAssignmentSubmit}>
-                                    Assign Personnel
-                                </button>
-                            </div>
+                        </div>
+                        
+                        <div className="assignment-modal-footer">
+                            <button type="button" className="assignment-cancel-btn" onClick={handleAssignmentCancel}>
+                                Cancel
+                            </button>
+                            <button type="button" className="assignment-save-btn" onClick={handleAssignmentSubmit}>
+                                Save Assignments
+                            </button>
                         </div>
                     </div>
                 </div>

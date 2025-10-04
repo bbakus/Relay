@@ -1079,6 +1079,260 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Assignment Modal Styling */
+.assignment-modal-content {
+    background: rgba(20, 20, 20, 0.95);
+    border-radius: 12px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.assignment-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 122, 24, 0.1);
+}
+
+.assignment-modal-header h2 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.assignment-close-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.assignment-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.assignment-modal-body {
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.assignment-shot-request-info {
+    margin-bottom: 24px;
+}
+
+.assignment-shot-request-info h3 {
+    color: #ffffff;
+    font-size: 16px;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.assignment-request-title {
+    color: #ff7a18;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    padding: 12px;
+    background: rgba(255, 122, 24, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 122, 24, 0.2);
+}
+
+.assignment-current-section {
+    margin-bottom: 24px;
+}
+
+.assignment-current-section h4 {
+    color: #ffffff;
+    font-size: 14px;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.assignment-current-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.assignment-current-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+}
+
+.assignment-person-name {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.assignment-person-role {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-style: italic;
+}
+
+.assignment-remove-btn {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.assignment-remove-btn:hover {
+    background: rgba(220, 53, 69, 0.3);
+    border-color: rgba(220, 53, 69, 0.5);
+}
+
+.assignment-available-section h4 {
+    color: #ffffff;
+    font-size: 14px;
+    margin: 0 0 16px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.assignment-personnel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.assignment-personnel-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 12px;
+}
+
+.assignment-personnel-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 122, 24, 0.3);
+}
+
+.assignment-personnel-item.selected {
+    background: rgba(255, 122, 24, 0.1);
+    border-color: rgba(255, 122, 24, 0.5);
+}
+
+.assignment-personnel-checkbox {
+    flex-shrink: 0;
+}
+
+.assignment-personnel-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ff7a18;
+    cursor: pointer;
+}
+
+.assignment-personnel-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.assignment-personnel-name {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.assignment-personnel-role {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    font-style: italic;
+}
+
+.assignment-currently-badge {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.assignment-modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.assignment-cancel-btn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.assignment-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.assignment-save-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #ff7a18, #ff9f40);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.assignment-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
+}
+
 /* Personnel Group Styling */
 .personnel-group {
     background: rgba(255, 255, 255, 0.03);
