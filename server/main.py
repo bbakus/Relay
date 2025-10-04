@@ -1665,7 +1665,8 @@ class ShotRequestDetail(Resource):
                 'start_time': shot_request.start_time,
                 'end_time': shot_request.end_time,
                 'deadline': shot_request.deadline,
-                'process_point': getattr(shot_request, 'process_point', 'idle')
+                'process_point': getattr(shot_request, 'process_point', 'idle'),
+                'status': getattr(shot_request, 'status', 'open')
             }, 200
         except Exception as e:
             session.rollback()

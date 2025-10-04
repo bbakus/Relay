@@ -394,7 +394,6 @@ export const ShotRequest = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...assignmentTarget,
                     personnel_ids: assignmentPersonnelIds
                 })
             })
