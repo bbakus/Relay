@@ -377,6 +377,46 @@ export const ShotRequest = () => {
         return personnel.filter(person => person.company_id === parseInt(selectedCompanyId))
     }, [personnel, selectedCompanyId])
 
+    const handleAssignmentClick = (shotRequest) => {
+        setAssignmentTarget(shotRequest)
+        setAssignmentPersonnelIds(shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : [])
+        setShowAssignmentModal(true)
+    }
+
+    const handleAssignmentSubmit = async () => {
+        if (!assignmentTarget) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${assignmentTarget.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...assignmentTarget,
+                    personnel_ids: assignmentPersonnelIds
+                })
+            })
+
+            if (response.ok) {
+                setShowAssignmentModal(false)
+                setAssignmentTarget(null)
+                setAssignmentPersonnelIds([])
+                fetchShotRequests() // Refresh the data
+            } else {
+                console.error('Failed to update shot request assignment')
+            }
+        } catch (error) {
+            console.error('Error updating shot request assignment:', error)
+        }
+    }
+
+    const handleAssignmentCancel = () => {
+        setShowAssignmentModal(false)
+        setAssignmentTarget(null)
+        setAssignmentPersonnelIds([])
+    }
+
     const handleCreateShotRequest = async (e) => {
         e.preventDefault()
         try {
@@ -569,42 +609,6 @@ export const ShotRequest = () => {
         e.stopPropagation()
         setEditingShotRequest(null)
         setEditFormData({})
-    }
-
-
-
-    const handleAssignmentClick = (shotRequest) => {
-        setAssignmentTarget(shotRequest)
-        setAssignmentPersonnelIds(shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : [])
-        setShowAssignmentModal(true)
-    }
-
-    const handleAssignmentSubmit = async () => {
-        if (!assignmentTarget) return
-
-        try {
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${assignmentTarget.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...assignmentTarget,
-                    personnel_ids: assignmentPersonnelIds
-                })
-            })
-
-            if (response.ok) {
-                setShowAssignmentModal(false)
-                setAssignmentTarget(null)
-                setAssignmentPersonnelIds([])
-                fetchShotRequests() // Refresh the data
-            } else {
-                console.error('Failed to update shot request assignment')
-            }
-        } catch (error) {
-            console.error('Error updating shot request assignment:', error)
-        }
     }
 
         const handleDeleteClick = async (e) => {
