@@ -24,7 +24,6 @@ export const ShotRequest = () => {
     // Filter states (use global selectedDate for date filtering)
     const [filterQuickTurn, setFilterQuickTurn] = useState('all')
     const [filterProcessPoint, setFilterProcessPoint] = useState('all')
-    const [filterDate, setFilterDate] = useState('selected') // 'selected' or 'all'
     
     // Form state
     const [formData, setFormData] = useState({
@@ -32,6 +31,7 @@ export const ShotRequest = () => {
         notes: '',
         details: '',
         quick_turn: false,
+        date: '',
         start_time: '',
         end_time: '',
         deadline: '',
@@ -205,20 +205,6 @@ export const ShotRequest = () => {
     const filteredShotRequests = useMemo(() => {
         let filtered = projectShotRequests
         
-        // Filter by date (based on associated events) - use global selectedDate
-        if (selectedDate && filterDate === 'selected') {
-            filtered = filtered.filter(sr => {
-                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
-                    sr.events.some(ev => ev.date === selectedDate)
-                const isIndependent = !sr.events || sr.events.length === 0
-                
-                // Show shot requests that either:
-                // 1. Have events on the selected date, OR
-                // 2. Are independent (no events)
-                return hasEventOnSelectedDate || isIndependent
-            })
-        }
-        
         // Filter by quick turn
         if (filterQuickTurn !== 'all') {
             const isQuickTurn = filterQuickTurn === 'yes'
@@ -231,7 +217,7 @@ export const ShotRequest = () => {
         }
         
         return filtered
-    }, [projectShotRequests, selectedDate, filterDate, filterQuickTurn, filterProcessPoint, events])
+    }, [projectShotRequests, filterQuickTurn, filterProcessPoint])
 
     // Date parsing helpers (moved here to be available for getShotRequestStatus)
     const parseDateLocal = (dateStr) => {
@@ -600,6 +586,7 @@ export const ShotRequest = () => {
                 notes: shotRequest.notes || '',
                 details: shotRequest.details || '',
                 quick_turn: shotRequest.quick_turn || false,
+                date: shotRequest.date || '',
                 start_time: shotRequest.start_time || '',
                 end_time: shotRequest.end_time || '',
                 deadline: shotRequest.deadline || ''
@@ -724,6 +711,15 @@ export const ShotRequest = () => {
                                         onChange={(e) => setEditFormData(prev => ({...prev, details: e.target.value}))}
                                         rows={3}
                                         placeholder="Add specific individual references, names, or detailed requirements..."
+                                    />
+                                </div>
+                                
+                                <div className="sr-form-group">
+                                    <label>Date (for independent requests):</label>
+                                    <input
+                                        type="date"
+                                        value={editFormData.date}
+                                        onChange={(e) => setEditFormData(prev => ({...prev, date: e.target.value}))}
                                     />
                                 </div>
                                 
@@ -895,18 +891,6 @@ export const ShotRequest = () => {
                         {/* Filters */}
                         <div className="shot-request-sr-filters">
                             <div className="shot-request-filter-group">
-                                <label>Date:</label>
-                                <select 
-                                    value={filterDate} 
-                                    onChange={(e) => setFilterDate(e.target.value)}
-                                    className="shot-request-filter-select"
-                                >
-                                    <option value="selected">Selected Date</option>
-                                    <option value="all">All Dates</option>
-                                </select>
-                            </div>
-                            
-                            <div className="shot-request-filter-group">
                                 <label>Quick Turn:</label>
                                 <select 
                                     value={filterQuickTurn} 
@@ -989,8 +973,10 @@ export const ShotRequest = () => {
                                                     onClick={() => group.personnel.id === 'unassigned' ? handleAssignmentClick(sr) : null}
                                                     style={{ cursor: group.personnel.id === 'unassigned' ? 'pointer' : 'default' }}
                                                 >
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                                                        <span className="sr-title">{sr.request}</span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+                                                        <span className="sr-title" style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                            {sr.request}
+                                                        </span>
                                                         <span 
                                                             className="shot-status"
                                                             style={{
@@ -999,18 +985,38 @@ export const ShotRequest = () => {
                                                                 padding: '2px 6px',
                                                                 borderRadius: '10px',
                                                                 backgroundColor: sr.status === 'shot' ? '#28a745' : '#6c757d',
-                                                                color: 'white'
+                                                                color: 'white',
+                                                                flexShrink: 0
                                                             }}
                                                         >
                                                             {sr.status === 'shot' ? 'SHOT' : 'OPEN'}
                                                         </span>
                                                     </div>
-                                                    <span className="sr-process">{(sr.process_point || 'idle').toUpperCase()}</span>
-                                                    {group.personnel.id === 'unassigned' && (
-                                                        <span className="assign-hint" style={{ fontSize: '11px', color: 'rgba(255, 122, 24, 0.7)', fontStyle: 'italic' }}>
-                                                            Click to assign
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                                                        <span className="sr-process" style={{ 
+                                                            color: 'rgba(255, 255, 255, 0.7)',
+                                                            fontSize: '11px',
+                                                            fontWeight: '600',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px',
+                                                            padding: '2px 6px',
+                                                            background: 'rgba(255, 255, 255, 0.1)',
+                                                            borderRadius: '4px',
+                                                            whiteSpace: 'nowrap'
+                                                        }}>
+                                                            {(sr.process_point || 'idle').toUpperCase()}
                                                         </span>
-                                                    )}
+                                                        {group.personnel.id === 'unassigned' && (
+                                                            <span className="assign-hint" style={{ 
+                                                                fontSize: '11px', 
+                                                                color: 'rgba(255, 122, 24, 0.7)', 
+                                                                fontStyle: 'italic',
+                                                                whiteSpace: 'nowrap' 
+                                                            }}>
+                                                                Click to assign
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1090,6 +1096,15 @@ export const ShotRequest = () => {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                            
+                            <div className="shot-request-form-group">
+                                <label>Date (for independent requests):</label>
+                                <input
+                                    type="date"
+                                    value={formData.date}
+                                    onChange={(e) => setFormData(prev => ({...prev, date: e.target.value}))}
+                                />
                             </div>
                             
                             <div className="shot-request-form-group">

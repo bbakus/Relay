@@ -153,6 +153,7 @@ class ShotRequest(Base, SerializerMixin):
     notes = Column(String)
     details = Column(String)  # New field for specific individual references
     quick_turn = Column(Boolean)
+    date = Column(String)  # Date for independent shot requests
     start_time = Column(String)
     end_time = Column(String)
     deadline = Column(String)

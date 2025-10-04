@@ -202,7 +202,7 @@
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    max-height: none;
+    max-height: 400px; /* Set a reasonable max height for scrolling */
 }
 
 .shot-request-no-items {
