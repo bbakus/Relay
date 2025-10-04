@@ -737,9 +737,24 @@ export const EditorDashboardView = () => {
                         <div className="editor-card-header" onClick={() => toggleShotRequestExpanded(shotRequest.id)}>
                           <div className="editor-card-title-row">
                             <span className="editor-process-indicator" style={{ backgroundColor: processColor.borderColor }}></span>
-                            <span className="editor-event-name">
-                              {shotRequest.request}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span className="editor-event-name">
+                                {shotRequest.request}
+                              </span>
+                              <span 
+                                  className="shot-status"
+                                  style={{
+                                      fontSize: '10px',
+                                      fontWeight: '600',
+                                      padding: '2px 6px',
+                                      borderRadius: '10px',
+                                      backgroundColor: shotRequest.status === 'shot' ? '#28a745' : '#6c757d',
+                                      color: 'white'
+                                  }}
+                              >
+                                  {shotRequest.status === 'shot' ? 'SHOT' : 'OPEN'}
+                              </span>
+                            </div>
                             <span className={`editor-expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
                           </div>
                           <div className="editor-card-details-row">

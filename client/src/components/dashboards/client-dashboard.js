@@ -841,7 +841,22 @@ export const ClientDashboardView = () => {
                             {shotRequestsByProcess.map(({ point, requests, color }) => (
                                 requests.map(request => (
                                     <div key={request.id} className="client-shot-request-card" style={{ borderLeftColor: color }}>
-                                        <div className="client-request-text">{request.request}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div className="client-request-text">{request.request}</div>
+                                            <span 
+                                                className="shot-status"
+                                                style={{
+                                                    fontSize: '10px',
+                                                    fontWeight: '600',
+                                                    padding: '2px 6px',
+                                                    borderRadius: '10px',
+                                                    backgroundColor: request.status === 'shot' ? '#28a745' : '#6c757d',
+                                                    color: 'white'
+                                                }}
+                                            >
+                                                {request.status === 'shot' ? 'SHOT' : 'OPEN'}
+                                            </span>
+                                        </div>
                                         <div className="client-request-status" style={{ color }}>{point}</div>
                                     </div>
                                 ))
@@ -882,8 +897,23 @@ export const ClientDashboardView = () => {
                         ) : (
                             deliveredShotRequests.length ? deliveredShotRequests.map(request => (
                                 <div key={request.id} className="client-shot-request-card" style={{ borderLeftColor: getProcessPointColor('delivered') }}>
-                                    <div className="client-request-text">
-                                        {request.request}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <div className="client-request-text">
+                                            {request.request}
+                                        </div>
+                                        <span 
+                                            className="shot-status"
+                                            style={{
+                                                fontSize: '10px',
+                                                fontWeight: '600',
+                                                padding: '2px 6px',
+                                                borderRadius: '10px',
+                                                backgroundColor: request.status === 'shot' ? '#28a745' : '#6c757d',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            {request.status === 'shot' ? 'SHOT' : 'OPEN'}
+                                        </span>
                                     </div>
                                     <div className="client-request-status" style={{ color: getProcessPointColor('delivered') }}>Delivered</div>
                                     {request.deadline && (

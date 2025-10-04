@@ -634,7 +634,22 @@ export const ShotRequest = () => {
                 <div className="sr-card-header" onClick={handleCardClick}>
                     <div className="sr-header-content">
                         <div className="sr-title-with-status">
-                            <h4>{shotRequest.request}</h4>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <h4>{shotRequest.request}</h4>
+                                <span 
+                                    className="shot-status"
+                                    style={{
+                                        fontSize: '10px',
+                                        fontWeight: '600',
+                                        padding: '2px 6px',
+                                        borderRadius: '10px',
+                                        backgroundColor: shotRequest.status === 'shot' ? '#28a745' : '#6c757d',
+                                        color: 'white'
+                                    }}
+                                >
+                                    {shotRequest.status === 'shot' ? 'SHOT' : 'OPEN'}
+                                </span>
+                            </div>
                             <span 
                                 className="sr-status-indicator"
                                 style={{ 
