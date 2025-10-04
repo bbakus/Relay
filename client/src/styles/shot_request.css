@@ -848,7 +848,7 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sr-edit-btn, .sr-delete-btn {
+.sr-edit-btn, .sr-delete-btn, .sr-assign-btn {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
