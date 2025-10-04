@@ -183,10 +183,25 @@ export const ShotRequest = () => {
         }
     }, [orgProjects, projects, user, selectedProjectId])
 
-    // Get all shot requests (until API provides project filtering)
+    // Filter shot requests by current project
     const projectShotRequests = useMemo(() => {
-        return shotRequests
-    }, [shotRequests])
+        if (!currentProject) return []
+        
+        return shotRequests.filter(sr => {
+            // Check if shot request is associated with events from current project
+            if (sr.events && sr.events.length > 0) {
+                return sr.events.some(event => event.project_id === currentProject.id)
+            }
+            
+            // Check if shot request has its own project association
+            if (sr.projects && sr.projects.length > 0) {
+                return sr.projects.some(project => project.id === currentProject.id)
+            }
+            
+            // If no project association, include it (independent shot requests)
+            return true
+        })
+    }, [shotRequests, currentProject])
 
     // Get project dates for filter dropdown
     const projectDates = useMemo(() => {
@@ -205,6 +220,23 @@ export const ShotRequest = () => {
     const filteredShotRequests = useMemo(() => {
         let filtered = projectShotRequests
         
+        // Filter by global date - show shot requests for the selected date
+        if (selectedDate) {
+            filtered = filtered.filter(sr => {
+                // Check if shot request has events on the selected date
+                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                    sr.events.some(event => event.date === selectedDate)
+                
+                // Check if shot request has its own date matching selected date
+                const hasOwnDateMatch = sr.date === selectedDate
+                
+                // Check if it's an independent shot request (no events, no date)
+                const isIndependent = (!sr.events || sr.events.length === 0) && !sr.date
+                
+                return hasEventOnSelectedDate || hasOwnDateMatch || isIndependent
+            })
+        }
+        
         // Filter by quick turn
         if (filterQuickTurn !== 'all') {
             const isQuickTurn = filterQuickTurn === 'yes'
@@ -217,7 +249,7 @@ export const ShotRequest = () => {
         }
         
         return filtered
-    }, [projectShotRequests, filterQuickTurn, filterProcessPoint])
+    }, [projectShotRequests, selectedDate, filterQuickTurn, filterProcessPoint])
 
     // Date parsing helpers (moved here to be available for getShotRequestStatus)
     const parseDateLocal = (dateStr) => {

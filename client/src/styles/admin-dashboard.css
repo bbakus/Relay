@@ -1501,3 +1501,124 @@
   font-style: italic;
   padding: 8px;
 }
+
+/* Unassigned Events Styles */
+.admin-unassigned-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.admin-unassigned-event-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border-left: 4px solid #ff7a18;
+}
+
+.admin-unassigned-event-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 122, 24, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.admin-unassigned-event-item .admin-event-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-unassigned-event-item .admin-event-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.admin-unassigned-event-item .admin-event-date {
+  color: rgba(255, 122, 24, 0.9);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.admin-unassigned-event-item .admin-event-time {
+  color: #ff9f40;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.admin-unassigned-event-item .admin-event-location {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.admin-unassigned-event-item .admin-event-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-unassigned-event-item .assign-staff-btn {
+  background: linear-gradient(135deg, #ff7a18, #ff9f40);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(255, 122, 24, 0.3);
+}
+
+.admin-unassigned-event-item .assign-staff-btn:hover {
+  background: linear-gradient(135deg, #ff6600, #ff8533);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 122, 24, 0.4);
+}
+
+.admin-unassigned-event-item .days-until {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Responsive design for unassigned events */
+@media (max-width: 768px) {
+  .admin-unassigned-event-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .admin-unassigned-event-item .admin-event-actions {
+    align-items: flex-start;
+    width: 100%;
+  }
+  
+  .admin-unassigned-event-item .assign-staff-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
