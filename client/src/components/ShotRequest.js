@@ -15,6 +15,9 @@ export const ShotRequest = () => {
     const [expandedShotRequests, setExpandedShotRequests] = useState(new Set())
     const [editingShotRequest, setEditingShotRequest] = useState(null)
     const [editFormData, setEditFormData] = useState({})
+    const [showAssignmentModal, setShowAssignmentModal] = useState(false)
+    const [assignmentTarget, setAssignmentTarget] = useState(null)
+    const [assignmentPersonnelIds, setAssignmentPersonnelIds] = useState([])
     const [currentTimeTick, setCurrentTimeTick] = useState(Date.now())
     
     // Filter states (use global selectedDate for date filtering)
@@ -203,8 +206,14 @@ export const ShotRequest = () => {
         // Filter by date (based on associated events) - use global selectedDate
         if (selectedDate) {
             filtered = filtered.filter(sr => {
-                const event = events.find(e => sr.events?.some(ev => ev.id === e.id))
-                return event?.date === selectedDate
+                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                    sr.events.some(ev => ev.date === selectedDate)
+                const isIndependent = !sr.events || sr.events.length === 0
+                
+                // Show shot requests that either:
+                // 1. Have events on the selected date, OR
+                // 2. Are independent (no events)
+                return hasEventOnSelectedDate || isIndependent
             })
         }
         
@@ -551,11 +560,52 @@ export const ShotRequest = () => {
             })
         }
 
-        const handleCancelEdit = (e) => {
-            e.stopPropagation()
-            setEditingShotRequest(null)
-            setEditFormData({})
+    const handleCancelEdit = (e) => {
+        e.stopPropagation()
+        setEditingShotRequest(null)
+        setEditFormData({})
+    }
+
+    // Assignment modal handlers
+    const handleAssignmentClick = (shotRequest) => {
+        setAssignmentTarget(shotRequest)
+        setAssignmentPersonnelIds(shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : [])
+        setShowAssignmentModal(true)
+    }
+
+    const handleAssignmentSubmit = async () => {
+        if (!assignmentTarget) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${assignmentTarget.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...assignmentTarget,
+                    personnel_ids: assignmentPersonnelIds
+                })
+            })
+
+            if (response.ok) {
+                setShowAssignmentModal(false)
+                setAssignmentTarget(null)
+                setAssignmentPersonnelIds([])
+                fetchShotRequests() // Refresh the data
+            } else {
+                console.error('Failed to update shot request assignment')
+            }
+        } catch (error) {
+            console.error('Error updating shot request assignment:', error)
         }
+    }
+
+    const handleAssignmentCancel = () => {
+        setShowAssignmentModal(false)
+        setAssignmentTarget(null)
+        setAssignmentPersonnelIds([])
+    }
 
         const handleDeleteClick = async (e) => {
             e.stopPropagation()
@@ -928,9 +978,19 @@ export const ShotRequest = () => {
                                         </div>
                                         <div className="personnel-shot-requests">
                                             {group.shotRequests.map(sr => (
-                                                <div key={sr.id} className="personnel-shot-request-item">
+                                                <div 
+                                                    key={sr.id} 
+                                                    className="personnel-shot-request-item"
+                                                    onClick={() => group.personnel.id === 'unassigned' ? handleAssignmentClick(sr) : null}
+                                                    style={{ cursor: group.personnel.id === 'unassigned' ? 'pointer' : 'default' }}
+                                                >
                                                     <span className="sr-title">{sr.request}</span>
                                                     <span className="sr-process">{(sr.process_point || 'idle').toUpperCase()}</span>
+                                                    {group.personnel.id === 'unassigned' && (
+                                                        <span className="assign-hint" style={{ fontSize: '11px', color: 'rgba(255, 122, 24, 0.7)', fontStyle: 'italic' }}>
+                                                            Click to assign
+                                                        </span>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -1111,6 +1171,71 @@ export const ShotRequest = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Assignment Modal */}
+            {showAssignmentModal && assignmentTarget && (
+                <div className="shot-request-modal-overlay" onClick={handleAssignmentCancel}>
+                    <div className="shot-request-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="shot-request-modal-header">
+                            <h2>Assign Personnel</h2>
+                            <button 
+                                className="shot-request-close-btn"
+                                onClick={handleAssignmentCancel}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        
+                        <div className="sr-form">
+                            <div className="shot-request-form-group">
+                                <label>Shot Request:</label>
+                                <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: '600', margin: '8px 0' }}>
+                                    {assignmentTarget.request}
+                                </p>
+                            </div>
+                            
+                            <div className="shot-request-form-group">
+                                <label>Assign Personnel:</label>
+                                <select
+                                    multiple
+                                    value={assignmentPersonnelIds}
+                                    onChange={(e) => {
+                                        const selectedIds = Array.from(e.target.selectedOptions, option => parseInt(option.value))
+                                        setAssignmentPersonnelIds(selectedIds)
+                                    }}
+                                    style={{
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '6px',
+                                        padding: '10px 12px',
+                                        color: '#ffffff',
+                                        fontSize: '14px',
+                                        minHeight: '120px'
+                                    }}
+                                >
+                                    {personnel.map(person => (
+                                        <option key={person.id} value={person.id}>
+                                            {person.name} ({person.role || 'No role'})
+                                        </option>
+                                    ))}
+                                </select>
+                                <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '12px' }}>
+                                    Hold Ctrl/Cmd to select multiple personnel
+                                </small>
+                            </div>
+                            
+                            <div className="shot-request-form-actions">
+                                <button type="button" onClick={handleAssignmentCancel}>
+                                    Cancel
+                                </button>
+                                <button type="button" onClick={handleAssignmentSubmit}>
+                                    Assign Personnel
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
