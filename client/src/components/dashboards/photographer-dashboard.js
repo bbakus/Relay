@@ -510,114 +510,7 @@ export const PhotographerDashboardView = () => {
                     )}
                 </div>
 
-                {/* Personal Schedule Section - Using Schedule Grid Layout */}
-                <div className="photographer-schedule-section">
-                    <div className="photographer-schedule-grid">
-                        {/* Global grid lines */}
-                        <div className='photographer-global-grid-lines'>
-                            {timeSlots.map((slot) => (
-                                <div
-                                    key={`gline-${slot.time}`}
-                                    className={`photographer-grid-slot ${slot.time.endsWith(':00') ? 'hour' : ''}`}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Time column */}
-                        <div className='photographer-time-column'>
-                            <div className='photographer-time-header'>Time</div>
-                            {timeSlots.map((slot) => (
-                                <div key={slot.time} className='photographer-time-slot'>
-                                    <p className='photographer-time-text'>{slot.display}</p>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Single Events column */}
-                        <div className='photographer-events-area'>
-                            {/* Events header */}
-                            <div className='photographer-events-header'>
-                                <div className='photographer-column-header'>My Schedule</div>
-                            </div>
-                            
-                            {/* Event column container */}
-                            <div className='photographer-events-container'>
-                                {eventsWithPositions.length === 0 ? (
-                                    <div className='photographer-no-events'>
-                                        <p>No events scheduled for {displayDate}</p>
-                                    </div>
-                                ) : (
-                                    <div className='photographer-event-column'>
-                                        {/* Render photographer's events */}
-                                        {eventsWithPositions.map((event, index) => {
-                                            const eventStatus = getEventStatus(event)
-                                            const processColors = getProcessPointColor(event.process_point)
-                                            return (
-                                                <div
-                                                    key={event.id}
-                                                    className={`photographer-dashboard-event-card photographer-status-${eventStatus} ${event.process_point === 'null' ? 'process-null' : ''}`}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: `${event.position.top}px`,
-                                                        height: `${event.position.height}px`,
-                                                        left: '8px',
-                                                        zIndex: eventsWithPositions.length - index, // Shorter events (sorted first) get higher z-index
-                                                        right: '8px',
-                                                        backgroundColor: processColors.backgroundColor,
-                                                        border: `2px solid ${processColors.borderColor}`,
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    onClick={() => handleEventClick(event)}
-                                                >
-                                                    <div className='photographer-dashboard-event-header'>
-                                                        <h3 className='photographer-dashboard-event-title'>{event.name}</h3>
-                                                        <div className='photographer-dashboard-event-status-container'>
-                                                            {event.quick_turn && <span className='photographer-dashboard-quick-turn'>⚡</span>}
-                                                            <span 
-                                                                className='photographer-dashboard-event-status'
-                                                                style={{ color: getStatusColor(eventStatus) }}
-                                                            >
-                                                                {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1).replace('-', ' ')}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className='photographer-dashboard-event-time'>
-                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                    </div>
-                                                    <div className='photographer-dashboard-event-location'>{event.location}</div>
-                                                    <div className='photographer-dashboard-event-process' style={{ 
-                                                        color: processColors.borderColor,
-                                                        fontWeight: '600',
-                                                        fontSize: '0.7rem',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px',
-                                                        marginTop: '4px'
-                                                    }}>
-                                                        {(event.process_point || 'idle')}
-                                                        {event.process_point_updated_by_name && (
-                                                            <span style={{ 
-                                                                fontSize: '0.6rem', 
-                                                                marginLeft: '6px', 
-                                                                opacity: 0.8,
-                                                                fontStyle: 'italic',
-                                                                textTransform: 'none',
-                                                                fontWeight: '400'
-                                                            }}>
-                                                                by {event.process_point_updated_by_name}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Shot Requests Section */}
+                {/* Shot Requests Section - Now First */}
                 <div className="photographer-shot-requests-section">
                     <div className="photographer-section-header">
                         <h2>Assigned Shot Requests</h2>
@@ -734,6 +627,113 @@ export const PhotographerDashboardView = () => {
                                 )
                             })
                         )}
+                    </div>
+                </div>
+
+                {/* Personal Schedule Section - Now Second */}
+                <div className="photographer-schedule-section">
+                    <div className="photographer-schedule-grid">
+                        {/* Global grid lines */}
+                        <div className='photographer-global-grid-lines'>
+                            {timeSlots.map((slot) => (
+                                <div
+                                    key={`gline-${slot.time}`}
+                                    className={`photographer-grid-slot ${slot.time.endsWith(':00') ? 'hour' : ''}`}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Time column */}
+                        <div className='photographer-time-column'>
+                            <div className='photographer-time-header'>Time</div>
+                            {timeSlots.map((slot) => (
+                                <div key={slot.time} className='photographer-time-slot'>
+                                    <p className='photographer-time-text'>{slot.display}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Single Events column */}
+                        <div className='photographer-events-area'>
+                            {/* Events header */}
+                            <div className='photographer-events-header'>
+                                <div className='photographer-column-header'>My Schedule</div>
+                            </div>
+                            
+                            {/* Event column container */}
+                            <div className='photographer-events-container'>
+                                {eventsWithPositions.length === 0 ? (
+                                    <div className='photographer-no-events'>
+                                        <p>No events scheduled for {displayDate}</p>
+                                    </div>
+                                ) : (
+                                    <div className='photographer-event-column'>
+                                        {/* Render photographer's events */}
+                                        {eventsWithPositions.map((event, index) => {
+                                            const eventStatus = getEventStatus(event)
+                                            const processColors = getProcessPointColor(event.process_point)
+                                            return (
+                                                <div
+                                                    key={event.id}
+                                                    className={`photographer-dashboard-event-card photographer-status-${eventStatus} ${event.process_point === 'null' ? 'process-null' : ''}`}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: `${event.position.top}px`,
+                                                        height: `${event.position.height}px`,
+                                                        left: '8px',
+                                                        zIndex: eventsWithPositions.length - index, // Shorter events (sorted first) get higher z-index
+                                                        right: '8px',
+                                                        backgroundColor: processColors.backgroundColor,
+                                                        border: `2px solid ${processColors.borderColor}`,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    onClick={() => handleEventClick(event)}
+                                                >
+                                                    <div className='photographer-dashboard-event-header'>
+                                                        <h3 className='photographer-dashboard-event-title'>{event.name}</h3>
+                                                        <div className='photographer-dashboard-event-status-container'>
+                                                            {event.quick_turn && <span className='photographer-dashboard-quick-turn'>⚡</span>}
+                                                            <span 
+                                                                className='photographer-dashboard-event-status'
+                                                                style={{ color: getStatusColor(eventStatus) }}
+                                                            >
+                                                                {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1).replace('-', ' ')}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className='photographer-dashboard-event-time'>
+                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                    </div>
+                                                    <div className='photographer-dashboard-event-location'>{event.location}</div>
+                                                    <div className='photographer-dashboard-event-process' style={{ 
+                                                        color: processColors.borderColor,
+                                                        fontWeight: '600',
+                                                        fontSize: '0.7rem',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px',
+                                                        marginTop: '4px'
+                                                    }}>
+                                                        {(event.process_point || 'idle')}
+                                                        {event.process_point_updated_by_name && (
+                                                            <span style={{ 
+                                                                fontSize: '0.6rem', 
+                                                                marginLeft: '6px', 
+                                                                opacity: 0.8,
+                                                                fontStyle: 'italic',
+                                                                textTransform: 'none',
+                                                                fontWeight: '400'
+                                                            }}>
+                                                                by {event.process_point_updated_by_name}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
