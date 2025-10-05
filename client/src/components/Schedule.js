@@ -38,6 +38,10 @@ export const Schedule = () => {
         special_instructions: '',
         details: ''
     })
+    const [selectedShotRequest, setSelectedShotRequest] = useState(null)
+    const [showShotRequestDetailModal, setShowShotRequestDetailModal] = useState(false)
+    const [showShotRequestEditModal, setShowShotRequestEditModal] = useState(false)
+    const [editingShotRequest, setEditingShotRequest] = useState(null)
     const [editingNotes, setEditingNotes] = useState('')
     const [newNoteInput, setNewNoteInput] = useState('')
     const [quickTurn, setQuickTurn] = useState(false)
@@ -575,14 +579,190 @@ export const Schedule = () => {
         
         try {
             const dragData = JSON.parse(e.dataTransfer.getData('text/plain'))
-            const { eventId, currentColumn } = dragData
+            const { eventId, currentColumn, shotRequestId, currentSRColumn } = dragData
             
-            // Only update if actually moving to a different column
-            if (currentColumn !== targetColumn) {
+            // Handle event drop
+            if (eventId && currentColumn !== targetColumn) {
                 handleColumnChange(eventId, targetColumn)
+            }
+            
+            // Handle shot request drop
+            if (shotRequestId && currentSRColumn !== targetColumn) {
+                handleShotRequestColumnChange(shotRequestId, targetColumn)
             }
         } catch (error) {
             console.error('Error handling drop:', error)
+        }
+    }
+
+    // Shot Request Drag and Drop handlers
+    const handleShotRequestDragStart = (e, shotRequest) => {
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            shotRequestId: shotRequest.id,
+            currentSRColumn: shotRequest.column_number || 0
+        }))
+        e.dataTransfer.effectAllowed = 'move'
+    }
+
+    const handleShotRequestColumnChange = async (shotRequestId, newColumnNumber) => {
+        try {
+            const scrollPosition = window.pageYOffset || document.documentElement.scrollTop
+
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    column_number: newColumnNumber
+                })
+            })
+
+            if (response.ok) {
+                // Update shot requests state
+                setShotRequests(prevRequests => 
+                    prevRequests.map(sr => 
+                        sr.id === shotRequestId 
+                            ? { ...sr, column_number: newColumnNumber }
+                            : sr
+                    )
+                )
+                
+                setTimeout(() => {
+                    window.scrollTo(0, scrollPosition)
+                }, 0)
+            } else {
+                console.error('Failed to update shot request column')
+            }
+        } catch (error) {
+            console.error('Error updating shot request column:', error)
+        }
+    }
+
+    // Shot Request modal handlers
+    const openShotRequestDetailModal = (shotRequest) => {
+        setSelectedShotRequest(shotRequest)
+        setShowShotRequestDetailModal(true)
+    }
+
+    const closeShotRequestDetailModal = () => {
+        setShowShotRequestDetailModal(false)
+        setSelectedShotRequest(null)
+    }
+
+    const openShotRequestEditModal = (shotRequest) => {
+        setEditingShotRequest(shotRequest)
+        setShowShotRequestEditModal(true)
+        closeShotRequestDetailModal()
+    }
+
+    const closeShotRequestEditModal = () => {
+        setShowShotRequestEditModal(false)
+        setEditingShotRequest(null)
+    }
+
+    const handleShotRequestProcessPointChange = async (shotRequestId, newProcessPoint) => {
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    process_point: newProcessPoint
+                })
+            })
+
+            if (response.ok) {
+                const updatedShotRequest = await response.json()
+                setShotRequests(prevRequests =>
+                    prevRequests.map(sr => sr.id === shotRequestId ? updatedShotRequest : sr)
+                )
+                if (selectedShotRequest && selectedShotRequest.id === shotRequestId) {
+                    setSelectedShotRequest(updatedShotRequest)
+                }
+            }
+        } catch (error) {
+            console.error('Error updating shot request process point:', error)
+        }
+    }
+
+    const handleShotRequestDelete = async (shotRequestId) => {
+        if (!window.confirm('Are you sure you want to delete this shot request?')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
+                method: 'DELETE'
+            })
+
+            if (response.ok) {
+                setShotRequests(prevRequests => prevRequests.filter(sr => sr.id !== shotRequestId))
+                closeShotRequestDetailModal()
+            }
+        } catch (error) {
+            console.error('Error deleting shot request:', error)
+        }
+    }
+
+    const handleShotRequestPersonnelAssign = async (shotRequestId, personnelId) => {
+        try {
+            const shotRequest = shotRequests.find(sr => sr.id === shotRequestId)
+            if (!shotRequest) return
+
+            const currentPersonnelIds = shotRequest.personnels ? shotRequest.personnels.map(p => p.id) : []
+            const newPersonnelIds = currentPersonnelIds.includes(personnelId)
+                ? currentPersonnelIds.filter(id => id !== personnelId) // Remove if already assigned
+                : [...currentPersonnelIds, personnelId] // Add if not assigned
+
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    personnel_ids: newPersonnelIds
+                })
+            })
+
+            if (response.ok) {
+                const updatedShotRequest = await response.json()
+                setShotRequests(prevRequests =>
+                    prevRequests.map(sr => sr.id === shotRequestId ? updatedShotRequest : sr)
+                )
+                if (selectedShotRequest && selectedShotRequest.id === shotRequestId) {
+                    setSelectedShotRequest(updatedShotRequest)
+                }
+            }
+        } catch (error) {
+            console.error('Error assigning personnel to shot request:', error)
+        }
+    }
+
+    const handleShotRequestEdit = async (e) => {
+        e.preventDefault()
+        if (!editingShotRequest) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${editingShotRequest.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editingShotRequest)
+            })
+
+            if (response.ok) {
+                const updatedShotRequest = await response.json()
+                setShotRequests(prevRequests =>
+                    prevRequests.map(sr => sr.id === updatedShotRequest.id ? updatedShotRequest : sr)
+                )
+                closeShotRequestEditModal()
+                fetchShotRequests()
+            }
+        } catch (error) {
+            console.error('Error updating shot request:', error)
         }
     }
 
@@ -680,6 +860,24 @@ export const Schedule = () => {
         }
         return shotRequests
     }, [shotRequests, selectedPhotographerId])
+
+    // Group shot requests by column
+    const getShotRequestsByColumn = () => {
+        const srByColumn = { 0: [], 1: [], 2: [] }
+        
+        filteredShotRequests.forEach(sr => {
+            const column = sr.column_number !== undefined ? sr.column_number : Math.floor(filteredShotRequests.indexOf(sr) % 3)
+            if (srByColumn[column] !== undefined) {
+                srByColumn[column].push(sr)
+            } else {
+                srByColumn[0].push(sr)
+            }
+        })
+        
+        return srByColumn
+    }
+
+    const shotRequestsByColumn = useMemo(() => getShotRequestsByColumn(), [filteredShotRequests])
 
     // Project status calculation based on active date
     const getProjectStatus = (project) => {
@@ -1102,57 +1300,64 @@ export const Schedule = () => {
                                 </div>
                             ) : (
                                 [0, 1, 2].map((columnIndex) => (
-                                    <div key={columnIndex} className='sched-event-column'>
-                                        {filteredShotRequests
-                                            .filter((sr, index) => index % 3 === columnIndex)
-                                            .map(sr => {
-                                                // Default to 6:00 AM - 7:00 AM if no time is specified
-                                                const startTime = sr.start_time || '06:00'
-                                                const endTime = sr.end_time || '07:00'
-                                                
-                                                const position = getEventPosition({
-                                                    start_time: startTime,
-                                                    end_time: endTime,
-                                                    startTime: startTime,
-                                                    endTime: endTime
-                                                })
-                                                
-                                                if (!position) return null
-                                                
-                                                return (
-                                                    <div
-                                                        key={sr.id}
-                                                        className={`sched-event-card process-${(sr.process_point || 'idle').toLowerCase()}`}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: `${position.top}px`,
-                                                            height: `${position.height}px`,
-                                                            left: '8px',
-                                                            right: '8px',
-                                                            minHeight: '60px',
-                                                            backgroundColor: getProcessPointColor(sr.process_point).backgroundColor,
-                                                            border: `2px solid ${getProcessPointColor(sr.process_point).borderColor}`,
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        <div className='event-header'>
-                                                            <h3>{sr.request}</h3>
-                                                            {sr.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
-                                                        </div>
-                                                        <div className='event-time'>
-                                                            {sr.start_time && sr.end_time ? (
-                                                                `${formatTimeTo12Hour(startTime)} - ${formatTimeTo12Hour(endTime)}`
-                                                            ) : (
-                                                                <span style={{ opacity: 0.6, fontStyle: 'italic' }}>No time specified</span>
-                                                            )}
-                                                        </div>
-                                                        {sr.notes && <div className='event-notes'>{sr.notes}</div>}
-                                                        <div className='event-process'>
-                                                            {(sr.process_point || 'idle').toUpperCase()}
-                                                        </div>
+                                    <div 
+                                        key={columnIndex} 
+                                        className='sched-event-column'
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={(e) => handleDrop(e, columnIndex)}
+                                    >
+                                        {shotRequestsByColumn[columnIndex]?.map(sr => {
+                                            // Default to 6:00 AM - 7:00 AM if no time is specified
+                                            const startTime = sr.start_time || '06:00'
+                                            const endTime = sr.end_time || '07:00'
+                                            
+                                            const position = getEventPosition({
+                                                start_time: startTime,
+                                                end_time: endTime,
+                                                startTime: startTime,
+                                                endTime: endTime
+                                            })
+                                            
+                                            if (!position) return null
+                                            
+                                            return (
+                                                <div
+                                                    key={sr.id}
+                                                    className={`sched-event-card process-${(sr.process_point || 'idle').toLowerCase()}`}
+                                                    draggable={isAdmin}
+                                                    onDragStart={(e) => handleShotRequestDragStart(e, sr)}
+                                                    onClick={() => openShotRequestDetailModal(sr)}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: `${position.top}px`,
+                                                        height: `${position.height}px`,
+                                                        left: '8px',
+                                                        right: '8px',
+                                                        minHeight: '60px',
+                                                        backgroundColor: getProcessPointColor(sr.process_point).backgroundColor,
+                                                        border: `2px solid ${getProcessPointColor(sr.process_point).borderColor}`,
+                                                        cursor: isAdmin ? 'move' : 'pointer'
+                                                    }}
+                                                >
+                                                    <div className='event-header'>
+                                                        <h3>{sr.request}</h3>
+                                                        {sr.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                     </div>
-                                                )
-                                            })}
+                                                    <div className='event-time'>
+                                                        {sr.start_time && sr.end_time ? (
+                                                            `${formatTimeTo12Hour(startTime)} - ${formatTimeTo12Hour(endTime)}`
+                                                        ) : (
+                                                            <span style={{ opacity: 0.6, fontStyle: 'italic' }}>No time specified</span>
+                                                        )}
+                                                    </div>
+                                                    {sr.notes && <div className='event-notes'>{sr.notes}</div>}
+                                                    <div className='event-process'>
+                                                        {(sr.process_point || 'idle').toUpperCase()}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
                                     </div>
                                 ))
                             )}
@@ -1573,6 +1778,275 @@ export const Schedule = () => {
                                         Submit Shot Request
                                     </button>
                                     <button type="button" className="modal-button" onClick={closeShotRequestModal}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shot Request Detail Modal */}
+            {showShotRequestDetailModal && selectedShotRequest && (
+                <div className="modal-overlay" onClick={closeShotRequestDetailModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>{selectedShotRequest.request}</h2>
+                            <button className="modal-close" onClick={closeShotRequestDetailModal}>×</button>
+                        </div>
+                        
+                        <div className="modal-body">
+                            {selectedShotRequest.start_time && selectedShotRequest.end_time && (
+                                <div className="event-detail-row">
+                                    <label>Time:</label>
+                                    <span>{formatTimeTo12Hour(selectedShotRequest.start_time)} - {formatTimeTo12Hour(selectedShotRequest.end_time)}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.date && (
+                                <div className="event-detail-row">
+                                    <label>Date:</label>
+                                    <span>{formatDateForHeader(selectedShotRequest.date)}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.details && (
+                                <div className="event-detail-row">
+                                    <label>Details:</label>
+                                    <span>{selectedShotRequest.details}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.notes && (
+                                <div className="event-detail-row">
+                                    <label>Notes:</label>
+                                    <span>{selectedShotRequest.notes}</span>
+                                </div>
+                            )}
+                            
+                            <div className="event-detail-row">
+                                <label>Quick Turn:</label>
+                                <span>{selectedShotRequest.quick_turn ? <>Yes <span className="quick-turn-dot"></span></> : 'No'}</span>
+                            </div>
+                            
+                            {selectedShotRequest.deadline && (
+                                <div className="event-detail-row">
+                                    <label>Deadline:</label>
+                                    <span>{selectedShotRequest.deadline}</span>
+                                </div>
+                            )}
+                            
+                            <div className="event-detail-row">
+                                <label>Process Point:</label>
+                                <select 
+                                    value={selectedShotRequest.process_point || 'idle'} 
+                                    onChange={(e) => handleShotRequestProcessPointChange(selectedShotRequest.id, e.target.value)}
+                                    className="process-point-select"
+                                >
+                                    <option value="idle">Idle</option>
+                                    <option value="ingest">Ingest</option>
+                                    <option value="cull">Cull</option>
+                                    <option value="color">Color</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="null">Not Shot</option>
+                                </select>
+                            </div>
+                            
+                            <div className="event-detail-row">
+                                <label>Status:</label>
+                                <span style={{
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    backgroundColor: selectedShotRequest.status === 'shot' ? '#4CAF50' : '#757575',
+                                    color: 'white',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {(selectedShotRequest.status || 'open').toUpperCase()}
+                                </span>
+                            </div>
+                            
+                            <div className="event-detail-row">
+                                <label>Assigned Personnel:</label>
+                                <div className="personnel-list">
+                                    {selectedShotRequest.personnels && selectedShotRequest.personnels.length > 0 ? (
+                                        selectedShotRequest.personnels.map(person => (
+                                            <div key={person.id} className="personnel-item">
+                                                {person.name}
+                                                {isAdmin && (
+                                                    <button 
+                                                        className="personnel-remove-btn"
+                                                        onClick={() => handleShotRequestPersonnelAssign(selectedShotRequest.id, person.id)}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <span>No personnel assigned</span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {isAdmin && (
+                                <div className="event-detail-row">
+                                    <label>Add Personnel:</label>
+                                    <select 
+                                        onChange={(e) => {
+                                            if (e.target.value) {
+                                                handleShotRequestPersonnelAssign(selectedShotRequest.id, parseInt(e.target.value))
+                                                e.target.value = ''
+                                            }
+                                        }}
+                                        className="personnel-select"
+                                    >
+                                        <option value="">Select personnel...</option>
+                                        {personnel
+                                            .filter(p => (p.role || '').toLowerCase().includes('photographer'))
+                                            .filter(p => !selectedShotRequest.personnels?.some(assigned => assigned.id === p.id))
+                                            .map(person => (
+                                                <option key={person.id} value={person.id}>
+                                                    {person.name}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="modal-actions">
+                            {isAdmin && (
+                                <>
+                                    <button 
+                                        className="modal-button edit-button" 
+                                        onClick={() => openShotRequestEditModal(selectedShotRequest)}
+                                    >
+                                        Edit Shot Request
+                                    </button>
+                                    <button 
+                                        className="modal-button delete-button" 
+                                        onClick={() => handleShotRequestDelete(selectedShotRequest.id)}
+                                    >
+                                        Delete Shot Request
+                                    </button>
+                                </>
+                            )}
+                            <button className="modal-button" onClick={closeShotRequestDetailModal}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Shot Request Modal */}
+            {showShotRequestEditModal && editingShotRequest && (
+                <div className="modal-overlay" onClick={closeShotRequestEditModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Edit Shot Request</h2>
+                            <button className="modal-close" onClick={closeShotRequestEditModal}>×</button>
+                        </div>
+                        
+                        <div className="modal-body">
+                            <form onSubmit={handleShotRequestEdit}>
+                                <div className="form-group">
+                                    <label>Request:</label>
+                                    <input
+                                        type="text"
+                                        value={editingShotRequest.request || ''}
+                                        onChange={(e) => setEditingShotRequest({...editingShotRequest, request: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Start Time:</label>
+                                        <input
+                                            type="time"
+                                            value={editingShotRequest.start_time || ''}
+                                            onChange={(e) => setEditingShotRequest({...editingShotRequest, start_time: e.target.value})}
+                                        />
+                                    </div>
+                                    
+                                    <div className="form-group">
+                                        <label>End Time:</label>
+                                        <input
+                                            type="time"
+                                            value={editingShotRequest.end_time || ''}
+                                            onChange={(e) => setEditingShotRequest({...editingShotRequest, end_time: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Date:</label>
+                                    <input
+                                        type="date"
+                                        value={editingShotRequest.date || ''}
+                                        onChange={(e) => setEditingShotRequest({...editingShotRequest, date: e.target.value})}
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Details:</label>
+                                    <textarea
+                                        value={editingShotRequest.details || ''}
+                                        onChange={(e) => setEditingShotRequest({...editingShotRequest, details: e.target.value})}
+                                        rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Notes:</label>
+                                    <textarea
+                                        value={editingShotRequest.notes || ''}
+                                        onChange={(e) => setEditingShotRequest({...editingShotRequest, notes: e.target.value})}
+                                        rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Deadline:</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={editingShotRequest.deadline || ''}
+                                        onChange={(e) => setEditingShotRequest({...editingShotRequest, deadline: e.target.value})}
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={editingShotRequest.quick_turn || false}
+                                            onChange={(e) => setEditingShotRequest({...editingShotRequest, quick_turn: e.target.checked})}
+                                        />
+                                        Quick Turn <span className="quick-turn-dot"></span>
+                                    </label>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Process Point:</label>
+                                    <select
+                                        value={editingShotRequest.process_point || 'idle'}
+                                        onChange={(e) => setEditingShotRequest({...editingShotRequest, process_point: e.target.value})}
+                                    >
+                                        <option value="idle">Idle</option>
+                                        <option value="ingest">Ingest</option>
+                                        <option value="cull">Cull</option>
+                                        <option value="color">Color</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="null">Not Shot</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="modal-actions">
+                                    <button type="submit" className="modal-button save-button">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" className="modal-button" onClick={closeShotRequestEditModal}>
                                         Cancel
                                     </button>
                                 </div>
