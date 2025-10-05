@@ -230,10 +230,8 @@ export const ShotRequest = () => {
                 // Check if shot request has its own date matching selected date
                 const hasOwnDateMatch = sr.date === selectedDate
                 
-                // Check if it's an independent shot request (no events, no date)
-                const isIndependent = (!sr.events || sr.events.length === 0) && !sr.date
-                
-                return hasEventOnSelectedDate || hasOwnDateMatch || isIndependent
+                // Only show shot requests that match the selected date
+                return hasEventOnSelectedDate || hasOwnDateMatch
             })
         }
         
