@@ -846,7 +846,10 @@ export const Schedule = () => {
                                 >
                                     <option value=''>All Photographers</option>
                                     {personnel
-                                        .filter(person => person.role === 'photographer')
+                                        .filter(person => {
+                                            const role = (person.role || '').toLowerCase()
+                                            return role.includes('photographer')
+                                        })
                                         .map(photographer => (
                                             <option key={photographer.id} value={photographer.id}>
                                                 {photographer.name}
@@ -1061,60 +1064,90 @@ export const Schedule = () => {
                         </div>
                         </>
                     ) : (
-                /* Shot Requests View */
-                <div className='shot-requests-view'>
-                    <div className='shot-requests-list'>
-                        {filteredShotRequests.length === 0 ? (
-                            <div className='no-shot-requests'>
-                                <p>No shot requests for {selectedPhotographerId ? 'this photographer' : 'this date'}</p>
+                /* Shot Requests Timeline View */
+                <>
+                <div className='desktop-layout'>
+                    {/* unified grid overlay */}
+                    <div className='global-grid-lines'>
+                        {timeSlots.map((slot) => (
+                            <div
+                                key={`gline-sr-${slot.time}`}
+                                className={`global-grid-slot ${slot.time.endsWith(':00') ? 'hour' : ''}`}
+                            />
+                        ))}
+                    </div>
+                    
+                    {/* Time column */}
+                    <div className='time-column'>
+                        <div className='time-header'>Time</div>
+                        {timeSlots.map((slot) => (
+                            <div key={slot.time} className='time-slot'>
+                                <p className='time-text'>{slot.display}</p>
                             </div>
-                        ) : (
-                            filteredShotRequests.map(shotRequest => (
-                                <div key={shotRequest.id} className='shot-request-schedule-card'>
-                                    <div className='sr-card-header'>
-                                        <h3>{shotRequest.request}</h3>
-                                        <div className='sr-card-meta'>
-                                            {shotRequest.quick_turn && <span className="quick-turn"><span className="quick-turn-dot"></span></span>}
-                                            <span className={`sr-status ${shotRequest.status || 'open'}`}>
-                                                {(shotRequest.status || 'open').toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className='sr-card-details'>
-                                        {shotRequest.notes && (
-                                            <div className='sr-detail'>
-                                                <label>Notes:</label>
-                                                <span>{shotRequest.notes}</span>
-                                            </div>
-                                        )}
-                                        {shotRequest.details && (
-                                            <div className='sr-detail'>
-                                                <label>Details:</label>
-                                                <span>{shotRequest.details}</span>
-                                            </div>
-                                        )}
-                                        <div className='sr-detail'>
-                                            <label>Process Point:</label>
-                                            <span>{(shotRequest.process_point || 'idle').toUpperCase()}</span>
-                                        </div>
-                                        {shotRequest.start_time && shotRequest.end_time && (
-                                            <div className='sr-detail'>
-                                                <label>Time:</label>
-                                                <span>{shotRequest.start_time} - {shotRequest.end_time}</span>
-                                            </div>
-                                        )}
-                                        {shotRequest.personnels && shotRequest.personnels.length > 0 && (
-                                            <div className='sr-detail'>
-                                                <label>Assigned:</label>
-                                                <span>{shotRequest.personnels.map(p => p.name).join(', ')}</span>
-                                            </div>
-                                        )}
-                                    </div>
+                        ))}
+                    </div>
+
+                    {/* Shot Requests area */}
+                    <div className='events-area'>
+                        <div className='events-header'>
+                            <div className='column-header'>Shot Requests</div>
+                        </div>
+                        
+                        <div className='sched-events-container'>
+                            {filteredShotRequests.length === 0 ? (
+                                <div className='no-events'>
+                                    <p>No shot requests for {selectedPhotographerId ? 'this photographer' : 'this date'}</p>
                                 </div>
-                            ))
-                        )}
+                            ) : (
+                                <div className='sched-event-column'>
+                                    {filteredShotRequests
+                                        .filter(sr => sr.start_time && sr.end_time)
+                                        .map(sr => {
+                                            const position = getEventPosition({
+                                                start_time: sr.start_time,
+                                                end_time: sr.end_time,
+                                                startTime: sr.start_time,
+                                                endTime: sr.end_time
+                                            })
+                                            
+                                            if (!position) return null
+                                            
+                                            return (
+                                                <div
+                                                    key={sr.id}
+                                                    className='sched-event-card'
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: `${position.top}px`,
+                                                        height: `${position.height}px`,
+                                                        left: '8px',
+                                                        right: '8px',
+                                                        minHeight: '60px',
+                                                        backgroundColor: 'rgba(255, 122, 24, 0.15)',
+                                                        border: '2px solid rgba(255, 122, 24, 0.5)',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <div className='event-header'>
+                                                        <h3>{sr.request}</h3>
+                                                        {sr.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
+                                                    </div>
+                                                    <div className='event-time'>
+                                                        {formatTimeTo12Hour(sr.start_time)} - {formatTimeTo12Hour(sr.end_time)}
+                                                    </div>
+                                                    {sr.notes && <div className='event-notes'>{sr.notes}</div>}
+                                                    <div className='event-process'>
+                                                        {(sr.process_point || 'idle').toUpperCase()}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
+                </>
             )}
             </div>
                     )}
