@@ -865,6 +865,7 @@ export const Schedule = () => {
                         <div className='schedule-grid'>
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
                             {currentView === 'events' ? (
+                                <>
                                 <div className='desktop-layout'>
                                     {/* unified grid overlay across time + events */}
                                     <div className='global-grid-lines'>
@@ -1005,7 +1006,7 @@ export const Schedule = () => {
                                 )}
                             </div>
                         </div>
-                            ):
+
                         <div className='mobile-layout'>
                             {/* Time column */}
                             <div className='time-column'>
@@ -1058,8 +1059,8 @@ export const Schedule = () => {
                         <div className="mobile-scroll-indicator">
                             ← Swipe to see more columns →
                         </div>
-                    </div>
-                ) : (
+                        </>
+                    ) : (
                 /* Shot Requests View */
                 <div className='shot-requests-view'>
                     <div className='shot-requests-list'>
@@ -1115,6 +1116,8 @@ export const Schedule = () => {
                     </div>
                 </div>
             )}
+                        </div>
+                    )}
             </div>
             
             {/* Event Details Modal */}
