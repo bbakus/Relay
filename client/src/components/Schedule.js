@@ -1104,14 +1104,17 @@ export const Schedule = () => {
                                 [0, 1, 2].map((columnIndex) => (
                                     <div key={columnIndex} className='sched-event-column'>
                                         {filteredShotRequests
-                                            .filter(sr => sr.start_time && sr.end_time)
                                             .filter((sr, index) => index % 3 === columnIndex)
                                             .map(sr => {
+                                                // Default to 6:00 AM - 7:00 AM if no time is specified
+                                                const startTime = sr.start_time || '06:00'
+                                                const endTime = sr.end_time || '07:00'
+                                                
                                                 const position = getEventPosition({
-                                                    start_time: sr.start_time,
-                                                    end_time: sr.end_time,
-                                                    startTime: sr.start_time,
-                                                    endTime: sr.end_time
+                                                    start_time: startTime,
+                                                    end_time: endTime,
+                                                    startTime: startTime,
+                                                    endTime: endTime
                                                 })
                                                 
                                                 if (!position) return null
@@ -1137,7 +1140,11 @@ export const Schedule = () => {
                                                             {sr.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                         </div>
                                                         <div className='event-time'>
-                                                            {formatTimeTo12Hour(sr.start_time)} - {formatTimeTo12Hour(sr.end_time)}
+                                                            {sr.start_time && sr.end_time ? (
+                                                                `${formatTimeTo12Hour(startTime)} - ${formatTimeTo12Hour(endTime)}`
+                                                            ) : (
+                                                                <span style={{ opacity: 0.6, fontStyle: 'italic' }}>No time specified</span>
+                                                            )}
                                                         </div>
                                                         {sr.notes && <div className='event-notes'>{sr.notes}</div>}
                                                         <div className='event-process'>
