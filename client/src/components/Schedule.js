@@ -636,9 +636,9 @@ export const Schedule = () => {
         // Filter by selected photographer if one is selected
         if (selectedPhotographerId) {
             filteredEvents = events.filter(event => {
-                // Check if event has personnel assigned
-                if (event.personnels && event.personnels.length > 0) {
-                    return event.personnels.some(person => person.id === parseInt(selectedPhotographerId))
+                // Check if event has personnel assigned (events use assigned_personnel)
+                if (event.assigned_personnel && event.assigned_personnel.length > 0) {
+                    return event.assigned_personnel.some(person => person.personnel_id === parseInt(selectedPhotographerId))
                 }
                 return false
             })

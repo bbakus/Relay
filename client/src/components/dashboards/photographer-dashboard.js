@@ -25,6 +25,7 @@ export const PhotographerDashboardView = () => {
     const [isEditMode, setIsEditMode] = useState(false)
     const [editingNotes, setEditingNotes] = useState('')
     const [newNoteInput, setNewNoteInput] = useState('')
+    const [isShotRequestsCollapsed, setIsShotRequestsCollapsed] = useState(false)
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -549,11 +550,15 @@ export const PhotographerDashboardView = () => {
 
                 {/* Shot Requests Section - Now First */}
                 <div className="photographer-shot-requests-section">
-                    <div className="photographer-section-header">
+                    <div className="photographer-section-header" onClick={() => setIsShotRequestsCollapsed(!isShotRequestsCollapsed)} style={{ cursor: 'pointer' }}>
                         <h2>Assigned Shot Requests</h2>
-                        <span className="photographer-shot-count">{photographerShotRequests.length} Requests</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="photographer-shot-count">{photographerShotRequests.length} Requests</span>
+                            <span className="collapse-icon">{isShotRequestsCollapsed ? '▶' : '▼'}</span>
+                        </div>
                     </div>
 
+                    {!isShotRequestsCollapsed && (
                     <div className="photographer-shot-requests-list">
                         {photographerShotRequests.length === 0 ? (
                             <div className="photographer-no-shots">
@@ -590,6 +595,44 @@ export const PhotographerDashboardView = () => {
                                         <div className="photographer-shot-details">
                                             {shotRequest.notes && (
                                                 <p className="photographer-shot-description">{shotRequest.notes}</p>
+                                            )}
+
+                                            {/* Time and Location */}
+                                            {(shotRequest.start_time || shotRequest.end_time || associatedEvent) && (
+                                                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                    {(shotRequest.start_time && shotRequest.end_time) && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                                                            <span>🕐</span>
+                                                            <span>{shotRequest.start_time} - {shotRequest.end_time}</span>
+                                                        </div>
+                                                    )}
+                                                    {associatedEvent && associatedEvent.location && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                                                            <span>📍</span>
+                                                            <span>{associatedEvent.location}</span>
+                                                        </div>
+                                                    )}
+                                                    {associatedEvent && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'rgba(255, 122, 24, 0.9)' }}>
+                                                            <span>📅</span>
+                                                            <span>{associatedEvent.name}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {shotRequest.details && (
+                                                <div style={{ 
+                                                    marginTop: '8px',
+                                                    padding: '8px',
+                                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                    borderRadius: '4px',
+                                                    fontSize: '0.85rem',
+                                                    color: 'rgba(255, 255, 255, 0.9)'
+                                                }}>
+                                                    <strong style={{ display: 'block', marginBottom: '4px', color: 'rgba(255, 255, 255, 1)' }}>Details:</strong>
+                                                    {shotRequest.details}
+                                                </div>
                                             )}
 
                                             <div className="photographer-shot-meta">
@@ -693,6 +736,7 @@ export const PhotographerDashboardView = () => {
                             })
                         )}
                     </div>
+                    )}
                 </div>
 
                 {/* Personal Schedule Section - Now Second */}
