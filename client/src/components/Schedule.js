@@ -866,38 +866,38 @@ export const Schedule = () => {
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
                             {currentView === 'events' ? (
                                 <div className='desktop-layout'>
-                                {/* unified grid overlay across time + events */}
-                            <div className='global-grid-lines'>
-                                {timeSlots.map((slot) => (
-                                    <div
-                                        key={`gline-${slot.time}`}
-                                        className={`global-grid-slot ${slot.time.endsWith(':00') ? 'hour' : ''}`}
-                                    />
-                                ))}
-                            </div>
-                            {/* Time column */}
-                            <div className='time-column'>
-                                <div className='time-header'>Time</div>
-                                {timeSlots.map((slot) => (
-                                    <div key={slot.time} className='time-slot'>
-                                        <p className='time-text'>{slot.display}</p>
+                                    {/* unified grid overlay across time + events */}
+                                    <div className='global-grid-lines'>
+                                        {timeSlots.map((slot) => (
+                                            <div
+                                                key={`gline-${slot.time}`}
+                                                className={`global-grid-slot ${slot.time.endsWith(':00') ? 'hour' : ''}`}
+                                            />
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                    {/* Time column */}
+                                    <div className='time-column'>
+                                        <div className='time-header'>Time</div>
+                                        {timeSlots.map((slot) => (
+                                            <div key={slot.time} className='time-slot'>
+                                                <p className='time-text'>{slot.display}</p>
+                                            </div>
+                                        ))}
+                                    </div>
 
-                            {/* Events columns - Fixed 5 columns */}
-                            <div className='events-area'>
-                                {/* Events header to match time header */}
-                                <div className='events-header'>
-                                    <div className='column-header'>Column 1</div>
-                                    <div className='column-header'>Column 2</div>
-                                    <div className='column-header'>Column 3</div>
-                                    <div className='column-header'>Column 4</div>
-                                    <div className='column-header'>Column 5</div>
-                                </div>
-                                
-                                {/* Event columns container */}
-                                <div className='sched-events-container'>
+                                    {/* Events columns - Fixed 5 columns */}
+                                    <div className='events-area'>
+                                        {/* Events header to match time header */}
+                                        <div className='events-header'>
+                                            <div className='column-header'>Column 1</div>
+                                            <div className='column-header'>Column 2</div>
+                                            <div className='column-header'>Column 3</div>
+                                            <div className='column-header'>Column 4</div>
+                                            <div className='column-header'>Column 5</div>
+                                        </div>
+                                        
+                                        {/* Event columns container */}
+                                        <div className='sched-events-container'>
                                     
 
 
@@ -1012,7 +1012,7 @@ export const Schedule = () => {
                     <div className="mobile-scroll-indicator">
                         ← Swipe to see more columns →
                     </div>
-                </div>
+                                </div>
                             ) : (
                 /* Shot Requests View */
                 <div className='shot-requests-view'>
