@@ -1005,14 +1005,13 @@ export const Schedule = () => {
                                 )}
                             </div>
                         </div>
-                    )}
 
-                    {/* Mobile scroll indicator */}
-                    <div className="mobile-scroll-indicator">
-                        ← Swipe to see more columns →
+                        {/* Mobile scroll indicator */}
+                        <div className="mobile-scroll-indicator">
+                            ← Swipe to see more columns →
+                        </div>
                     </div>
-                                </div>
-                            ) : (
+                ) : (
                 /* Shot Requests View */
                 <div className='shot-requests-view'>
                     <div className='shot-requests-list'>
