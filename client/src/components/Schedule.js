@@ -863,12 +863,9 @@ export const Schedule = () => {
                         <div className='loading'>Loading {currentView}...</div>
                     ) : (
                         <div className='schedule-grid'>
-                            {currentView === 'events' ? (
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
-
-                            
-                            {/* Desktop Layout */}
-                            <div className='desktop-layout'>
+                            {currentView === 'events' ? (
+                                <div className='desktop-layout'>
                                 {/* unified grid overlay across time + events */}
                             <div className='global-grid-lines'>
                                 {timeSlots.map((slot) => (
