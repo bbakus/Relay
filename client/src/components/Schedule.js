@@ -20,6 +20,9 @@ export const Schedule = () => {
     const [projects, setProjects] = useState([])
     const [organizations, setOrganizations] = useState([])
     const [personnel, setPersonnel] = useState([])
+    const [selectedPhotographerId, setSelectedPhotographerId] = useState('')
+    const [currentView, setCurrentView] = useState('events') // 'events' or 'shot-requests'
+    const [shotRequests, setShotRequests] = useState([])
 
     const [loading, setLoading] = useState(true)
     const [selectedEvent, setSelectedEvent] = useState(null)
@@ -156,6 +159,35 @@ export const Schedule = () => {
         }
     }
 
+    const fetchShotRequests = async () => {
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`)
+            if (response.ok) {
+                const allShotRequests = await response.json()
+                
+                // Filter shot requests for selected date and project
+                const filteredShotRequests = allShotRequests.filter(sr => {
+                    // Check if shot request has events on the selected date
+                    const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                        sr.events.some(event => event.date === activeDate)
+                    const hasOwnDateMatch = sr.date === activeDate
+                    const isIndependent = (!sr.events || sr.events.length === 0) && !sr.date
+                    
+                    const dateMatch = hasEventOnSelectedDate || hasOwnDateMatch || isIndependent
+                    const projectMatch = !selectedProjectId || 
+                        (sr.events && sr.events.some(event => event.project_id === Number(selectedProjectId))) ||
+                        (sr.projects && sr.projects.some(project => project.id === Number(selectedProjectId)))
+                    
+                    return dateMatch && projectMatch
+                })
+                
+                setShotRequests(filteredShotRequests)
+            }
+        } catch (error) {
+            console.error('Error fetching shot requests:', error)
+        }
+    }
+
     useEffect(() => {
         if (isAdmin) {
             fetchOrganizations()
@@ -163,6 +195,7 @@ export const Schedule = () => {
         fetchProjects()
         fetchPersonnel()
         fetchEvents()
+        fetchShotRequests()
     }, [activeDate, selectedProjectId, isAdmin, user?.company_id, selectedCompanyId])
 
 
@@ -598,7 +631,20 @@ export const Schedule = () => {
     }
 
     const getEventsWithPositions = () => {
-        return events
+        let filteredEvents = events
+        
+        // Filter by selected photographer if one is selected
+        if (selectedPhotographerId) {
+            filteredEvents = events.filter(event => {
+                // Check if event has personnel assigned
+                if (event.personnels && event.personnels.length > 0) {
+                    return event.personnels.some(person => person.id === parseInt(selectedPhotographerId))
+                }
+                return false
+            })
+        }
+        
+        return filteredEvents
             .map(event => ({ ...event, position: getEventPosition(event) }))
             .filter(event => event.position !== null)
             .sort((a, b) => a.position.top - b.position.top)
@@ -618,8 +664,22 @@ export const Schedule = () => {
         return eventsByColumn
     }
 
-    const eventsWithPositions = useMemo(() => getEventsWithPositions(), [events])
+    const eventsWithPositions = useMemo(() => getEventsWithPositions(), [events, selectedPhotographerId])
     const eventsByColumn = useMemo(() => getEventsByColumn(), [eventsWithPositions])
+
+    // Filter shot requests by photographer
+    const filteredShotRequests = useMemo(() => {
+        if (selectedPhotographerId) {
+            return shotRequests.filter(sr => {
+                // Check if shot request has personnel assigned
+                if (sr.personnels && sr.personnels.length > 0) {
+                    return sr.personnels.some(person => person.id === parseInt(selectedPhotographerId))
+                }
+                return false
+            })
+        }
+        return shotRequests
+    }, [shotRequests, selectedPhotographerId])
 
     // Project status calculation based on active date
     const getProjectStatus = (project) => {
@@ -761,16 +821,49 @@ export const Schedule = () => {
                 <div className='schedule-container'>
                     <div className='schedule-header'>
                         <h1>Schedule</h1>
-                        
-
+                        <div className='schedule-filters'>
+                            <div className='view-toggle'>
+                                <button
+                                    className={`view-toggle-btn ${currentView === 'events' ? 'active' : ''}`}
+                                    onClick={() => setCurrentView('events')}
+                                >
+                                    Events
+                                </button>
+                                <button
+                                    className={`view-toggle-btn ${currentView === 'shot-requests' ? 'active' : ''}`}
+                                    onClick={() => setCurrentView('shot-requests')}
+                                >
+                                    Shot Requests
+                                </button>
+                            </div>
+                            <div className='filter-group'>
+                                <label htmlFor='photographer-filter'>Filter by Photographer:</label>
+                                <select
+                                    id='photographer-filter'
+                                    value={selectedPhotographerId}
+                                    onChange={(e) => setSelectedPhotographerId(e.target.value)}
+                                    className='filter-select'
+                                >
+                                    <option value=''>All Photographers</option>
+                                    {personnel
+                                        .filter(person => person.role === 'photographer')
+                                        .map(photographer => (
+                                            <option key={photographer.id} value={photographer.id}>
+                                                {photographer.name}
+                                            </option>
+                                        ))}
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
 
 
                     {loading ? (
-                        <div className='loading'>Loading events...</div>
+                        <div className='loading'>Loading {currentView}...</div>
                     ) : (
                         <div className='schedule-grid'>
+                            {currentView === 'events' ? (
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
 
                             
@@ -923,6 +1016,62 @@ export const Schedule = () => {
                         ← Swipe to see more columns →
                     </div>
                 </div>
+            ) : (
+                /* Shot Requests View */
+                <div className='shot-requests-view'>
+                    <div className='shot-requests-list'>
+                        {filteredShotRequests.length === 0 ? (
+                            <div className='no-shot-requests'>
+                                <p>No shot requests for {selectedPhotographerId ? 'this photographer' : 'this date'}</p>
+                            </div>
+                        ) : (
+                            filteredShotRequests.map(shotRequest => (
+                                <div key={shotRequest.id} className='shot-request-schedule-card'>
+                                    <div className='sr-card-header'>
+                                        <h3>{shotRequest.request}</h3>
+                                        <div className='sr-card-meta'>
+                                            {shotRequest.quick_turn && <span className="quick-turn"><span className="quick-turn-dot"></span></span>}
+                                            <span className={`sr-status ${shotRequest.status || 'open'}`}>
+                                                {(shotRequest.status || 'open').toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className='sr-card-details'>
+                                        {shotRequest.notes && (
+                                            <div className='sr-detail'>
+                                                <label>Notes:</label>
+                                                <span>{shotRequest.notes}</span>
+                                            </div>
+                                        )}
+                                        {shotRequest.details && (
+                                            <div className='sr-detail'>
+                                                <label>Details:</label>
+                                                <span>{shotRequest.details}</span>
+                                            </div>
+                                        )}
+                                        <div className='sr-detail'>
+                                            <label>Process Point:</label>
+                                            <span>{(shotRequest.process_point || 'idle').toUpperCase()}</span>
+                                        </div>
+                                        {shotRequest.start_time && shotRequest.end_time && (
+                                            <div className='sr-detail'>
+                                                <label>Time:</label>
+                                                <span>{shotRequest.start_time} - {shotRequest.end_time}</span>
+                                            </div>
+                                        )}
+                                        {shotRequest.personnels && shotRequest.personnels.length > 0 && (
+                                            <div className='sr-detail'>
+                                                <label>Assigned:</label>
+                                                <span>{shotRequest.personnels.map(p => p.name).join(', ')}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
             </div>
             
             {/* Event Details Modal */}
