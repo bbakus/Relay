@@ -1013,7 +1013,7 @@ export const Schedule = () => {
                         ← Swipe to see more columns →
                     </div>
                 </div>
-            ) : (
+                            ) : (
                 /* Shot Requests View */
                 <div className='shot-requests-view'>
                     <div className='shot-requests-list'>
