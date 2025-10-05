@@ -1090,7 +1090,9 @@ export const Schedule = () => {
                     {/* Shot Requests area */}
                     <div className='events-area'>
                         <div className='events-header'>
-                            <div className='column-header'>Shot Requests</div>
+                            <div className='column-header'>Column 1</div>
+                            <div className='column-header'>Column 2</div>
+                            <div className='column-header'>Column 3</div>
                         </div>
                         
                         <div className='sched-events-container'>
@@ -1099,50 +1101,53 @@ export const Schedule = () => {
                                     <p>No shot requests for {selectedPhotographerId ? 'this photographer' : 'this date'}</p>
                                 </div>
                             ) : (
-                                <div className='sched-event-column'>
-                                    {filteredShotRequests
-                                        .filter(sr => sr.start_time && sr.end_time)
-                                        .map(sr => {
-                                            const position = getEventPosition({
-                                                start_time: sr.start_time,
-                                                end_time: sr.end_time,
-                                                startTime: sr.start_time,
-                                                endTime: sr.end_time
-                                            })
-                                            
-                                            if (!position) return null
-                                            
-                                            return (
-                                                <div
-                                                    key={sr.id}
-                                                    className='sched-event-card'
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: `${position.top}px`,
-                                                        height: `${position.height}px`,
-                                                        left: '8px',
-                                                        right: '8px',
-                                                        minHeight: '60px',
-                                                        backgroundColor: 'rgba(255, 122, 24, 0.15)',
-                                                        border: '2px solid rgba(255, 122, 24, 0.5)',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    <div className='event-header'>
-                                                        <h3>{sr.request}</h3>
-                                                        {sr.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
+                                [0, 1, 2].map((columnIndex) => (
+                                    <div key={columnIndex} className='sched-event-column'>
+                                        {filteredShotRequests
+                                            .filter(sr => sr.start_time && sr.end_time)
+                                            .filter((sr, index) => index % 3 === columnIndex)
+                                            .map(sr => {
+                                                const position = getEventPosition({
+                                                    start_time: sr.start_time,
+                                                    end_time: sr.end_time,
+                                                    startTime: sr.start_time,
+                                                    endTime: sr.end_time
+                                                })
+                                                
+                                                if (!position) return null
+                                                
+                                                return (
+                                                    <div
+                                                        key={sr.id}
+                                                        className='sched-event-card'
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: `${position.top}px`,
+                                                            height: `${position.height}px`,
+                                                            left: '8px',
+                                                            right: '8px',
+                                                            minHeight: '60px',
+                                                            backgroundColor: 'rgba(255, 122, 24, 0.15)',
+                                                            border: '2px solid rgba(255, 122, 24, 0.5)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <div className='event-header'>
+                                                            <h3>{sr.request}</h3>
+                                                            {sr.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
+                                                        </div>
+                                                        <div className='event-time'>
+                                                            {formatTimeTo12Hour(sr.start_time)} - {formatTimeTo12Hour(sr.end_time)}
+                                                        </div>
+                                                        {sr.notes && <div className='event-notes'>{sr.notes}</div>}
+                                                        <div className='event-process'>
+                                                            {(sr.process_point || 'idle').toUpperCase()}
+                                                        </div>
                                                     </div>
-                                                    <div className='event-time'>
-                                                        {formatTimeTo12Hour(sr.start_time)} - {formatTimeTo12Hour(sr.end_time)}
-                                                    </div>
-                                                    {sr.notes && <div className='event-notes'>{sr.notes}</div>}
-                                                    <div className='event-process'>
-                                                        {(sr.process_point || 'idle').toUpperCase()}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                </div>
+                                                )
+                                            })}
+                                    </div>
+                                ))
                             )}
                         </div>
                     </div>
