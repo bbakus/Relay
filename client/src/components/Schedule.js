@@ -1119,7 +1119,7 @@ export const Schedule = () => {
                                                 return (
                                                     <div
                                                         key={sr.id}
-                                                        className='sched-event-card'
+                                                        className={`sched-event-card process-${(sr.process_point || 'idle').toLowerCase()}`}
                                                         style={{
                                                             position: 'absolute',
                                                             top: `${position.top}px`,
@@ -1127,8 +1127,8 @@ export const Schedule = () => {
                                                             left: '8px',
                                                             right: '8px',
                                                             minHeight: '60px',
-                                                            backgroundColor: 'rgba(255, 122, 24, 0.15)',
-                                                            border: '2px solid rgba(255, 122, 24, 0.5)',
+                                                            backgroundColor: getProcessPointColor(sr.process_point).backgroundColor,
+                                                            border: `2px solid ${getProcessPointColor(sr.process_point).borderColor}`,
                                                             cursor: 'pointer'
                                                         }}
                                                     >
