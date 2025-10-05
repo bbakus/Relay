@@ -952,7 +952,6 @@ export const Schedule = () => {
                                     )}
                                 </div>
                             </div>
-                            </div>
 
                             {/* Mobile Layout */}
                             <div className='mobile-layout'>
