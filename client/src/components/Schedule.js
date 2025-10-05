@@ -1116,9 +1116,8 @@ export const Schedule = () => {
                     </div>
                 </div>
             )}
-                        </div>
-                    )}
             </div>
+                    )}
             
             {/* Event Details Modal */}
             {showModal && selectedEvent && (
