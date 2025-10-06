@@ -99,8 +99,6 @@ export const ShotRequest = () => {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Fetched shot requests:', data.length, 'total')
-                console.log('Sample shot request:', data[0])
                 setShotRequests(data)
             }
         } catch (error) {
@@ -222,9 +220,6 @@ export const ShotRequest = () => {
     const filteredShotRequests = useMemo(() => {
         let filtered = projectShotRequests
         
-        console.log('Filtering shot requests. projectShotRequests:', projectShotRequests.length)
-        console.log('selectedDate:', selectedDate)
-        
         // Filter by global date - show shot requests for the selected date
         if (selectedDate) {
             filtered = filtered.filter(sr => {
@@ -235,14 +230,10 @@ export const ShotRequest = () => {
                 // Check if shot request has its own date matching selected date
                 const hasOwnDateMatch = sr.date === selectedDate
                 
-                console.log(`SR ${sr.id}: date=${sr.date}, hasEventOnSelectedDate=${hasEventOnSelectedDate}, hasOwnDateMatch=${hasOwnDateMatch}`)
-                
                 // Only show shot requests that match the selected date
                 return hasEventOnSelectedDate || hasOwnDateMatch
             })
         }
-        
-        console.log('After date filter:', filtered.length)
         
         // Filter by quick turn
         if (filterQuickTurn !== 'all') {
@@ -254,8 +245,6 @@ export const ShotRequest = () => {
         if (filterProcessPoint !== 'all') {
             filtered = filtered.filter(sr => (sr.process_point || 'idle') === filterProcessPoint)
         }
-        
-        console.log('Final filtered shot requests:', filtered.length)
         
         return filtered
     }, [projectShotRequests, selectedDate, filterQuickTurn, filterProcessPoint])
@@ -453,9 +442,6 @@ export const ShotRequest = () => {
                 project_id: currentProject?.id,
             }
             
-            console.log('Creating shot request with payload:', payload)
-            console.log('Current selectedDate:', selectedDate)
-            
             const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
                 method: 'POST',
                 headers: {
@@ -465,9 +451,6 @@ export const ShotRequest = () => {
             })
             
             if (response.ok) {
-                const createdShotRequest = await response.json()
-                console.log('Created shot request:', createdShotRequest)
-                
                 setFormData({
                     request: '',
                     notes: '',
@@ -482,10 +465,8 @@ export const ShotRequest = () => {
                 })
                 setShowCreateForm(false)
                 await fetchShotRequests()
-                console.log('Shot requests after fetch:', shotRequests.length)
             } else {
-                const errorData = await response.json()
-                console.error('Failed to create shot request:', errorData)
+                console.error('Failed to create shot request')
             }
         } catch (error) {
             console.error('Error creating shot request:', error)
