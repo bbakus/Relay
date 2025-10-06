@@ -328,12 +328,12 @@ export const ShotRequest = () => {
             if (selectedDate) {
                 const hasEventOnSelectedDate = shotRequest.events && shotRequest.events.length > 0 && 
                     shotRequest.events.some(ev => ev.date === selectedDate)
-                const isIndependent = !shotRequest.events || shotRequest.events.length === 0
+                const hasOwnDateMatch = shotRequest.date === selectedDate
                 
                 // Show shot requests that either:
                 // 1. Have events on the selected date, OR
-                // 2. Are independent (no events)
-                if (!hasEventOnSelectedDate && !isIndependent) {
+                // 2. Have their own date matching the selected date
+                if (!hasEventOnSelectedDate && !hasOwnDateMatch) {
                     return false
                 }
             }
@@ -354,12 +354,12 @@ export const ShotRequest = () => {
             if (selectedDate) {
                 const hasEventOnSelectedDate = shotRequest.events && shotRequest.events.length > 0 && 
                     shotRequest.events.some(ev => ev.date === selectedDate)
-                const isIndependent = !shotRequest.events || shotRequest.events.length === 0
+                const hasOwnDateMatch = shotRequest.date === selectedDate
                 
                 // Show shot requests that either:
                 // 1. Have events on the selected date, OR
-                // 2. Are independent (no events)
-                if (!hasEventOnSelectedDate && !isIndependent) {
+                // 2. Have their own date matching the selected date
+                if (!hasEventOnSelectedDate && !hasOwnDateMatch) {
                     return false
                 }
             }
@@ -606,7 +606,7 @@ export const ShotRequest = () => {
         }
     }
 
-    const ShotRequestCard = ({ shotRequest, showProcessColor = false, panelType = 'default' }) => {
+    const ShotRequestCard = React.memo(({ shotRequest, showProcessColor = false, panelType = 'default' }) => {
         // Use events directly from shotRequest API response
         const event = shotRequest.events && shotRequest.events.length > 0 ? shotRequest.events[0] : null
         const processClass = showProcessColor ? `process-${(shotRequest.process_point || 'idle').toLowerCase()}` : ''
@@ -895,7 +895,7 @@ export const ShotRequest = () => {
                 )}
             </div>
         )
-    }
+    })
 
     if (loading) {
         return (
