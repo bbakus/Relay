@@ -589,6 +589,13 @@ export const PhotographerDashboardView = () => {
                                 const eventStatus = associatedEvent ? getEventStatus(associatedEvent) : 'scheduled'
                                 const statusColor = getStatusColor(eventStatus)
                                 
+                                // Determine card colors based on status
+                                const isShot = shotRequest.status === 'shot'
+                                const baseBackgroundColor = isShot ? 'rgba(40, 167, 69, 0.15)' : 'rgba(255, 255, 255, 0.05)'
+                                const hoverBackgroundColor = isShot ? 'rgba(40, 167, 69, 0.25)' : 'rgba(255, 255, 255, 0.08)'
+                                const baseBorderColor = isShot ? 'rgba(40, 167, 69, 0.4)' : 'rgba(255, 255, 255, 0.1)'
+                                const hoverBorderColor = isShot ? 'rgba(40, 167, 69, 0.6)' : 'rgba(255, 255, 255, 0.2)'
+                                
                                 return (
                                     <div 
                                         key={shotRequest.id} 
@@ -600,19 +607,19 @@ export const PhotographerDashboardView = () => {
                                         style={{ 
                                             cursor: 'pointer',
                                             padding: '12px 16px',
-                                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                            backgroundColor: baseBackgroundColor,
                                             borderRadius: '8px',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            border: `1px solid ${baseBorderColor}`,
                                             transition: 'all 0.2s ease',
                                             marginBottom: '8px'
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
-                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                                            e.currentTarget.style.backgroundColor = hoverBackgroundColor
+                                            e.currentTarget.style.borderColor = hoverBorderColor
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
-                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+                                            e.currentTarget.style.backgroundColor = baseBackgroundColor
+                                            e.currentTarget.style.borderColor = baseBorderColor
                                         }}
                                     >
                                         <h3 style={{ 
@@ -1057,7 +1064,22 @@ export const PhotographerDashboardView = () => {
                             )}
                         </div>
                         
-                        <div className="photographer-modal-footer">
+                        <div className="photographer-modal-footer" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            {selectedShotRequest.status !== 'shot' && (
+                                <button 
+                                    className="photographer-modal-button" 
+                                    onClick={async () => {
+                                        await handleMarkShotRequestComplete(selectedShotRequest.id)
+                                        setShowShotRequestModal(false)
+                                    }}
+                                    style={{
+                                        backgroundColor: '#28a745',
+                                        color: 'white'
+                                    }}
+                                >
+                                    Mark as Shot
+                                </button>
+                            )}
                             <button className="photographer-modal-button" onClick={() => setShowShotRequestModal(false)}>Close</button>
                         </div>
                     </div>
