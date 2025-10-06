@@ -205,16 +205,26 @@ export const PhotographerDashboardView = () => {
             // Only show open shot requests
             if (sr.status === 'shot') return false
 
+            // Filter by date
+            const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                sr.events.some(event => event.date === activeDate)
+            
+            // Normalize date - treat null, "null", undefined, and empty string as null
+            const srDate = sr.date && sr.date !== 'null' && sr.date !== '' ? sr.date : null
+            const hasOwnDateMatch = srDate === activeDate
+            
+            // Must match the selected date
+            if (!hasEventOnSelectedDate && !hasOwnDateMatch) return false
+
             // Show shot requests that either:
             // 1. Have events assigned to this photographer, OR
-            // 2. Have no events (independent shot requests)
-            if (!sr.events || !Array.isArray(sr.events) || sr.events.length === 0) {
-                return true // Independent shot requests
-            }
+            // 2. Are directly assigned to this photographer (check personnels)
+            const isDirectlyAssigned = sr.personnels && sr.personnels.some(person => person.id === currentPhotographer.id)
+            const hasPhotographerEvent = sr.events && sr.events.some(event => photographerEventIds.has(event.id))
 
-            return sr.events.some(event => photographerEventIds.has(event.id))
+            return isDirectlyAssigned || hasPhotographerEvent
         })
-    }, [shotRequests, currentPhotographer, photographerEvents])
+    }, [shotRequests, currentPhotographer, photographerEvents, activeDate])
 
     // Get shot requests for a specific event
     const getShotRequestsForEvent = (eventId) => {
