@@ -232,8 +232,9 @@ export const ShotRequest = () => {
             filtered.forEach(sr => {
                 const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
                     sr.events.some(event => event.date === selectedDate)
-                const hasOwnDateMatch = sr.date === selectedDate
-                console.log(`SR ${sr.id} (${sr.request}): date="${sr.date}", events=${sr.events?.length || 0}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, PASS=${hasEventOnSelectedDate || hasOwnDateMatch}`)
+                const srDate = sr.date && sr.date !== 'null' && sr.date !== '' ? sr.date : null
+                const hasOwnDateMatch = srDate === selectedDate
+                console.log(`SR ${sr.id} (${sr.request}): rawDate="${sr.date}", normalizedDate="${srDate}", events=${sr.events?.length || 0}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, PASS=${hasEventOnSelectedDate || hasOwnDateMatch}`)
             })
             
             filtered = filtered.filter(sr => {
@@ -242,7 +243,9 @@ export const ShotRequest = () => {
                     sr.events.some(event => event.date === selectedDate)
                 
                 // Check if shot request has its own date matching selected date
-                const hasOwnDateMatch = sr.date === selectedDate
+                // Handle null, "null", undefined, and empty string
+                const srDate = sr.date && sr.date !== 'null' && sr.date !== '' ? sr.date : null
+                const hasOwnDateMatch = srDate === selectedDate
                 
                 // Only show shot requests that match the selected date
                 return hasEventOnSelectedDate || hasOwnDateMatch
@@ -337,7 +340,9 @@ export const ShotRequest = () => {
             if (selectedDate) {
                 const hasEventOnSelectedDate = shotRequest.events && shotRequest.events.length > 0 && 
                     shotRequest.events.some(ev => ev.date === selectedDate)
-                const hasOwnDateMatch = shotRequest.date === selectedDate
+                // Handle null, "null", undefined, and empty string
+                const srDate = shotRequest.date && shotRequest.date !== 'null' && shotRequest.date !== '' ? shotRequest.date : null
+                const hasOwnDateMatch = srDate === selectedDate
                 
                 // Show shot requests that either:
                 // 1. Have events on the selected date, OR
@@ -363,7 +368,9 @@ export const ShotRequest = () => {
             if (selectedDate) {
                 const hasEventOnSelectedDate = shotRequest.events && shotRequest.events.length > 0 && 
                     shotRequest.events.some(ev => ev.date === selectedDate)
-                const hasOwnDateMatch = shotRequest.date === selectedDate
+                // Handle null, "null", undefined, and empty string
+                const srDate = shotRequest.date && shotRequest.date !== 'null' && shotRequest.date !== '' ? shotRequest.date : null
+                const hasOwnDateMatch = srDate === selectedDate
                 
                 // Show shot requests that either:
                 // 1. Have events on the selected date, OR
@@ -462,6 +469,10 @@ export const ShotRequest = () => {
                 project_id: currentProject?.id,
             }
             
+            console.log('🚀 Creating shot request with payload:', payload)
+            console.log('🚀 formData.date:', formData.date)
+            console.log('🚀 selectedDate:', selectedDate)
+            
             const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
                 method: 'POST',
                 headers: {
@@ -471,6 +482,10 @@ export const ShotRequest = () => {
             })
             
             if (response.ok) {
+                const created = await response.json()
+                console.log('✅ Created shot request:', created)
+                console.log('✅ Created date field:', created.date)
+                
                 setFormData({
                     request: '',
                     notes: '',
