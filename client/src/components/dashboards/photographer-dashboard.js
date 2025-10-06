@@ -204,9 +204,6 @@ export const PhotographerDashboardView = () => {
         const photographerEventIds = new Set(photographerEvents.map(event => event.id))
 
         return shotRequests.filter(sr => {
-            // Only show open shot requests
-            if (sr.status === 'shot') return false
-
             // Filter by date
             const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
                 sr.events.some(event => event.date === activeDate)
@@ -387,8 +384,6 @@ export const PhotographerDashboardView = () => {
 
     // Handle marking shot request as complete
     const handleMarkShotRequestComplete = async (shotRequestId) => {
-        if (!window.confirm('Mark this shot request as complete?')) return
-
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
                 method: 'PUT',
@@ -401,15 +396,12 @@ export const PhotographerDashboardView = () => {
             })
 
             if (response.ok) {
-                // Update local state - remove from shot requests list
+                // Update local state - keep in list but update status
                 setShotRequests(prev => prev.map(sr => 
                     sr.id === shotRequestId 
                         ? { ...sr, status: 'shot' }
                         : sr
                 ))
-                alert('Shot request marked as complete!')
-            } else {
-                alert('Failed to mark shot request as complete. Please try again.')
             }
         } catch (error) {
             console.error('Error marking shot request as complete:', error)
