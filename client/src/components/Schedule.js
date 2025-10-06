@@ -651,7 +651,19 @@ export const Schedule = () => {
     }
 
     const openShotRequestEditModal = (shotRequest) => {
-        setEditingShotRequest(shotRequest)
+        // Create a clean copy with only the fields we need to edit
+        setEditingShotRequest({
+            id: shotRequest.id,
+            request: shotRequest.request || '',
+            start_time: shotRequest.start_time || '',
+            end_time: shotRequest.end_time || '',
+            date: shotRequest.date || '',
+            details: shotRequest.details || '',
+            notes: shotRequest.notes || '',
+            deadline: shotRequest.deadline || '',
+            quick_turn: shotRequest.quick_turn || false,
+            process_point: shotRequest.process_point || 'idle'
+        })
         setShowShotRequestEditModal(true)
         closeShotRequestDetailModal()
     }
