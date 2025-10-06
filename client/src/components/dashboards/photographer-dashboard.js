@@ -26,6 +26,8 @@ export const PhotographerDashboardView = () => {
     const [editingNotes, setEditingNotes] = useState('')
     const [newNoteInput, setNewNoteInput] = useState('')
     const [isShotRequestsCollapsed, setIsShotRequestsCollapsed] = useState(false)
+    const [selectedShotRequest, setSelectedShotRequest] = useState(null)
+    const [showShotRequestModal, setShowShotRequestModal] = useState(false)
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -588,7 +590,15 @@ export const PhotographerDashboardView = () => {
                                 const statusColor = getStatusColor(eventStatus)
                                 
                                 return (
-                                    <div key={shotRequest.id} className="photographer-shot-request-card">
+                                    <div 
+                                        key={shotRequest.id} 
+                                        className="photographer-shot-request-card"
+                                        onClick={() => {
+                                            setSelectedShotRequest(shotRequest)
+                                            setShowShotRequestModal(true)
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                         <div className="photographer-shot-header">
                                             <h3 className="photographer-shot-name">{shotRequest.request}</h3>
                                             <span
@@ -1111,6 +1121,72 @@ export const PhotographerDashboardView = () => {
                         
                         <div className="photographer-modal-footer">
                             <button className="photographer-modal-button" onClick={closeModal}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Shot Request Modal */}
+            {showShotRequestModal && selectedShotRequest && (
+                <div className="photographer-modal-overlay" onClick={() => setShowShotRequestModal(false)}>
+                    <div className="photographer-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="photographer-modal-header">
+                            <h2>{selectedShotRequest.request}</h2>
+                            <button className="photographer-modal-close" onClick={() => setShowShotRequestModal(false)}>×</button>
+                        </div>
+                        
+                        <div className="photographer-modal-body">
+                            {selectedShotRequest.start_time && selectedShotRequest.end_time && (
+                                <div className="photographer-detail-row">
+                                    <label>Time:</label>
+                                    <span>{selectedShotRequest.start_time} - {selectedShotRequest.end_time}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.date && (
+                                <div className="photographer-detail-row">
+                                    <label>Date:</label>
+                                    <span>{selectedShotRequest.date}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.details && (
+                                <div className="photographer-detail-row">
+                                    <label>Details:</label>
+                                    <span>{selectedShotRequest.details}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.notes && (
+                                <div className="photographer-detail-row">
+                                    <label>Notes:</label>
+                                    <span>{selectedShotRequest.notes}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.deadline && (
+                                <div className="photographer-detail-row">
+                                    <label>Deadline:</label>
+                                    <span>{selectedShotRequest.deadline}</span>
+                                </div>
+                            )}
+                            
+                            {selectedShotRequest.events && selectedShotRequest.events.length > 0 && (
+                                <div className="photographer-detail-row">
+                                    <label>Associated Events:</label>
+                                    <div>
+                                        {selectedShotRequest.events.map(event => (
+                                            <div key={event.id} style={{ marginBottom: '4px' }}>
+                                                {event.name} - {event.location}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="photographer-modal-footer">
+                            <button className="photographer-modal-button" onClick={() => setShowShotRequestModal(false)}>Close</button>
                         </div>
                     </div>
                 </div>
