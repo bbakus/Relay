@@ -889,7 +889,11 @@ export const ShotRequest = () => {
             <Nav />
             <div className='shot-request-page-header'>
                 <h1>SHOT REQUESTS</h1>
-                <button onClick={() => setShowCreateForm(true)}>Add Shot Request</button>
+                <button onClick={() => {
+                    setShowCreateForm(true)
+                    // Pre-fill the date with the currently selected global date
+                    setFormData(prev => ({...prev, date: selectedDate || ''}))
+                }}>Add Shot Request</button>
             </div>
             
             <div className="shot-requests-container">
