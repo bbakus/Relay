@@ -218,10 +218,24 @@ export const ShotRequest = () => {
 
     // Filtered shot requests with all filters applied
     const filteredShotRequests = useMemo(() => {
+        console.log('=== FILTERING SHOT REQUESTS ===')
+        console.log('Total projectShotRequests:', projectShotRequests.length)
+        console.log('selectedDate:', selectedDate)
+        console.log('filterQuickTurn:', filterQuickTurn)
+        console.log('filterProcessPoint:', filterProcessPoint)
+        
         let filtered = projectShotRequests
         
         // Filter by global date - show shot requests for the selected date
         if (selectedDate) {
+            console.log('\n--- BEFORE DATE FILTER ---')
+            filtered.forEach(sr => {
+                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
+                    sr.events.some(event => event.date === selectedDate)
+                const hasOwnDateMatch = sr.date === selectedDate
+                console.log(`SR ${sr.id} (${sr.request}): date="${sr.date}", events=${sr.events?.length || 0}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, PASS=${hasEventOnSelectedDate || hasOwnDateMatch}`)
+            })
+            
             filtered = filtered.filter(sr => {
                 // Check if shot request has events on the selected date
                 const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
@@ -233,18 +247,24 @@ export const ShotRequest = () => {
                 // Only show shot requests that match the selected date
                 return hasEventOnSelectedDate || hasOwnDateMatch
             })
+            console.log('AFTER DATE FILTER:', filtered.length)
         }
         
         // Filter by quick turn
         if (filterQuickTurn !== 'all') {
             const isQuickTurn = filterQuickTurn === 'yes'
             filtered = filtered.filter(sr => !!sr.quick_turn === isQuickTurn)
+            console.log('AFTER QUICK TURN FILTER:', filtered.length)
         }
         
         // Filter by process point
         if (filterProcessPoint !== 'all') {
             filtered = filtered.filter(sr => (sr.process_point || 'idle') === filterProcessPoint)
+            console.log('AFTER PROCESS POINT FILTER:', filtered.length)
         }
+        
+        console.log('FINAL FILTERED:', filtered.length)
+        console.log('=== END FILTERING ===\n')
         
         return filtered
     }, [projectShotRequests, selectedDate, filterQuickTurn, filterProcessPoint])
