@@ -491,8 +491,11 @@ export const ShotRequest = () => {
             }
             
             console.log('🚀 Creating shot request with payload:', payload)
+            console.log('🚀 formData:', formData)
             console.log('🚀 formData.date:', formData.date)
             console.log('🚀 selectedDate:', selectedDate)
+            console.log('🚀 currentProject:', currentProject)
+            console.log('🚀 currentProject.id:', currentProject?.id)
             
             const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`, {
                 method: 'POST',
