@@ -597,160 +597,32 @@ export const PhotographerDashboardView = () => {
                                             setSelectedShotRequest(shotRequest)
                                             setShowShotRequestModal(true)
                                         }}
-                                        style={{ cursor: 'pointer' }}
+                                        style={{ 
+                                            cursor: 'pointer',
+                                            padding: '12px 16px',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                            borderRadius: '8px',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            transition: 'all 0.2s ease',
+                                            marginBottom: '8px'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+                                        }}
                                     >
-                                        <div className="photographer-shot-header">
-                                            <h3 className="photographer-shot-name">{shotRequest.request}</h3>
-                                            <span
-                                                className="photographer-shot-status"
-                                                style={{
-                                                    color: statusColor,
-                                                    borderColor: statusColor
-                                                }}
-                                            >
-                                                {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1).replace('-', ' ')}
-                                            </span>
-                                        </div>
-
-                                        <div className="photographer-shot-details">
-                                            {shotRequest.notes && (
-                                                <p className="photographer-shot-description">{shotRequest.notes}</p>
-                                            )}
-
-                                            {/* Time and Location */}
-                                            {(shotRequest.start_time || shotRequest.end_time || associatedEvent) && (
-                                                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                                    {(shotRequest.start_time && shotRequest.end_time) && (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                                                            <span>🕐</span>
-                                                            <span>{shotRequest.start_time} - {shotRequest.end_time}</span>
-                                                        </div>
-                                                    )}
-                                                    {associatedEvent && associatedEvent.location && (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                                                            <span>📍</span>
-                                                            <span>{associatedEvent.location}</span>
-                                                        </div>
-                                                    )}
-                                                    {associatedEvent && (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'rgba(255, 122, 24, 0.9)' }}>
-                                                            <span>📅</span>
-                                                            <span>{associatedEvent.name}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {shotRequest.details && (
-                                                <div style={{ 
-                                                    marginTop: '8px',
-                                                    padding: '8px',
-                                                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                                    borderRadius: '4px',
-                                                    fontSize: '0.85rem',
-                                                    color: 'rgba(255, 255, 255, 0.9)'
-                                                }}>
-                                                    <strong style={{ display: 'block', marginBottom: '4px', color: 'rgba(255, 255, 255, 1)' }}>Details:</strong>
-                                                    {shotRequest.details}
-                                                </div>
-                                            )}
-
-                                            <div className="photographer-shot-meta">
-                                                <span className={`photographer-shot-priority ${shotRequest.quick_turn ? 'quick-turnaround' : 'normal-priority'}`}>
-                                                    {shotRequest.quick_turn ? (
-                                                        <>
-                                                            <span className="quick-turn-dot"></span>
-                                                            <span className="quick-turn-text">Quick Turnaround</span>
-                                                        </>
-                                                    ) : (
-                                                        'Priority: Normal'
-                                                    )}
-                                                </span>
-                                                {shotRequest.quick_turn && shotRequest.deadline && (
-                                                    <span className="photographer-shot-deadline">
-                                                        Deadline: {shotRequest.deadline}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* Event Association Display */}
-                                            {isIndependent && (
-                                                <div style={{
-                                                    marginTop: '8px',
-                                                    padding: '4px 8px',
-                                                    backgroundColor: 'rgba(255, 184, 77, 0.1)',
-                                                    borderRadius: '4px',
-                                                    border: '1px solid rgba(255, 184, 77, 0.3)'
-                                                }}>
-                                                    <span style={{
-                                                        fontSize: '0.75rem',
-                                                        color: '#ffb84d',
-                                                        fontWeight: '500'
-                                                    }}>
-                                                        📸 Independent Shot Request
-                                                    </span>
-                                                </div>
-                                            )}
-
-                                            {/* Process Point Display */}
-                                            <div className="photographer-shot-process" style={{
-                                                marginTop: '8px',
-                                                padding: '6px 8px',
-                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                                borderRadius: '4px',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)'
-                                            }}>
-                                                <span style={{
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    color: '#ffffff'
-                                                }}>
-                                                    Process: {(shotRequest.process_point || 'idle')}
-                                                    {shotRequest.process_point_updated_by_name && (
-                                                        <span style={{ 
-                                                            fontSize: '0.65rem', 
-                                                            marginLeft: '6px', 
-                                                            opacity: 0.8,
-                                                            fontStyle: 'italic',
-                                                            textTransform: 'none',
-                                                            fontWeight: '400'
-                                                        }}>
-                                                            by {shotRequest.process_point_updated_by_name}
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-
-                                            {/* Complete Button - Only show for photographers */}
-                                            <div style={{ marginTop: '12px', textAlign: 'right' }}>
-                                                <button
-                                                    onClick={() => handleMarkShotRequestComplete(shotRequest.id)}
-                                                    style={{
-                                                        padding: '6px 16px',
-                                                        backgroundColor: '#28a745',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius: '6px',
-                                                        fontSize: '0.8rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        transition: 'all 0.2s ease'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = '#218838'
-                                                        e.target.style.transform = 'translateY(-1px)'
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.backgroundColor = '#28a745'
-                                                        e.target.style.transform = 'translateY(0)'
-                                                    }}
-                                                >
-                                                    Mark Complete
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <h3 style={{ 
+                                            margin: 0, 
+                                            fontSize: '1rem', 
+                                            color: 'rgba(255, 255, 255, 0.95)',
+                                            fontWeight: '500'
+                                        }}>
+                                            {shotRequest.request}
+                                        </h3>
                                     </div>
                                 )
                             })
