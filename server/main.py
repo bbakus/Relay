@@ -1537,9 +1537,11 @@ class ShotRequests(Resource):
                 notes=data.get('notes'),
                 details=data.get('details'),
                 quick_turn=data.get('quick_turn', False),
+                date=data.get('date'),
                 start_time=data.get('start_time'),
                 end_time=data.get('end_time'),
-                deadline=data.get('deadline')
+                deadline=data.get('deadline'),
+                project_id=data.get('project_id')
             )
             
             session.add(new_request)
@@ -1574,9 +1576,11 @@ class ShotRequests(Resource):
                 'notes': new_request.notes,
                 'details': new_request.details,
                 'quick_turn': new_request.quick_turn,
+                'date': new_request.date,
                 'start_time': new_request.start_time,
                 'end_time': new_request.end_time,
-                'deadline': new_request.deadline
+                'deadline': new_request.deadline,
+                'project_id': new_request.project_id
             }, 201
         except Exception as e:
             session.rollback()
