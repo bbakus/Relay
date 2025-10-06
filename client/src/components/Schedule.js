@@ -174,10 +174,12 @@ export const Schedule = () => {
                     // Check if shot request has events on the selected date
                     const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
                         sr.events.some(event => event.date === activeDate)
-                    const hasOwnDateMatch = sr.date === activeDate
-                    const isIndependent = (!sr.events || sr.events.length === 0) && !sr.date
                     
-                    const dateMatch = hasEventOnSelectedDate || hasOwnDateMatch || isIndependent
+                    // Normalize date - treat null, "null", undefined, and empty string as null
+                    const srDate = sr.date && sr.date !== 'null' && sr.date !== '' ? sr.date : null
+                    const hasOwnDateMatch = srDate === activeDate
+                    
+                    const dateMatch = hasEventOnSelectedDate || hasOwnDateMatch
                     const projectMatch = !selectedProjectId || 
                         (sr.events && sr.events.some(event => event.project_id === Number(selectedProjectId))) ||
                         (sr.projects && sr.projects.some(project => project.id === Number(selectedProjectId)))
