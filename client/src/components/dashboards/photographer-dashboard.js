@@ -28,6 +28,7 @@ export const PhotographerDashboardView = () => {
     const [isShotRequestsCollapsed, setIsShotRequestsCollapsed] = useState(false)
     const [selectedShotRequest, setSelectedShotRequest] = useState(null)
     const [showShotRequestModal, setShowShotRequestModal] = useState(false)
+    const [completedShotRequestNotes, setCompletedShotRequestNotes] = useState([])
 
     // Use global selectedDate, fallback to today
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -289,6 +290,48 @@ export const PhotographerDashboardView = () => {
             // Revert local state if save failed
             setCompletedNotes(selectedEvent.completed_notes || [])
             console.error('Error saving completed notes:', error)
+        }
+    }
+
+    // Handle completed shot request note toggle - save to database
+    const handleCompletedShotRequestNoteToggle = async (noteValue) => {
+        if (!selectedShotRequest) return
+
+        const newCompletedNotes = completedShotRequestNotes.includes(noteValue) 
+            ? completedShotRequestNotes.filter(note => note !== noteValue)
+            : [...completedShotRequestNotes, noteValue]
+
+        // Update local state immediately for responsive UI
+        setCompletedShotRequestNotes(newCompletedNotes)
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${selectedShotRequest.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    completed_notes: newCompletedNotes
+                })
+            })
+
+            if (response.ok) {
+                // Update the shot request in local state
+                setShotRequests(prev => prev.map(sr => 
+                    sr.id === selectedShotRequest.id 
+                        ? { ...sr, completed_notes: newCompletedNotes }
+                        : sr
+                ))
+                setSelectedShotRequest(prev => ({ ...prev, completed_notes: newCompletedNotes }))
+            } else {
+                // Revert local state if save failed
+                setCompletedShotRequestNotes(selectedShotRequest.completed_notes || [])
+                console.error('Failed to save completed shot request notes')
+            }
+        } catch (error) {
+            // Revert local state if save failed
+            setCompletedShotRequestNotes(selectedShotRequest.completed_notes || [])
+            console.error('Error saving completed shot request notes:', error)
         }
     }
 
@@ -606,6 +649,7 @@ export const PhotographerDashboardView = () => {
                                         className="photographer-shot-request-card"
                                         onClick={() => {
                                             setSelectedShotRequest(shotRequest)
+                                            setCompletedShotRequestNotes(shotRequest.completed_notes || [])
                                             setShowShotRequestModal(true)
                                         }}
                                         style={{ 
@@ -1043,7 +1087,32 @@ export const PhotographerDashboardView = () => {
                             {selectedShotRequest.notes && (
                                 <div className="photographer-detail-row">
                                     <label>Notes:</label>
-                                    <span>{selectedShotRequest.notes}</span>
+                                    <div className="notes-checkboxes-display">
+                                        {selectedShotRequest.notes.split(/[,-]/).map((note, index) => {
+                                            const noteValue = note.trim();
+                                            const isCompleted = completedShotRequestNotes.includes(noteValue);
+                                            return (
+                                                <label key={index} className="checkbox-display-label" style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    marginBottom: '6px',
+                                                    cursor: 'pointer'
+                                                }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isCompleted}
+                                                        onChange={() => handleCompletedShotRequestNoteToggle(noteValue)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    />
+                                                    <span style={{
+                                                        textDecoration: isCompleted ? 'line-through' : 'none',
+                                                        opacity: isCompleted ? 0.7 : 1
+                                                    }}>{noteValue}</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
                             

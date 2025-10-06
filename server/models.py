@@ -151,6 +151,7 @@ class ShotRequest(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     request = Column(String, nullable=False)
     notes = Column(String)
+    completed_notes = Column(JSON, default=list)  # Array of completed note items
     details = Column(String)  # New field for specific individual references
     quick_turn = Column(Boolean)
     date = Column(String)  # Date for independent shot requests
