@@ -455,6 +455,7 @@ export const Schedule = () => {
             if (response.ok) {
                 alert('Shot request submitted successfully!')
                 closeShotRequestModal()
+                fetchShotRequests() // Refresh shot requests to show the new one
             } else {
                 console.error('Failed to submit shot request')
                 alert('Failed to submit shot request. Please try again.')
