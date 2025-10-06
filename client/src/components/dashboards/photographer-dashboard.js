@@ -560,6 +560,18 @@ export const PhotographerDashboardView = () => {
                     )}
                 </div>
 
+                {/* Refresh Message */}
+                <h3 style={{ 
+                    textAlign: 'center', 
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.95rem',
+                    fontWeight: '400',
+                    margin: '20px 0',
+                    fontStyle: 'italic'
+                }}>
+                    Please refresh to see updates
+                </h3>
+
                 {/* Shot Requests Section - Now First */}
                 <div className="photographer-shot-requests-section">
                     <div className="photographer-section-header" onClick={() => setIsShotRequestsCollapsed(!isShotRequestsCollapsed)} style={{ cursor: 'pointer' }}>
