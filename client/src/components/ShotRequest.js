@@ -187,20 +187,41 @@ export const ShotRequest = () => {
     const projectShotRequests = useMemo(() => {
         if (!currentProject) return []
         
-        return shotRequests.filter(sr => {
+        console.log('🔍 Filtering shot requests by project:', currentProject.name, 'ID:', currentProject.id)
+        console.log('🔍 Total shot requests:', shotRequests.length)
+        
+        const filtered = shotRequests.filter(sr => {
             // Check if shot request is associated with events from current project
             if (sr.events && sr.events.length > 0) {
-                return sr.events.some(event => event.project_id === currentProject.id)
+                const hasProjectEvent = sr.events.some(event => event.project_id === currentProject.id)
+                if (hasProjectEvent) {
+                    console.log(`✅ SR ${sr.id} (${sr.request}): HAS event from project ${currentProject.id}`)
+                    return true
+                }
             }
             
             // Check if shot request has its own project association
             if (sr.projects && sr.projects.length > 0) {
-                return sr.projects.some(project => project.id === currentProject.id)
+                const hasProjectAssoc = sr.projects.some(project => project.id === currentProject.id)
+                if (hasProjectAssoc) {
+                    console.log(`✅ SR ${sr.id} (${sr.request}): HAS project association`)
+                    return true
+                }
+            }
+            
+            // Check if shot request has project_id field directly
+            if (sr.project_id === currentProject.id) {
+                console.log(`✅ SR ${sr.id} (${sr.request}): HAS direct project_id match`)
+                return true
             }
             
             // If no project association, include it (independent shot requests)
+            console.log(`⚠️ SR ${sr.id} (${sr.request}): INDEPENDENT (no project), project_id=${sr.project_id}`)
             return true
         })
+        
+        console.log('🔍 Filtered to', filtered.length, 'shot requests for project')
+        return filtered
     }, [shotRequests, currentProject])
 
     // Get project dates for filter dropdown
