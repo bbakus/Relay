@@ -952,9 +952,13 @@ export const ShotRequest = () => {
             <div className='shot-request-page-header'>
                 <h1>SHOT REQUESTS</h1>
                 <button onClick={() => {
+                    console.log('📝 Opening create form with selectedDate:', selectedDate)
+                    console.log('📝 Current formData before update:', formData)
                     setShowCreateForm(true)
                     // Pre-fill the date with the currently selected global date
-                    setFormData(prev => ({...prev, date: selectedDate || ''}))
+                    const newFormData = {...formData, date: selectedDate || '', project_id: currentProject?.id || ''}
+                    console.log('📝 New formData after update:', newFormData)
+                    setFormData(newFormData)
                 }}>Add Shot Request</button>
             </div>
             
