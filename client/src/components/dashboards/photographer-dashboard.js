@@ -1090,7 +1090,8 @@ export const PhotographerDashboardView = () => {
                                     <div className="notes-checkboxes-display">
                                         {selectedShotRequest.notes.split(/[,-]/).map((note, index) => {
                                             const noteValue = note.trim();
-                                            const isCompleted = completedShotRequestNotes.includes(noteValue);
+                                            if (!noteValue) return null;
+                                            const isCompleted = (completedShotRequestNotes || []).includes(noteValue);
                                             return (
                                                 <label key={index} className="checkbox-display-label" style={{
                                                     display: 'flex',
