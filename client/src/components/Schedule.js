@@ -1309,8 +1309,8 @@ export const Schedule = () => {
                                     >
                                         {shotRequestsByColumn[columnIndex]?.map(sr => {
                                             // Default to 6:00 AM - 7:00 AM if no time is specified
-                                            const startTime = sr.start_time || '06:00'
-                                            const endTime = sr.end_time || '07:00'
+                                            const startTime = (sr.start_time && sr.start_time.trim() !== '') ? sr.start_time : '06:00'
+                                            const endTime = (sr.end_time && sr.end_time.trim() !== '') ? sr.end_time : '07:00'
                                             
                                             const position = getEventPosition({
                                                 start_time: startTime,
@@ -1319,7 +1319,11 @@ export const Schedule = () => {
                                                 endTime: endTime
                                             })
                                             
-                                            if (!position) return null
+                                            // Position should always exist now since we provide defaults
+                                            if (!position) {
+                                                console.warn('Shot request missing position:', sr.id, startTime, endTime)
+                                                return null
+                                            }
                                             
                                             return (
                                                 <div
