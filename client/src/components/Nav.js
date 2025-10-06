@@ -358,7 +358,7 @@ export const Nav = () => {
         { label: 'Schedule', to: `/${userId}/schedule`},
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
-        { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
         { label: 'Settings', to: `/${userId}/settings`},
       ]
@@ -367,7 +367,7 @@ export const Nav = () => {
     if (access === 'client') {
       return [...base,
         { label: 'Schedule', to:`/${userId}/schedule`},
-        { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
       ]
     }
@@ -378,7 +378,7 @@ export const Nav = () => {
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Personnel', to: `/${userId}/personnel` },
-        { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
       ]
     }
@@ -395,7 +395,7 @@ export const Nav = () => {
         { label: 'Schedule', to: `/${userId}/schedule`},
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
-        { label: 'Deliver', to: `/${userId}/deliver` },
+        { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
       ]
     }
