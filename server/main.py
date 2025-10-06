@@ -1540,8 +1540,7 @@ class ShotRequests(Resource):
                 date=data.get('date'),
                 start_time=data.get('start_time'),
                 end_time=data.get('end_time'),
-                deadline=data.get('deadline'),
-                project_id=data.get('project_id')
+                deadline=data.get('deadline')
             )
             
             session.add(new_request)
@@ -1579,8 +1578,7 @@ class ShotRequests(Resource):
                 'date': new_request.date,
                 'start_time': new_request.start_time,
                 'end_time': new_request.end_time,
-                'deadline': new_request.deadline,
-                'project_id': new_request.project_id
+                'deadline': new_request.deadline
             }, 201
         except Exception as e:
             session.rollback()
