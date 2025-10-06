@@ -169,6 +169,10 @@ export const Schedule = () => {
             if (response.ok) {
                 const allShotRequests = await response.json()
                 
+                console.log('📅 Schedule: Fetched', allShotRequests.length, 'shot requests')
+                console.log('📅 Schedule: activeDate:', activeDate)
+                console.log('📅 Schedule: selectedProjectId:', selectedProjectId)
+                
                 // Filter shot requests for selected date and project
                 const filteredShotRequests = allShotRequests.filter(sr => {
                     // Check if shot request has events on the selected date
@@ -184,9 +188,12 @@ export const Schedule = () => {
                         (sr.events && sr.events.some(event => event.project_id === Number(selectedProjectId))) ||
                         (sr.projects && sr.projects.some(project => project.id === Number(selectedProjectId)))
                     
+                    console.log(`📅 SR ${sr.id} (${sr.request}): date="${sr.date}", events=${sr.events?.length}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, projectMatch=${projectMatch}, PASS=${dateMatch && projectMatch}`)
+                    
                     return dateMatch && projectMatch
                 })
                 
+                console.log('📅 Schedule: Filtered to', filteredShotRequests.length, 'shot requests')
                 setShotRequests(filteredShotRequests)
             }
         } catch (error) {
