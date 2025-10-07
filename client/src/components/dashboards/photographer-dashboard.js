@@ -538,6 +538,131 @@ export const PhotographerDashboardView = () => {
         }
     }
 
+    // Function to generate iCalendar (.ics) file for photographer's schedule
+    const generateICalendar = async () => {
+        try {
+            // Fetch ALL events for the photographer (not just current day)
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
+            if (!response.ok) {
+                alert('Failed to fetch events. Please try again.')
+                return
+            }
+            const allEvents = await response.json()
+            
+            // Filter events for this photographer
+            const photographerAllEvents = allEvents.filter(event => {
+                if (!event.assigned_personnel || !Array.isArray(event.assigned_personnel)) return false
+                return event.assigned_personnel.some(person => person.personnel_id === currentPhotographer.id)
+            })
+            
+            // Filter to only include future and today's events
+            const today = new Date().toISOString().split('T')[0]
+            const eventsToExport = photographerAllEvents.filter(event => event.date >= today)
+            
+            // Sort events by date and time
+            eventsToExport.sort((a, b) => {
+                if (a.date !== b.date) {
+                    return a.date.localeCompare(b.date)
+                }
+                return a.start_time.localeCompare(b.start_time)
+            })
+
+            if (eventsToExport.length === 0) {
+                alert('No upcoming events to export.')
+                return
+            }
+
+            // Helper function to format date/time for iCalendar (YYYYMMDDTHHMMSS)
+            const formatICalDateTime = (date, time) => {
+                const dateStr = date.replace(/-/g, '')
+                const timeStr = time.replace(/:/g, '') + '00'
+                return `${dateStr}T${timeStr}`
+            }
+
+            // Helper function to escape special characters in iCalendar format
+            const escapeICalText = (text) => {
+                if (!text) return ''
+                return text.replace(/\\/g, '\\\\')
+                          .replace(/;/g, '\\;')
+                          .replace(/,/g, '\\,')
+                          .replace(/\n/g, '\\n')
+            }
+
+            // Build iCalendar content
+            let icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Relay Photography Schedule//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'X-WR-CALNAME:Relay Photography Schedule',
+                'X-WR-TIMEZONE:America/Los_Angeles'
+            ]
+
+            eventsToExport.forEach(event => {
+                const uid = `${event.id}-${Date.now()}@relay-schedule.com`
+                const dtstamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+                const dtstart = formatICalDateTime(event.date, event.start_time)
+                const dtend = formatICalDateTime(event.date, event.end_time)
+                
+                // Build description with notes
+                let description = ''
+                if (event.notes) {
+                    description = `Notes: ${event.notes}`
+                }
+                if (event.photographer_notes) {
+                    description += description ? `\\n\\nPhotographer Notes: ${event.photographer_notes}` : `Photographer Notes: ${event.photographer_notes}`
+                }
+                if (event.quick_turn) {
+                    description += description ? `\\n\\n⚠️ QUICK TURN - Priority Delivery` : '⚠️ QUICK TURN - Priority Delivery'
+                }
+
+                icsContent.push('BEGIN:VEVENT')
+                icsContent.push(`UID:${uid}`)
+                icsContent.push(`DTSTAMP:${dtstamp}`)
+                icsContent.push(`DTSTART:${dtstart}`)
+                icsContent.push(`DTEND:${dtend}`)
+                icsContent.push(`SUMMARY:${escapeICalText(event.name)}`)
+                if (event.location) {
+                    icsContent.push(`LOCATION:${escapeICalText(event.location)}`)
+                }
+                if (description) {
+                    icsContent.push(`DESCRIPTION:${escapeICalText(description)}`)
+                }
+                
+                // Add 5-minute alarm/reminder
+                icsContent.push('BEGIN:VALARM')
+                icsContent.push('ACTION:DISPLAY')
+                icsContent.push('TRIGGER:-PT5M')
+                icsContent.push('DESCRIPTION:Event reminder')
+                icsContent.push('END:VALARM')
+                
+                icsContent.push('END:VEVENT')
+            })
+
+            icsContent.push('END:VCALENDAR')
+
+            // Create and download the file
+            const icsBlob = new Blob([icsContent.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
+            const url = window.URL.createObjectURL(icsBlob)
+            const link = document.createElement('a')
+            link.href = url
+            
+            // Create filename based on photographer name
+            const photographerName = currentPhotographer.name.replace(/\s+/g, '_')
+            const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '')
+            link.download = `Relay_Schedule_${photographerName}_${timestamp}.ics`
+            
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(url)
+        } catch (error) {
+            console.error('Error generating iCalendar:', error)
+            alert('Failed to generate calendar file. Please try again.')
+        }
+    }
+
     if (loading) {
         return (
             <div className="photographer-dashboard-container">
@@ -559,12 +684,22 @@ export const PhotographerDashboardView = () => {
     return (
         <div className="photographer-dashboard-container">
             <div className="photographer-header">
-                <h1>Photographer Schedule</h1>
-                <div className="photographer-info">
-                    <span className="photographer-name">{currentPhotographer.name}</span>
-                    <span className="photographer-role">{currentPhotographer.role}</span>
-                    <span className="photographer-date">Schedule for {displayDate}</span>
+                <div>
+                    <h1>Photographer Schedule</h1>
+                    <div className="photographer-info">
+                        <span className="photographer-name">{currentPhotographer.name}</span>
+                        <span className="photographer-role">{currentPhotographer.role}</span>
+                        <span className="photographer-date">Schedule for {displayDate}</span>
+                    </div>
                 </div>
+                <button 
+                    className='photographer-download-ical-button'
+                    onClick={generateICalendar}
+                    title='Download your schedule as iCalendar file (.ics) for Apple Calendar'
+                >
+                    <span>📅</span>
+                    Download iCal
+                </button>
             </div>
 
             <div className="photographer-content-grid">

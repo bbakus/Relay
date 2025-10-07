@@ -86,32 +86,6 @@
     color: #ffffff;
 }
 
-/* Download iCal Button */
-.download-ical-button {
-    padding: 8px 16px;
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.download-ical-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.download-ical-button:active {
-    transform: translateY(0);
-}
-
 /* Shot Requests View */
 .shot-requests-view {
     padding: 20px;

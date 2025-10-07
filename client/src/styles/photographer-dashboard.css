@@ -33,6 +33,33 @@
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Download iCal Button */
+.photographer-download-ical-button {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.photographer-download-ical-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+}
+
+.photographer-download-ical-button:active {
+    transform: translateY(0);
+}
+
 /* Search Section */
 .photographer-search-section {
     margin-bottom: 20px;
