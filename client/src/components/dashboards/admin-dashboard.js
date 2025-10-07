@@ -389,7 +389,7 @@ export const AdminDashboardView = () => {
   // Photographer hours calculation
   const photographerHours = useMemo(() => {
     const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
+      ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
     )
     
     // ALWAYS use global date filter for staff assignments
@@ -446,7 +446,7 @@ export const AdminDashboardView = () => {
   // Available photographers calculation - real-time
   const availablePhotographers = useMemo(() => {
     const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Lead Photographer', 'Videographer', 'Admin'].includes(p.role)
+      ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
     )
     
     const currentTime = new Date()
@@ -486,6 +486,9 @@ export const AdminDashboardView = () => {
   // Unassigned Events - events with no personnel assigned
   const unassignedEvents = useMemo(() => {
     const futureEvents = events.filter(event => {
+      // Filter out invalid/corrupted events
+      if (!event.id || !event.name || !event.date) return false
+      
       const eventDate = new Date(event.date)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
