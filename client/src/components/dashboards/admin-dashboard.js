@@ -51,6 +51,8 @@ export const AdminDashboardView = () => {
   const [showEventForm, setShowEventForm] = useState(false)
   const [showShotRequestForm, setShowShotRequestForm] = useState(false)
   const [expandedCards, setExpandedCards] = useState(new Set())
+  const [selectedUnassignedEvent, setSelectedUnassignedEvent] = useState(null)
+  const [showUnassignedEventModal, setShowUnassignedEventModal] = useState(false)
   
   // Toggle card expansion
   const toggleCardExpansion = (cardId) => {
@@ -404,13 +406,29 @@ export const AdminDashboardView = () => {
     const currentTimeInMinutes = currentHour * 60 + currentMinute
     
     photoVideoStaff.forEach(staff => {
-      const assignedEventIds = staff.event_ids || []
-      const assignedEvents = assignedEventIds
+      // Check if staff is assigned through BOTH old event_ids AND new assigned_personnel
+      // to prevent double-counting
+      const assignedEventIds = new Set()
+      
+      // Get events from assigned_personnel (new method)
+      dateFilteredEvents.forEach(event => {
+        if (event.assigned_personnel && Array.isArray(event.assigned_personnel)) {
+          const isAssigned = event.assigned_personnel.some(p => p.personnel_id === staff.id)
+          if (isAssigned) {
+            assignedEventIds.add(event.id)
+          }
+        }
+      })
+      
+      // Get unique events by ID
+      const assignedEvents = Array.from(assignedEventIds)
         .map(eventId => dateFilteredEvents.find(e => e.id === eventId))
         .filter(Boolean)
       
       let scheduledHours = 0
       let workedHours = 0
+      
+      console.log(`${staff.name}: Processing ${assignedEvents.length} unique events for ${selectedDate}`)
       
       assignedEvents.forEach(event => {
         if (event.start_time && event.end_time) {
@@ -606,6 +624,38 @@ export const AdminDashboardView = () => {
     }
     setSelectedStaffForAssignment(eventStaff)
     setAssignmentModalOpen(true)
+  }
+
+  // Handler for deleting an unassigned event
+  const handleDeleteUnassignedEvent = async (eventId) => {
+    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      return
+    }
+    
+    try {
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        // Remove the event from local state
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId))
+        setShowUnassignedEventModal(false)
+        setSelectedUnassignedEvent(null)
+      } else {
+        alert('Failed to delete event')
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      alert('Error deleting event')
+    }
+  }
+
+  // Handler for editing an unassigned event - navigate to schedule
+  const handleEditUnassignedEvent = (event) => {
+    // Close modal and navigate to Schedule with the event
+    setShowUnassignedEventModal(false)
+    navigate('/schedule', { state: { editEvent: event } })
   }
 
   // Event distribution for selected date by hour
@@ -1265,7 +1315,15 @@ export const AdminDashboardView = () => {
             {unassignedEvents.length > 0 ? (
               unassignedEvents.map(event => (
                 <div key={event.id} className="admin-unassigned-event-item">
-                  <div className="admin-event-info">
+                  <div 
+                    className="admin-event-info clickable-event-info"
+                    onClick={() => {
+                      setSelectedUnassignedEvent(event)
+                      setShowUnassignedEventModal(true)
+                    }}
+                    style={{ cursor: 'pointer' }}
+                    title="Click to view event details"
+                  >
                     <span className="admin-event-name">{event.name}</span>
                     <span className="admin-event-date">{formatDateForHeader(event.date)}</span>
                     <span className="admin-event-time">
@@ -1278,7 +1336,10 @@ export const AdminDashboardView = () => {
                   <div className="admin-event-actions">
                     <button 
                       className="assign-staff-btn"
-                      onClick={() => openAssignmentModal(event)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openAssignmentModal(event)
+                      }}
                       title="Assign staff to this event"
                     >
                       Assign Staff
@@ -1559,6 +1620,116 @@ export const AdminDashboardView = () => {
                 }}
               >
                 Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unassigned Event Details Modal */}
+      {showUnassignedEventModal && selectedUnassignedEvent && (
+        <div className="modal-overlay" onClick={() => setShowUnassignedEventModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedUnassignedEvent.name}</h2>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowUnassignedEventModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="event-detail-row">
+                <label>Date:</label>
+                <span>{formatDateForHeader(selectedUnassignedEvent.date)}</span>
+              </div>
+              
+              <div className="event-detail-row">
+                <label>Time:</label>
+                <span>
+                  {formatTimeTo12Hour(selectedUnassignedEvent.start_time)} - {formatTimeTo12Hour(selectedUnassignedEvent.end_time)}
+                </span>
+              </div>
+              
+              <div className="event-detail-row">
+                <label>Location:</label>
+                <span>{selectedUnassignedEvent.location || 'No location specified'}</span>
+              </div>
+              
+              {selectedUnassignedEvent.notes && (
+                <div className="event-detail-row">
+                  <label>Notes:</label>
+                  <span>{selectedUnassignedEvent.notes}</span>
+                </div>
+              )}
+              
+              {selectedUnassignedEvent.photographer_notes && (
+                <div className="event-detail-row">
+                  <label>Photographer Notes:</label>
+                  <span>{selectedUnassignedEvent.photographer_notes}</span>
+                </div>
+              )}
+              
+              <div className="event-detail-row">
+                <label>Process Point:</label>
+                <span style={{ 
+                  color: getProcessPointColor(selectedUnassignedEvent.process_point),
+                  fontWeight: 'bold'
+                }}>
+                  {selectedUnassignedEvent.process_point || 'idle'}
+                </span>
+              </div>
+              
+              <div className="event-detail-row">
+                <label>Quick Turn:</label>
+                <span>{selectedUnassignedEvent.quick_turn ? 'Yes' : 'No'}</span>
+              </div>
+              
+              <div className="event-detail-row">
+                <label>Days Until Event:</label>
+                <span style={{ 
+                  color: getDaysUntilEvent(selectedUnassignedEvent.date) <= 3 ? '#dc3545' : '#ffffff',
+                  fontWeight: getDaysUntilEvent(selectedUnassignedEvent.date) <= 3 ? 'bold' : 'normal'
+                }}>
+                  {getDaysUntilEvent(selectedUnassignedEvent.date)} days
+                </span>
+              </div>
+            </div>
+            
+            <div className="modal-footer" style={{ gap: '12px' }}>
+              <button 
+                className="modal-button assign-button"
+                onClick={() => {
+                  setShowUnassignedEventModal(false)
+                  openAssignmentModal(selectedUnassignedEvent)
+                }}
+                style={{ 
+                  background: 'linear-gradient(135deg, #28a745, #20c997)',
+                  flex: 1
+                }}
+              >
+                Assign Staff
+              </button>
+              <button 
+                className="modal-button edit-button"
+                onClick={() => handleEditUnassignedEvent(selectedUnassignedEvent)}
+                style={{ flex: 1 }}
+              >
+                Edit Event
+              </button>
+              <button 
+                className="modal-button delete-button"
+                onClick={() => handleDeleteUnassignedEvent(selectedUnassignedEvent.id)}
+              >
+                Delete
+              </button>
+              <button 
+                className="modal-button"
+                onClick={() => setShowUnassignedEventModal(false)}
+              >
+                Close
               </button>
             </div>
           </div>
