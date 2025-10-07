@@ -1161,6 +1161,14 @@ class EventDetail(Resource):
             if not event:
                 return {'error': 'Event not found'}, 404
             
+            # Clear all associations before deleting
+            # Clear personnel associations
+            event.personnels = []
+            # Clear shot request associations
+            event.shot_requests = []
+            session.flush()
+            
+            # Now delete the event
             session.delete(event)
             session.commit()
             return {'message': 'Event deleted successfully'}, 200

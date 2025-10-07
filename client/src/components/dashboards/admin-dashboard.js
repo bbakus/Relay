@@ -416,26 +416,47 @@ export const AdminDashboardView = () => {
         if (event.start_time && event.end_time) {
           const [startHour, startMinute] = event.start_time.split(':').map(Number)
           const [endHour, endMinute] = event.end_time.split(':').map(Number)
+          
+          // Validate time values
+          if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+            console.warn(`Invalid time data for event ${event.id}: ${event.start_time} - ${event.end_time}`)
+            return
+          }
+          
           const startTimeInMinutes = startHour * 60 + startMinute
-          const endTimeInMinutes = endHour * 60 + endMinute
+          let endTimeInMinutes = endHour * 60 + endMinute
+          
+          // Handle events that span midnight (end time is earlier than start time)
+          if (endTimeInMinutes < startTimeInMinutes) {
+            endTimeInMinutes += 24 * 60 // Add 24 hours
+          }
+          
           const eventDurationHours = (endTimeInMinutes - startTimeInMinutes) / 60
           
-          scheduledHours += eventDurationHours
-          
-          // Calculate worked hours (events that have already ended)
-          if (currentTimeInMinutes >= endTimeInMinutes) {
-            workedHours += eventDurationHours
-          } else if (currentTimeInMinutes >= startTimeInMinutes) {
-            // Event is currently happening, calculate partial hours worked
-            const partialWorkedHours = (currentTimeInMinutes - startTimeInMinutes) / 60
-            workedHours += partialWorkedHours
+          // Only add positive durations
+          if (eventDurationHours > 0) {
+            scheduledHours += eventDurationHours
+            
+            // Calculate worked hours (events that have already ended)
+            if (currentTimeInMinutes >= endTimeInMinutes) {
+              workedHours += eventDurationHours
+            } else if (currentTimeInMinutes >= startTimeInMinutes) {
+              // Event is currently happening, calculate partial hours worked
+              const partialWorkedHours = (currentTimeInMinutes - startTimeInMinutes) / 60
+              workedHours += Math.max(0, partialWorkedHours) // Ensure non-negative
+            }
+          } else {
+            console.warn(`Invalid duration for event ${event.id}: ${eventDurationHours} hours`)
           }
         }
       })
       
+      // Ensure worked hours never exceeds scheduled hours
+      const finalWorkedHours = Math.min(workedHours, scheduledHours)
+      
       staffHours[staff.name] = {
         scheduled: Math.round(scheduledHours * 10) / 10, // Round to 1 decimal
-        worked: Math.round(workedHours * 10) / 10,
+        worked: Math.round(Math.max(0, finalWorkedHours) * 10) / 10, // Ensure non-negative
         exhausted: scheduledHours >= 8
       }
     })
