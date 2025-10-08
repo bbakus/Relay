@@ -1210,6 +1210,16 @@ export const Schedule = () => {
                                                     <div
                                                         key={event.id}
                                                         className='mobile-event-card'
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: `${event.position.top}px`,
+                                                            height: `${event.position.height}px`,
+                                                            left: '8px',
+                                                            right: '8px',
+                                                            minHeight: '60px',
+                                                            backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                            border: `2px solid ${getProcessPointColor(event.process_point).borderColor}`
+                                                        }}
                                                         onClick={() => handleEventClick(event)}
                                                     >
                                                         <div className='event-header'>
@@ -1228,54 +1238,6 @@ export const Schedule = () => {
                                     ))
                                 )}
                             </div>
-                        </div>
-
-                        <div className='mobile-layout'>
-                            {/* Time column */}
-                            <div className='time-column'>
-                                <div className='time-header'>Time</div>
-                                {timeSlots.map((slot) => (
-                                    <div key={slot.time} className='time-slot'>
-                                        <p className='time-text'>{slot.display}</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Mobile columns */}
-                            {eventsWithPositions.length === 0 ? (
-                                <div className='mobile-column-wrapper'>
-                                    <div className='mobile-column-header'>
-                                        <span>No events scheduled for {formatDateForHeader(activeDate)}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                columns.map((columnIndex) => (
-                                    <div key={columnIndex} className='mobile-column-wrapper'>
-                                        <div className='mobile-column-header'>
-                                            <span>Column {columnIndex + 1}</span>
-                                        </div>
-                                        <div className='mobile-events-container'>
-                                            {eventsByColumn[columnIndex]?.map(event => (
-                                                <div
-                                                    key={event.id}
-                                                    className='mobile-event-card'
-                                                    onClick={() => handleEventClick(event)}
-                                                >
-                                                    <div className='event-header'>
-                                                        <h3>{event.name}</h3>
-                                                        {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
-                                                    </div>
-                                                    <div className='event-time'>
-                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                    </div>
-                                                    <div className='event-location'>{event.location}</div>
-                                                    {event.notes && <div className='event-notes'>{event.notes}</div>}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
                         </div>
 
                         {/* Mobile scroll indicator */}
