@@ -140,6 +140,7 @@ export const Nav = () => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
+        console.log('🏢 Fetched organizations:', data.length, 'orgs:', data.map(o => `${o.name} (${o.id})`))
         setOrganizations(data)
       }
     } catch (error) {
@@ -176,6 +177,7 @@ export const Nav = () => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
+        console.log('📚 Fetched projects:', data.length, 'projects:', data.map(p => `${p.name} (start: ${p.start_date}, end: ${p.end_date})`))
         setProjects(data)
       }
     } catch (error) {
@@ -272,19 +274,30 @@ export const Nav = () => {
     console.log('🏢 Organizations available:', organizations.length, organizations.map(o => o.name))
     console.log('🔍 Currently selected org ID:', selectedOrganizationId)
     
-    if ((access === 'photographer' || access === 'videographer') && organizations.length > 0 && !selectedOrganizationId) {
+    // Check if user is photographer, lead photographer, or videographer
+    const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
+    
+    if (isPhotoVideoRole && organizations.length > 0 && !selectedOrganizationId) {
       console.log('🎯 Auto-selecting first organization for photographer:', organizations[0].name, 'ID:', organizations[0].id)
       setGlobalOrganization(organizations[0].id.toString())
+    } else if (isPhotoVideoRole && !organizations.length) {
+      console.log('⚠️ NO ORGANIZATIONS FOUND - cannot auto-select!')
     }
   }, [organizations, selectedOrganizationId, user?.access, setGlobalOrganization])
 
   // Auto-select first project for photographers/videographers (they don't have project selector in nav)
   useEffect(() => {
     const access = (user?.access || '').toLowerCase()
-    if ((access === 'photographer' || access === 'videographer') && filteredProjects.length > 0 && !selectedProjectId) {
+    const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
+    
+    console.log('🎬 Filtered projects available:', filteredProjects.length, filteredProjects.map(p => `${p.name} (${p.id})`))
+    console.log('🎬 Currently selected project ID:', selectedProjectId)
+    
+    if (isPhotoVideoRole && filteredProjects.length > 0 && !selectedProjectId) {
       console.log('🎯 Auto-selecting first project for photographer:', filteredProjects[0].name, 'ID:', filteredProjects[0].id)
-      console.log('📅 Available filtered projects:', filteredProjects.map(p => p.name))
       setGlobalProject(filteredProjects[0].id.toString())
+    } else if (isPhotoVideoRole && !filteredProjects.length) {
+      console.log('⚠️ NO FILTERED PROJECTS FOUND - check if organization is selected!')
     }
   }, [filteredProjects, selectedProjectId, user?.access, setGlobalProject])
 
