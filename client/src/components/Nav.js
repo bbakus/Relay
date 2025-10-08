@@ -177,7 +177,7 @@ export const Nav = () => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        console.log('📚 Fetched projects:', data.length, 'projects:', data.map(p => `${p.name} (start: ${p.start_date}, end: ${p.end_date})`))
+        console.log('📚 Fetched projects:', data.length, 'projects:', data.map(p => `${p.name} (ID: ${p.id}, start: ${p.start_date}, end: ${p.end_date})`))
         setProjects(data)
       }
     } catch (error) {
@@ -334,6 +334,8 @@ export const Nav = () => {
       return dates
     }
     
+    console.log('📆 Looking for project with ID:', selectedProjectId, '(parsed:', parseInt(selectedProjectId), ')')
+    console.log('📆 Available projects in array:', projects.map(p => `${p.name} (ID: ${p.id})`))
     const selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
     console.log('📆 Found project:', selectedProject?.name, 'start:', selectedProject?.start_date, 'end:', selectedProject?.end_date)
     
