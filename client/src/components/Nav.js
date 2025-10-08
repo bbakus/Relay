@@ -265,6 +265,32 @@ export const Nav = () => {
     return projects.filter(project => project.organization_id === parseInt(selectedOrganizationId))
   }, [projects, selectedOrganizationId])
 
+  // Auto-select first organization for photographers/videographers (they don't have org selector in nav)
+  useEffect(() => {
+    const access = (user?.access || '').toLowerCase()
+    if ((access === 'photographer' || access === 'videographer') && organizations.length > 0 && !selectedOrganizationId) {
+      console.log('Auto-selecting first organization for photographer:', organizations[0].name)
+      setGlobalOrganization(organizations[0].id)
+    }
+  }, [organizations, selectedOrganizationId, user?.access, setGlobalOrganization])
+
+  // Auto-select first project for photographers/videographers (they don't have project selector in nav)
+  useEffect(() => {
+    const access = (user?.access || '').toLowerCase()
+    if ((access === 'photographer' || access === 'videographer') && filteredProjects.length > 0 && !selectedProjectId) {
+      console.log('Auto-selecting first project for photographer:', filteredProjects[0].name)
+      setGlobalProject(filteredProjects[0].id)
+    }
+  }, [filteredProjects, selectedProjectId, user?.access, setGlobalProject])
+
+  // Auto-select today's date if no date is selected
+  useEffect(() => {
+    if (!selectedDate) {
+      const today = new Date().toISOString().split('T')[0]
+      setGlobalDate(today)
+    }
+  }, [selectedDate, setGlobalDate])
+
   // Get available dates from selected project's duration (start_date to end_date)
   const availableDates = useMemo(() => {
     const dates = []
@@ -325,8 +351,12 @@ export const Nav = () => {
       }
     }
     
-    // Sort dates to ensure today appears first
-    return dates.sort()
+    // Sort dates: today first, then chronologically
+    return dates.sort((a, b) => {
+      if (a === today) return -1
+      if (b === today) return 1
+      return a.localeCompare(b)
+    })
   }, [projects, selectedProjectId])
 
   // Map labels to icon image paths in public/images
