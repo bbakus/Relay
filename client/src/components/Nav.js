@@ -268,9 +268,13 @@ export const Nav = () => {
   // Auto-select first organization for photographers/videographers (they don't have org selector in nav)
   useEffect(() => {
     const access = (user?.access || '').toLowerCase()
+    console.log('👤 User access level:', user?.access, '(lowercase:', access + ')')
+    console.log('🏢 Organizations available:', organizations.length, organizations.map(o => o.name))
+    console.log('🔍 Currently selected org ID:', selectedOrganizationId)
+    
     if ((access === 'photographer' || access === 'videographer') && organizations.length > 0 && !selectedOrganizationId) {
-      console.log('Auto-selecting first organization for photographer:', organizations[0].name)
-      setGlobalOrganization(organizations[0].id)
+      console.log('🎯 Auto-selecting first organization for photographer:', organizations[0].name, 'ID:', organizations[0].id)
+      setGlobalOrganization(organizations[0].id.toString())
     }
   }, [organizations, selectedOrganizationId, user?.access, setGlobalOrganization])
 
@@ -278,15 +282,22 @@ export const Nav = () => {
   useEffect(() => {
     const access = (user?.access || '').toLowerCase()
     if ((access === 'photographer' || access === 'videographer') && filteredProjects.length > 0 && !selectedProjectId) {
-      console.log('Auto-selecting first project for photographer:', filteredProjects[0].name)
-      setGlobalProject(filteredProjects[0].id)
+      console.log('🎯 Auto-selecting first project for photographer:', filteredProjects[0].name, 'ID:', filteredProjects[0].id)
+      console.log('📅 Available filtered projects:', filteredProjects.map(p => p.name))
+      setGlobalProject(filteredProjects[0].id.toString())
     }
   }, [filteredProjects, selectedProjectId, user?.access, setGlobalProject])
 
   // Auto-select today's date if no date is selected
   useEffect(() => {
     if (!selectedDate) {
-      const today = new Date().toISOString().split('T')[0]
+      // Use LOCAL timezone, not UTC
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      const today = `${year}-${month}-${day}`
+      console.log('📅 Auto-selecting TODAY (local timezone):', today)
       setGlobalDate(today)
     }
   }, [selectedDate, setGlobalDate])
@@ -295,16 +306,26 @@ export const Nav = () => {
   const availableDates = useMemo(() => {
     const dates = []
     
-    // Always include today's date
-    const today = new Date().toISOString().split('T')[0]
+    // Always include today's date (USE LOCAL TIMEZONE)
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const today = `${year}-${month}-${day}`
     dates.push(today)
     
+    console.log('📆 Computing availableDates, selectedProjectId:', selectedProjectId)
+    
     if (!selectedProjectId) {
+      console.log('📆 No project selected, returning only today:', dates)
       return dates
     }
     
     const selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
+    console.log('📆 Found project:', selectedProject?.name, 'start:', selectedProject?.start_date, 'end:', selectedProject?.end_date)
+    
     if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
+      console.log('📆 Project missing date range, returning only today:', dates)
       return dates
     }
     
@@ -352,11 +373,14 @@ export const Nav = () => {
     }
     
     // Sort dates: today first, then chronologically
-    return dates.sort((a, b) => {
+    const sortedDates = dates.sort((a, b) => {
       if (a === today) return -1
       if (b === today) return 1
       return a.localeCompare(b)
     })
+    
+    console.log('📆 Final availableDates:', sortedDates.length, 'dates:', sortedDates)
+    return sortedDates
   }, [projects, selectedProjectId])
 
   // Map labels to icon image paths in public/images
