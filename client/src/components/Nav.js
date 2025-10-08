@@ -620,18 +620,6 @@ export const Nav = () => {
             </div>
           )}
           
-          {/* Display current project for Photographers/Videographers (auto-selected, read-only) */}
-          {(user?.access === 'Photographer' || user?.access === 'Lead Photographer' || user?.access === 'Videographer') && (
-            <div className='mobile-filter-group'>
-              <label>Project:</label>
-              <div style={{ padding: '8px', background: '#f0f0f0', borderRadius: '4px', fontSize: '14px' }}>
-                {selectedProjectId ? 
-                  projects.find(p => p.id === parseInt(selectedProjectId))?.name || 'Loading...' : 
-                  'Auto-selecting...'}
-              </div>
-            </div>
-          )}
-          
           {/* Date Filter - Available to ALL user roles */}
           <div className='mobile-filter-group'>
             <label>Date:</label>
