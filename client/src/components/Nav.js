@@ -620,22 +620,42 @@ export const Nav = () => {
             </div>
           )}
           
+          {/* Display current project for Photographers/Videographers (auto-selected, read-only) */}
+          {(user?.access === 'Photographer' || user?.access === 'Lead Photographer' || user?.access === 'Videographer') && (
+            <div className='mobile-filter-group'>
+              <label>Project:</label>
+              <div style={{ padding: '8px', background: '#f0f0f0', borderRadius: '4px', fontSize: '14px' }}>
+                {selectedProjectId ? 
+                  projects.find(p => p.id === parseInt(selectedProjectId))?.name || 'Loading...' : 
+                  'Auto-selecting...'}
+              </div>
+            </div>
+          )}
+          
           {/* Date Filter - Available to ALL user roles */}
           <div className='mobile-filter-group'>
             <label>Date:</label>
             <select 
               value={selectedDate} 
-              onChange={(e) => setGlobalDate(e.target.value)}
+              onChange={(e) => {
+                console.log('📱 MOBILE: Date changed to:', e.target.value)
+                setGlobalDate(e.target.value)
+              }}
             >
               <option value="">All Dates</option>
-              {availableDates.map(date => {
-                const displayDate = formatDateDisplay(date)
-                return (
-                  <option key={date} value={date}>
-                    {displayDate}
-                  </option>
-                )
-              })}
+              {(() => {
+                console.log('📱 MOBILE RENDER: availableDates:', availableDates)
+                console.log('📱 MOBILE RENDER: selectedProjectId:', selectedProjectId)
+                console.log('📱 MOBILE RENDER: projects:', projects.map(p => `${p.name} (${p.start_date} to ${p.end_date})`))
+                return availableDates.map(date => {
+                  const displayDate = formatDateDisplay(date)
+                  return (
+                    <option key={date} value={date}>
+                      {displayDate}
+                    </option>
+                  )
+                })
+              })()}
             </select>
           </div>
         </div>
@@ -718,17 +738,25 @@ export const Nav = () => {
               <label>Date:</label>
               <select 
                 value={selectedDate} 
-                onChange={(e) => setGlobalDate(e.target.value)}
+                onChange={(e) => {
+                  console.log('🖥️ DESKTOP: Date changed to:', e.target.value)
+                  setGlobalDate(e.target.value)
+                }}
               >
                 <option value="">All Dates</option>
-                {availableDates.map(date => {
-                  const displayDate = formatDateDisplay(date)
-                  return (
-                    <option key={date} value={date}>
-                      {displayDate}
-                    </option>
-                  )
-                })}
+                {(() => {
+                  console.log('🖥️ DESKTOP RENDER: availableDates:', availableDates)
+                  console.log('🖥️ DESKTOP RENDER: selectedProjectId:', selectedProjectId)
+                  console.log('🖥️ DESKTOP RENDER: projects:', projects.map(p => `${p.name} (${p.start_date} to ${p.end_date})`))
+                  return availableDates.map(date => {
+                    const displayDate = formatDateDisplay(date)
+                    return (
+                      <option key={date} value={date}>
+                        {displayDate}
+                      </option>
+                    )
+                  })
+                })()}
               </select>
             </div>
           </div>
