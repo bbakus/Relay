@@ -329,15 +329,26 @@ export const Nav = () => {
     
     console.log('📆 Computing availableDates, selectedProjectId:', selectedProjectId)
     
-    if (!selectedProjectId) {
+    // For photographers/videographers, use the first available project (auto-selected)
+    // instead of relying on selectedProjectId which might be stale
+    const access = (user?.access || '').toLowerCase()
+    const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
+    
+    let selectedProject
+    if (isPhotoVideoRole && projects.length > 0) {
+      // Use first project for photo/video roles (they don't manually select)
+      selectedProject = projects[0]
+      console.log('📆 Using first project for photographer:', selectedProject.name, 'ID:', selectedProject.id)
+    } else if (selectedProjectId) {
+      // For other roles, use the selected project
+      console.log('📆 Looking for project with ID:', selectedProjectId, '(parsed:', parseInt(selectedProjectId), ')')
+      console.log('📆 Available projects in array:', projects.map(p => `${p.name} (ID: ${p.id})`))
+      selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
+      console.log('📆 Found project:', selectedProject?.name, 'start:', selectedProject?.start_date, 'end:', selectedProject?.end_date)
+    } else {
       console.log('📆 No project selected, returning only today:', dates)
       return dates
     }
-    
-    console.log('📆 Looking for project with ID:', selectedProjectId, '(parsed:', parseInt(selectedProjectId), ')')
-    console.log('📆 Available projects in array:', projects.map(p => `${p.name} (ID: ${p.id})`))
-    const selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
-    console.log('📆 Found project:', selectedProject?.name, 'start:', selectedProject?.start_date, 'end:', selectedProject?.end_date)
     
     if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
       console.log('📆 Project missing date range, returning only today:', dates)
@@ -396,7 +407,7 @@ export const Nav = () => {
     
     console.log('📆 Final availableDates:', sortedDates.length, 'dates:', sortedDates)
     return sortedDates
-  }, [projects, selectedProjectId])
+  }, [projects, selectedProjectId, user?.access])
 
   // Map labels to icon image paths in public/images
   const iconMap = {
