@@ -140,7 +140,6 @@ export const Nav = () => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        console.log('🏢 Fetched organizations:', data.length, 'orgs:', data.map(o => `${o.name} (${o.id})`))
         setOrganizations(data)
       }
     } catch (error) {
@@ -177,7 +176,6 @@ export const Nav = () => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        console.log('📚 Fetched projects:', data.length, 'projects:', data.map(p => `${p.name} (ID: ${p.id}, start: ${p.start_date}, end: ${p.end_date})`))
         setProjects(data)
       }
     } catch (error) {
@@ -270,18 +268,12 @@ export const Nav = () => {
   // Auto-select first organization for photographers/videographers (they don't have org selector in nav)
   useEffect(() => {
     const access = (user?.access || '').toLowerCase()
-    console.log('👤 User access level:', user?.access, '(lowercase:', access + ')')
-    console.log('🏢 Organizations available:', organizations.length, organizations.map(o => o.name))
-    console.log('🔍 Currently selected org ID:', selectedOrganizationId)
     
     // Check if user is photographer, lead photographer, or videographer
     const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
     
     if (isPhotoVideoRole && organizations.length > 0 && !selectedOrganizationId) {
-      console.log('🎯 Auto-selecting first organization for photographer:', organizations[0].name, 'ID:', organizations[0].id)
       setGlobalOrganization(organizations[0].id.toString())
-    } else if (isPhotoVideoRole && !organizations.length) {
-      console.log('⚠️ NO ORGANIZATIONS FOUND - cannot auto-select!')
     }
   }, [organizations, selectedOrganizationId, user?.access, setGlobalOrganization])
 
@@ -290,14 +282,8 @@ export const Nav = () => {
     const access = (user?.access || '').toLowerCase()
     const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
     
-    console.log('🎬 Filtered projects available:', filteredProjects.length, filteredProjects.map(p => `${p.name} (${p.id})`))
-    console.log('🎬 Currently selected project ID:', selectedProjectId)
-    
     if (isPhotoVideoRole && filteredProjects.length > 0 && !selectedProjectId) {
-      console.log('🎯 Auto-selecting first project for photographer:', filteredProjects[0].name, 'ID:', filteredProjects[0].id)
       setGlobalProject(filteredProjects[0].id.toString())
-    } else if (isPhotoVideoRole && !filteredProjects.length) {
-      console.log('⚠️ NO FILTERED PROJECTS FOUND - check if organization is selected!')
     }
   }, [filteredProjects, selectedProjectId, user?.access, setGlobalProject])
 
@@ -310,7 +296,6 @@ export const Nav = () => {
       const month = String(now.getMonth() + 1).padStart(2, '0')
       const day = String(now.getDate()).padStart(2, '0')
       const today = `${year}-${month}-${day}`
-      console.log('📅 Auto-selecting TODAY (local timezone):', today)
       setGlobalDate(today)
     }
   }, [selectedDate, setGlobalDate])
@@ -327,8 +312,6 @@ export const Nav = () => {
     const today = `${year}-${month}-${day}`
     dates.push(today)
     
-    console.log('📆 Computing availableDates, selectedProjectId:', selectedProjectId)
-    
     // For photographers/videographers, use the first available project (auto-selected)
     // instead of relying on selectedProjectId which might be stale
     const access = (user?.access || '').toLowerCase()
@@ -338,20 +321,14 @@ export const Nav = () => {
     if (isPhotoVideoRole && projects.length > 0) {
       // Use first project for photo/video roles (they don't manually select)
       selectedProject = projects[0]
-      console.log('📆 Using first project for photographer:', selectedProject.name, 'ID:', selectedProject.id)
     } else if (selectedProjectId) {
       // For other roles, use the selected project
-      console.log('📆 Looking for project with ID:', selectedProjectId, '(parsed:', parseInt(selectedProjectId), ')')
-      console.log('📆 Available projects in array:', projects.map(p => `${p.name} (ID: ${p.id})`))
       selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
-      console.log('📆 Found project:', selectedProject?.name, 'start:', selectedProject?.start_date, 'end:', selectedProject?.end_date)
     } else {
-      console.log('📆 No project selected, returning only today:', dates)
       return dates
     }
     
     if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
-      console.log('📆 Project missing date range, returning only today:', dates)
       return dates
     }
     
@@ -405,7 +382,6 @@ export const Nav = () => {
       return a.localeCompare(b)
     })
     
-    console.log('📆 Final availableDates:', sortedDates.length, 'dates:', sortedDates)
     return sortedDates
   }, [projects, selectedProjectId, user?.access])
 
@@ -638,25 +614,17 @@ export const Nav = () => {
             <label>Date:</label>
             <select 
               value={selectedDate} 
-              onChange={(e) => {
-                console.log('📱 MOBILE: Date changed to:', e.target.value)
-                setGlobalDate(e.target.value)
-              }}
+              onChange={(e) => setGlobalDate(e.target.value)}
             >
               <option value="">All Dates</option>
-              {(() => {
-                console.log('📱 MOBILE RENDER: availableDates:', availableDates)
-                console.log('📱 MOBILE RENDER: selectedProjectId:', selectedProjectId)
-                console.log('📱 MOBILE RENDER: projects:', projects.map(p => `${p.name} (${p.start_date} to ${p.end_date})`))
-                return availableDates.map(date => {
-                  const displayDate = formatDateDisplay(date)
-                  return (
-                    <option key={date} value={date}>
-                      {displayDate}
-                    </option>
-                  )
-                })
-              })()}
+              {availableDates.map(date => {
+                const displayDate = formatDateDisplay(date)
+                return (
+                  <option key={date} value={date}>
+                    {displayDate}
+                  </option>
+                )
+              })}
             </select>
           </div>
         </div>
@@ -739,25 +707,17 @@ export const Nav = () => {
               <label>Date:</label>
               <select 
                 value={selectedDate} 
-                onChange={(e) => {
-                  console.log('🖥️ DESKTOP: Date changed to:', e.target.value)
-                  setGlobalDate(e.target.value)
-                }}
+                onChange={(e) => setGlobalDate(e.target.value)}
               >
                 <option value="">All Dates</option>
-                {(() => {
-                  console.log('🖥️ DESKTOP RENDER: availableDates:', availableDates)
-                  console.log('🖥️ DESKTOP RENDER: selectedProjectId:', selectedProjectId)
-                  console.log('🖥️ DESKTOP RENDER: projects:', projects.map(p => `${p.name} (${p.start_date} to ${p.end_date})`))
-                  return availableDates.map(date => {
-                    const displayDate = formatDateDisplay(date)
-                    return (
-                      <option key={date} value={date}>
-                        {displayDate}
-                      </option>
-                    )
-                  })
-                })()}
+                {availableDates.map(date => {
+                  const displayDate = formatDateDisplay(date)
+                  return (
+                    <option key={date} value={date}>
+                      {displayDate}
+                    </option>
+                  )
+                })}
               </select>
             </div>
           </div>
