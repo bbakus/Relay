@@ -2628,5 +2628,7 @@ if __name__ == '__main__':
     print(f"🌐 CORS origins: {cors_origins}")
     print(f"🔌 WebSocket support enabled")
     
-    socketio.run(app, debug=debug_mode, host='0.0.0.0', port=port)
+    # For production (Railway), use allow_unsafe_werkzeug
+    # In a true production setup, you'd use gunicorn with gevent/eventlet workers
+    socketio.run(app, debug=debug_mode, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
 
