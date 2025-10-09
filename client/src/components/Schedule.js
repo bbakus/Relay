@@ -339,14 +339,108 @@ export const Schedule = () => {
 
         const unsubscribeEvent = subscribe('event_update', (data) => {
             console.log('🔴 LIVE UPDATE: Event changed', data)
-            // Refresh events to show the update
-            fetchEvents()
+            const { action, event: updatedEvent } = data
+            
+            if (action === 'create') {
+                // Only add the event if it matches current filters
+                if (updatedEvent.date === activeDate && 
+                    (!selectedProjectId || updatedEvent.project_id === Number(selectedProjectId))) {
+                    setEvents(prev => {
+                        // Check if event already exists (avoid duplicates)
+                        if (prev.find(e => e.id === updatedEvent.id)) {
+                            return prev
+                        }
+                        return [...prev, updatedEvent]
+                    })
+                }
+            } else if (action === 'update') {
+                // Update the event in state
+                setEvents(prev => {
+                    const eventIndex = prev.findIndex(e => e.id === updatedEvent.id)
+                    if (eventIndex !== -1) {
+                        // Event exists in current view, update it
+                        const newEvents = [...prev]
+                        newEvents[eventIndex] = { ...newEvents[eventIndex], ...updatedEvent }
+                        return newEvents
+                    } else {
+                        // Event not in current view (different date/project)
+                        // Check if it should be added to current view
+                        if (updatedEvent.date === activeDate && 
+                            (!selectedProjectId || updatedEvent.project_id === Number(selectedProjectId))) {
+                            return [...prev, updatedEvent]
+                        }
+                        return prev
+                    }
+                })
+                
+                // Also update selectedEvent if it's the one being viewed in modal
+                setSelectedEvent(prev => {
+                    if (prev && prev.id === updatedEvent.id) {
+                        return { ...prev, ...updatedEvent }
+                    }
+                    return prev
+                })
+            } else if (action === 'delete') {
+                // Remove the event from state
+                setEvents(prev => prev.filter(e => e.id !== updatedEvent.id))
+                
+                // Close modal if viewing the deleted event
+                setSelectedEvent(prev => {
+                    if (prev && prev.id === updatedEvent.id) {
+                        // Event being viewed was deleted
+                        setTimeout(() => setShowModal(false), 0)
+                        return null
+                    }
+                    return prev
+                })
+            }
         })
 
         const unsubscribeShotRequest = subscribe('shot_request_update', (data) => {
             console.log('🔴 LIVE UPDATE: Shot request changed', data)
-            // Refresh shot requests to show the update
-            fetchShotRequests()
+            const { action, shotRequest: updatedSR } = data
+            
+            if (action === 'create') {
+                setShotRequests(prev => {
+                    // Check if shot request already exists (avoid duplicates)
+                    if (prev.find(sr => sr.id === updatedSR.id)) {
+                        return prev
+                    }
+                    return [...prev, updatedSR]
+                })
+            } else if (action === 'update') {
+                // Update the shot request in state
+                setShotRequests(prev => {
+                    const srIndex = prev.findIndex(sr => sr.id === updatedSR.id)
+                    if (srIndex !== -1) {
+                        const newSRs = [...prev]
+                        newSRs[srIndex] = { ...newSRs[srIndex], ...updatedSR }
+                        return newSRs
+                    }
+                    return prev
+                })
+                
+                // Also update selectedShotRequest if it's the one being viewed in modal
+                setSelectedShotRequest(prev => {
+                    if (prev && prev.id === updatedSR.id) {
+                        return { ...prev, ...updatedSR }
+                    }
+                    return prev
+                })
+            } else if (action === 'delete') {
+                // Remove the shot request from state
+                setShotRequests(prev => prev.filter(sr => sr.id !== updatedSR.id))
+                
+                // Close modal if viewing the deleted shot request
+                setSelectedShotRequest(prev => {
+                    if (prev && prev.id === updatedSR.id) {
+                        // Shot request being viewed was deleted
+                        setTimeout(() => setShowShotRequestDetailModal(false), 0)
+                        return null
+                    }
+                    return prev
+                })
+            }
         })
 
         return () => {
@@ -1273,18 +1367,41 @@ export const Schedule = () => {
                                     <div className='events-area'>
                                         {/* Events header to match time header */}
                                         <div className='events-header'>
-                                            <div className='column-header'>Column 1</div>
-                                            <div className='column-header'>Column 2</div>
-                                            <div className='column-header'>Column 3</div>
-                                            <div className='column-header'>Column 4</div>
-                                            <div className='column-header'>Column 5</div>
+                                            {scheduleColumns.map(column => (
+                                                <div key={column.id} className='column-header'>
+                                                    {isAdmin ? (
+                                                        editingColumnId === column.id ? (
+                                                            <div className='column-edit-form'>
+                                                                <input
+                                                                    type='text'
+                                                                    value={editingColumnName}
+                                                                    onChange={(e) => setEditingColumnName(e.target.value)}
+                                                                    onKeyPress={(e) => {
+                                                                        if (e.key === 'Enter') handleSaveColumnName(column.id)
+                                                                    }}
+                                                                    autoFocus
+                                                                />
+                                                                <button onClick={() => handleSaveColumnName(column.id)} className='btn-save'>✓</button>
+                                                                <button onClick={handleCancelEditColumn} className='btn-cancel'>✕</button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className='column-title-row'>
+                                                                <span onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</span>
+                                                                <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column' title='Delete column'>🗑</button>
+                                                            </div>
+                                                        )
+                                                    ) : (
+                                                        column.name
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {isAdmin && selectedProjectId && (
+                                                <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
+                                            )}
                                         </div>
                                         
                                         {/* Event columns container */}
                                         <div className='sched-events-container'>
-                                    
-
-
                                     
                                     {scheduleColumns.length === 0 ? (
                                         <div className='no-events'>
@@ -1301,31 +1418,6 @@ export const Schedule = () => {
                                                     onDragLeave={handleDragLeave}
                                                     onDrop={(e) => handleDrop(e, column.id)}
                                                 >
-                                                    {/* Column header with edit/delete for admins */}
-                                                    {isAdmin && (
-                                                        <div className='column-header'>
-                                                            {editingColumnId === column.id ? (
-                                                                <div className='column-edit-form'>
-                                                                    <input
-                                                                        type='text'
-                                                                        value={editingColumnName}
-                                                                        onChange={(e) => setEditingColumnName(e.target.value)}
-                                                                        onKeyPress={(e) => {
-                                                                            if (e.key === 'Enter') handleSaveColumnName(column.id)
-                                                                        }}
-                                                                        autoFocus
-                                                                    />
-                                                                    <button onClick={() => handleSaveColumnName(column.id)} className='btn-save'>✓</button>
-                                                                    <button onClick={handleCancelEditColumn} className='btn-cancel'>✕</button>
-                                                                </div>
-                                                            ) : (
-                                                                <div className='column-title-row'>
-                                                                    <h4 onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</h4>
-                                                                    <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column'>🗑</button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
                                                     {/* Render events for this column */}
                                                     {eventsByColumn[column.id]?.map(event => (
                                                     <div
@@ -1359,12 +1451,6 @@ export const Schedule = () => {
                                                 ))}
                                             </div>
                                         ))}
-                                            {/* Add Column Button for admins */}
-                                            {isAdmin && selectedProjectId && (
-                                                <div className='add-column-btn-container'>
-                                                    <button onClick={handleAddColumn} className='btn-add-column'>+ Add Column</button>
-                                                </div>
-                                            )}
                                         </>
                                     )}
                                 </div>
@@ -1485,7 +1571,7 @@ export const Schedule = () => {
                                         ) : (
                                             <div className='column-title-row'>
                                                 <span onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</span>
-                                                <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column'>🗑</button>
+                                                <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column' title='Delete column'>🗑</button>
                                             </div>
                                         )
                                     ) : (
@@ -1494,7 +1580,7 @@ export const Schedule = () => {
                                 </div>
                             ))}
                             {isAdmin && selectedProjectId && (
-                                <button onClick={handleAddColumn} className='btn-add-column-header'>+</button>
+                                <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
                             )}
                         </div>
                         
