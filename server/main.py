@@ -931,62 +931,73 @@ class EventsResource(Resource):
                 except (TypeError, ValueError):
                     return {'error': 'Invalid project_id'}, 400
 
-            # Auto-assign column number if not provided
-            column_number = data.get('column_number')
-            if column_number is None:
-                # Get all events for the same date
-                event_date = data['date']
-                existing_events = session.query(EventModel).filter_by(date=event_date).all()
+            # Auto-assign to schedule column if not provided
+            schedule_column_id = data.get('schedule_column_id')
+            if schedule_column_id is None and project_id:
+                # Get schedule columns for this project
+                schedule_columns = session.query(ScheduleColumn).filter_by(
+                    project_id=project_id
+                ).order_by(ScheduleColumn.order_index).all()
                 
-                new_start_time = data.get('start_time')
-                new_end_time = data.get('end_time')
-                
-                # Check each column for conflicts and count events
-                column_options = []
-                for col in [0, 1, 2, 3]:
-                    events_in_column = [e for e in existing_events if getattr(e, 'column_number', 0) == col]
+                if schedule_columns:
+                    # Get all events for the same date and project
+                    event_date = data['date']
+                    existing_events = session.query(EventModel).filter_by(
+                        date=event_date,
+                        project_id=project_id
+                    ).all()
                     
-                    # Check for time conflicts if start/end times are provided
-                    has_conflict = False
-                    if new_start_time and new_end_time:
-                        for event in events_in_column:
-                            if event.start_time and event.end_time:
-                                # Convert times to minutes for comparison
-                                def time_to_minutes(time_str):
-                                    if not time_str:
-                                        return None
-                                    try:
-                                        hours, minutes = map(int, time_str.split(':'))
-                                        return hours * 60 + minutes
-                                    except:
-                                        return None
-                                
-                                new_start_min = time_to_minutes(new_start_time)
-                                new_end_min = time_to_minutes(new_end_time)
-                                event_start_min = time_to_minutes(event.start_time)
-                                event_end_min = time_to_minutes(event.end_time)
-                                
-                                if all(t is not None for t in [new_start_min, new_end_min, event_start_min, event_end_min]):
-                                    # Check for overlap: events overlap if one starts before the other ends
-                                    if not (new_end_min <= event_start_min or new_start_min >= event_end_min):
-                                        has_conflict = True
-                                        break
+                    new_start_time = data.get('start_time')
+                    new_end_time = data.get('end_time')
                     
-                    if not has_conflict:
-                        column_options.append((col, len(events_in_column)))
-                
-                # If no conflicts found, pick column with least events
-                # If all columns have conflicts, pick column with least events anyway
-                if column_options:
-                    column_number = min(column_options, key=lambda x: x[1])[0]
+                    # Check each column for conflicts and count events
+                    column_options = []
+                    for col in schedule_columns:
+                        events_in_column = [e for e in existing_events if e.schedule_column_id == col.id]
+                        
+                        # Check for time conflicts if start/end times are provided
+                        has_conflict = False
+                        if new_start_time and new_end_time:
+                            for event in events_in_column:
+                                if event.start_time and event.end_time:
+                                    # Convert times to minutes for comparison
+                                    def time_to_minutes(time_str):
+                                        if not time_str:
+                                            return None
+                                        try:
+                                            hours, minutes = map(int, time_str.split(':'))
+                                            return hours * 60 + minutes
+                                        except:
+                                            return None
+                                    
+                                    new_start_min = time_to_minutes(new_start_time)
+                                    new_end_min = time_to_minutes(new_end_time)
+                                    event_start_min = time_to_minutes(event.start_time)
+                                    event_end_min = time_to_minutes(event.end_time)
+                                    
+                                    if all(t is not None for t in [new_start_min, new_end_min, event_start_min, event_end_min]):
+                                        # Check for overlap: events overlap if one starts before the other ends
+                                        if not (new_end_min <= event_start_min or new_start_min >= event_end_min):
+                                            has_conflict = True
+                                            break
+                        
+                        if not has_conflict:
+                            column_options.append((col.id, len(events_in_column)))
+                    
+                    # If no conflicts found, pick column with least events
+                    # If all columns have conflicts, pick column with least events anyway
+                    if column_options:
+                        schedule_column_id = min(column_options, key=lambda x: x[1])[0]
+                    else:
+                        # Fallback: count events in each column and pick least occupied
+                        column_counts = {col.id: 0 for col in schedule_columns}
+                        for event in existing_events:
+                            if event.schedule_column_id in column_counts:
+                                column_counts[event.schedule_column_id] += 1
+                        schedule_column_id = min(column_counts, key=column_counts.get)
                 else:
-                    # Fallback: count events in each column and pick least occupied
-                    column_counts = {0: 0, 1: 0, 2: 0, 3: 0}
-                    for event in existing_events:
-                        col = getattr(event, 'column_number', 0)
-                        if col in column_counts:
-                            column_counts[col] += 1
-                    column_number = min(column_counts, key=column_counts.get)
+                    # No columns configured, leave as None
+                    schedule_column_id = None
 
             new_event = EventModel(
                 name=data['name'],
@@ -998,7 +1009,7 @@ class EventsResource(Resource):
                 quick_turn=data.get('quick_turn', False),
                 deadline= data.get('deadline'),
                 process_point=data.get('process_point', 'idle'),
-                column_number=column_number,
+                schedule_column_id=schedule_column_id,
                 project_id=project_id
             )
             
@@ -1212,12 +1223,24 @@ class EventsDistribute(Resource):
         try:
             data = request.get_json() or {}
             target_date = data.get('date')  # Optional: redistribute events for specific date
+            project_id = data.get('project_id')  # Required: project to redistribute
+            
+            if not project_id:
+                return {'error': 'project_id is required'}, 400
+            
+            # Get schedule columns for this project
+            schedule_columns = session.query(ScheduleColumn).filter_by(
+                project_id=project_id
+            ).order_by(ScheduleColumn.order_index).all()
+            
+            if not schedule_columns:
+                return {'error': 'No columns configured for this project'}, 400
             
             # Get events to redistribute
+            query = session.query(EventModel).filter_by(project_id=project_id)
             if target_date:
-                events = session.query(EventModel).filter_by(date=target_date).all()
-            else:
-                events = session.query(EventModel).all()
+                query = query.filter_by(date=target_date)
+            events = query.all()
             
             # Group events by date
             events_by_date = {}
@@ -1234,19 +1257,19 @@ class EventsDistribute(Resource):
                 date_events.sort(key=lambda e: e.start_time or '00:00')
                 
                 # Track which time slots are occupied in each column
-                column_schedules = {0: [], 1: [], 2: [], 3: []}
+                column_schedules = {col.id: [] for col in schedule_columns}
                 
                 for event in date_events:
                     # Find best column for this event
-                    best_column = 0
+                    best_column_id = schedule_columns[0].id
                     min_conflicts = float('inf')
                     
-                    for col in [0, 1, 2, 3]:
+                    for col in schedule_columns:
                         conflicts = 0
                         
                         # Check for time conflicts with events already in this column
                         if event.start_time and event.end_time:
-                            for scheduled_event in column_schedules[col]:
+                            for scheduled_event in column_schedules[col.id]:
                                 if scheduled_event.start_time and scheduled_event.end_time:
                                     # Convert times to minutes for comparison
                                     def time_to_minutes(time_str):
@@ -1266,18 +1289,18 @@ class EventsDistribute(Resource):
                                         conflicts += 1
                         
                         # Prefer columns with fewer conflicts, then fewer events
-                        total_penalty = conflicts * 1000 + len(column_schedules[col])
+                        total_penalty = conflicts * 1000 + len(column_schedules[col.id])
                         if total_penalty < min_conflicts:
                             min_conflicts = total_penalty
-                            best_column = col
+                            best_column_id = col.id
                     
                     # Update event column if it changed
-                    if event.column_number != best_column:
-                        event.column_number = best_column
+                    if event.schedule_column_id != best_column_id:
+                        event.schedule_column_id = best_column_id
                         updated_count += 1
                     
                     # Add to column schedule
-                    column_schedules[best_column].append(event)
+                    column_schedules[best_column_id].append(event)
             
             session.commit()
             

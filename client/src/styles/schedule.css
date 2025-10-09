@@ -1,7 +1,8 @@
 .schedule-container {
     padding: 30px;
-    max-width: 1400px;
+    max-width: none;
     margin: 0 auto;
+    width: 100%;
 }
 
 .schedule-header {
@@ -351,8 +352,28 @@
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     min-height: 1000px;
+}
+
+/* Scrollbar styling for horizontal scroll */
+.schedule-grid::-webkit-scrollbar {
+    height: 12px;
+}
+
+.schedule-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.schedule-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 122, 24, 0.3);
+    border-radius: 6px;
+}
+
+.schedule-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 122, 24, 0.5);
 }
 
 .time-column {
@@ -402,6 +423,27 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Scrollbar styling for events area */
+.events-area::-webkit-scrollbar {
+    height: 12px;
+}
+
+.events-area::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.events-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 122, 24, 0.3);
+    border-radius: 6px;
+}
+
+.events-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 122, 24, 0.5);
 }
 
 .events-header {
@@ -409,10 +451,12 @@
     display: flex;
     background: rgba(255, 122, 24, 0.1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: fit-content;
 }
 
 .column-header {
-    flex: 1;
+    flex: 1 0 200px;
+    min-width: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -430,7 +474,8 @@
     flex: 1;
     position: relative;
     display: flex;
-    overflow: hidden;
+    overflow: visible;
+    min-width: fit-content;
 }
 
 /* Overlay explicit grid elements to remove any gradient rounding issues */
@@ -465,7 +510,7 @@
 
 .sched-event-column {
     position: relative;
-    flex: 1;
+    flex: 1 0 200px;
     min-width: 200px;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     padding: 0 8px;
