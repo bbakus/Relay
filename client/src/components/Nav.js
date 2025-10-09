@@ -137,10 +137,15 @@ export const Nav = () => {
         url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`
       }
       
+      console.log('Nav.js fetchOrganizations - URL:', url, 'User:', user?.name, 'Company ID:', user?.company_id, 'Is Super Admin:', user?.is_super_admin)
+      
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
+        console.log('Nav.js fetchOrganizations - Fetched organizations:', data)
         setOrganizations(data)
+      } else {
+        console.log('Nav.js fetchOrganizations - Failed with status:', response.status)
       }
     } catch (error) {
       console.error('Error fetching organizations:', error)
@@ -235,9 +240,9 @@ export const Nav = () => {
     }
   }, [user])
 
-  // Refetch organizations and projects when selected company changes (for super admin)
+  // Refetch organizations and projects when selected company changes (for super admin) or when access changes
   useEffect(() => {
-    if ((user?.is_super_admin && selectedCompanyId) || user?.access === 'Client') {
+    if ((user?.is_super_admin && selectedCompanyId) || user?.access === 'Client' || user?.access === 'Admin') {
       fetchOrganizations()
       fetchProjects()
     }
@@ -571,7 +576,7 @@ export const Nav = () => {
                   value={selectedOrganizationId} 
                   onChange={(e) => setGlobalOrganization(e.target.value)}
                 >
-                  <option value="">All Organizations</option>
+                  <option value="">{organizations.length === 0 ? 'No Organizations - Go to Settings to create one' : 'All Organizations'}</option>
                   {organizations.map(org => (
                     <option key={org.id} value={org.id}>{org.name}</option>
                   ))}
@@ -664,7 +669,7 @@ export const Nav = () => {
                     value={selectedOrganizationId} 
                     onChange={(e) => setGlobalOrganization(e.target.value)}
                   >
-                    <option value="">All Organizations</option>
+                    <option value="">{organizations.length === 0 ? 'No Organizations - Go to Settings to create one' : 'All Organizations'}</option>
                     {organizations.map(org => (
                       <option key={org.id} value={org.id}>{org.name}</option>
                     ))}
