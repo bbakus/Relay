@@ -18,6 +18,7 @@ from models import (
     ShotRequest as ShotRequestModel,
     Image as ImageModel,
     Project as ProjectModel,
+    ScheduleColumn,
     get_session,
     Organization,
     AccessRequest,
@@ -907,7 +908,7 @@ class EventsResource(Resource):
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
                 'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
-                'column_number': getattr(event, 'column_number', 0),
+                'schedule_column_id': getattr(event, 'schedule_column_id', None),
                 'project_id': event.project_id,
                 'assigned_personnel': [{'personnel_id': p.id, 'name': p.name, 'role': p.role} for p in event.personnels]
             } for event in events], 200
@@ -1037,7 +1038,7 @@ class EventsResource(Resource):
                 'quick_turn': new_event.quick_turn,
                 'deadline': new_event.deadline,
                 'process_point': getattr(new_event, 'process_point', 'idle'),
-                'column_number': getattr(new_event, 'column_number', 0),
+                'schedule_column_id': getattr(new_event, 'schedule_column_id', None),
                 'project_id': new_event.project_id,
                 'assigned_personnel': getattr(new_event, 'assigned_personnel', [])
             }
@@ -1074,7 +1075,7 @@ class EventDetail(Resource):
                     'deadline': event.deadline,
                     'process_point': getattr(event, 'process_point', 'idle'),
                     'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
-                    'column_number': getattr(event, 'column_number', 0),
+                    'schedule_column_id': getattr(event, 'schedule_column_id', None),
                     'project_id': event.project_id
                 }, 200
             return {'error': 'Event not found'}, 404
@@ -1156,7 +1157,7 @@ class EventDetail(Resource):
                 'deadline': event.deadline,
                 'process_point': getattr(event, 'process_point', 'idle'),
                 'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
-                'column_number': getattr(event, 'column_number', 0),
+                'schedule_column_id': getattr(event, 'schedule_column_id', None),
                 'project_id': event.project_id,
                 'assigned_personnel': getattr(event, 'assigned_personnel', [])
             }
@@ -1540,6 +1541,7 @@ class ShotRequests(Resource):
                 'process_point': getattr(request, 'process_point', 'idle'),
                 'process_point_updated_by_name': getattr(request, 'process_point_updated_by_name', None),
                 'status': getattr(request, 'status', 'open'),
+                'schedule_column_id': getattr(request, 'schedule_column_id', None),
                 'events': [{
                     'id': event.id,
                     'name': event.name,
@@ -1648,6 +1650,7 @@ class ShotRequestDetail(Resource):
                     'deadline': shot_request.deadline,
                     'process_point': getattr(shot_request, 'process_point', 'idle'),
                     'status': getattr(shot_request, 'status', 'open'),
+                    'schedule_column_id': getattr(shot_request, 'schedule_column_id', None),
                     'events': [{
                         'id': event.id,
                         'name': event.name,
@@ -2368,6 +2371,195 @@ class AccessRequestDetail(Resource):
             session.close()
 
 
+# ======================= Schedule Columns Resource =======================
+class ScheduleColumnsResource(Resource):
+    def get(self):
+        """Get schedule columns for a specific project"""
+        session = Session()
+        try:
+            project_id = request.args.get('project_id')
+            if not project_id:
+                return {'error': 'project_id is required'}, 400
+            
+            columns = session.query(ScheduleColumn).filter_by(
+                project_id=int(project_id)
+            ).order_by(ScheduleColumn.order_index).all()
+            
+            return [{
+                'id': col.id,
+                'name': col.name,
+                'order_index': col.order_index,
+                'project_id': col.project_id,
+                'created_at': col.created_at.isoformat() if col.created_at else None,
+                'updated_at': col.updated_at.isoformat() if col.updated_at else None
+            } for col in columns], 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+    
+    def post(self):
+        """Create a new schedule column for a project"""
+        session = Session()
+        try:
+            data = request.get_json()
+            project_id = data.get('project_id')
+            name = data.get('name', 'New Column')
+            
+            if not project_id:
+                return {'error': 'project_id is required'}, 400
+            
+            # Check if user is admin or super admin
+            # This would normally be checked via JWT token, but for now we'll trust the request
+            
+            # Get the current max order_index for this project
+            max_order = session.query(ScheduleColumn).filter_by(
+                project_id=project_id
+            ).count()
+            
+            # Create new column
+            new_column = ScheduleColumn(
+                name=name,
+                order_index=max_order,
+                project_id=project_id
+            )
+            
+            session.add(new_column)
+            session.commit()
+            
+            return {
+                'id': new_column.id,
+                'name': new_column.name,
+                'order_index': new_column.order_index,
+                'project_id': new_column.project_id,
+                'created_at': new_column.created_at.isoformat() if new_column.created_at else None,
+                'updated_at': new_column.updated_at.isoformat() if new_column.updated_at else None
+            }, 201
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
+
+class ScheduleColumnDetail(Resource):
+    def get(self, column_id):
+        """Get a specific schedule column"""
+        session = Session()
+        try:
+            column = session.query(ScheduleColumn).get(column_id)
+            if not column:
+                return {'error': 'Column not found'}, 404
+            
+            return {
+                'id': column.id,
+                'name': column.name,
+                'order_index': column.order_index,
+                'project_id': column.project_id,
+                'created_at': column.created_at.isoformat() if column.created_at else None,
+                'updated_at': column.updated_at.isoformat() if column.updated_at else None
+            }, 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+    
+    def patch(self, column_id):
+        """Update a schedule column (name or order)"""
+        session = Session()
+        try:
+            column = session.query(ScheduleColumn).get(column_id)
+            if not column:
+                return {'error': 'Column not found'}, 404
+            
+            data = request.get_json()
+            
+            # Update name if provided
+            if 'name' in data:
+                column.name = data['name']
+            
+            # Update order_index if provided
+            if 'order_index' in data:
+                old_index = column.order_index
+                new_index = data['order_index']
+                
+                if old_index != new_index:
+                    # Reorder other columns
+                    project_id = column.project_id
+                    
+                    if new_index > old_index:
+                        # Moving right: shift columns between old and new left
+                        session.query(ScheduleColumn).filter(
+                            ScheduleColumn.project_id == project_id,
+                            ScheduleColumn.order_index > old_index,
+                            ScheduleColumn.order_index <= new_index,
+                            ScheduleColumn.id != column_id
+                        ).update({ScheduleColumn.order_index: ScheduleColumn.order_index - 1})
+                    else:
+                        # Moving left: shift columns between new and old right
+                        session.query(ScheduleColumn).filter(
+                            ScheduleColumn.project_id == project_id,
+                            ScheduleColumn.order_index >= new_index,
+                            ScheduleColumn.order_index < old_index,
+                            ScheduleColumn.id != column_id
+                        ).update({ScheduleColumn.order_index: ScheduleColumn.order_index + 1})
+                    
+                    column.order_index = new_index
+            
+            column.updated_at = datetime.datetime.utcnow()
+            session.commit()
+            
+            return {
+                'id': column.id,
+                'name': column.name,
+                'order_index': column.order_index,
+                'project_id': column.project_id,
+                'updated_at': column.updated_at.isoformat()
+            }, 200
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+    
+    def delete(self, column_id):
+        """Delete a schedule column"""
+        session = Session()
+        try:
+            column = session.query(ScheduleColumn).get(column_id)
+            if not column:
+                return {'error': 'Column not found'}, 404
+            
+            project_id = column.project_id
+            order_index = column.order_index
+            
+            # Unassign any events/shot requests from this column
+            session.query(EventModel).filter_by(
+                schedule_column_id=column_id
+            ).update({EventModel.schedule_column_id: None})
+            
+            session.query(ShotRequestModel).filter_by(
+                schedule_column_id=column_id
+            ).update({ShotRequestModel.schedule_column_id: None})
+            
+            # Delete the column
+            session.delete(column)
+            
+            # Reorder remaining columns
+            session.query(ScheduleColumn).filter(
+                ScheduleColumn.project_id == project_id,
+                ScheduleColumn.order_index > order_index
+            ).update({ScheduleColumn.order_index: ScheduleColumn.order_index - 1})
+            
+            session.commit()
+            return {'message': 'Column deleted successfully'}, 200
+        except Exception as e:
+            session.rollback()
+            return {'error': str(e)}, 500
+        finally:
+            session.close()
+
+
 # API Routes
 api.add_resource(Users, '/api/users')
 api.add_resource(UserDetail, '/api/users/<int:user_id>')
@@ -2390,6 +2582,8 @@ api.add_resource(CompaniesResource, '/api/companies')
 api.add_resource(CompanyDetail, '/api/companies/<int:company_id>')
 api.add_resource(AccessRequests, '/api/access-requests')
 api.add_resource(AccessRequestDetail, '/api/access-requests/<int:request_id>')
+api.add_resource(ScheduleColumnsResource, '/api/schedule-columns')
+api.add_resource(ScheduleColumnDetail, '/api/schedule-columns/<int:column_id>')
 
 
 @app.route('/')

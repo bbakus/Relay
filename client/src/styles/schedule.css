@@ -1135,3 +1135,145 @@
     border-color: rgba(220, 53, 69, 0.5) !important;
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
 }
+
+/* Column Management Styles */
+.column-header {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.column-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.column-title-row h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    flex: 1;
+}
+
+.column-edit-form {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.column-edit-form input {
+    flex: 1;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.column-edit-form input:focus {
+    outline: none;
+    border-color: #ff7a18;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-save, .btn-cancel {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.btn-save {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.btn-save:hover {
+    background: rgba(40, 167, 69, 0.3);
+}
+
+.btn-cancel {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.btn-cancel:hover {
+    background: rgba(220, 53, 69, 0.3);
+}
+
+.btn-delete-column {
+    padding: 4px 8px;
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 4px;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-column:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.5);
+}
+
+.add-column-btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 20px;
+}
+
+.btn-add-column {
+    padding: 12px 24px;
+    background: rgba(255, 122, 24, 0.1);
+    border: 2px dashed rgba(255, 122, 24, 0.3);
+    border-radius: 8px;
+    color: #ff7a18;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-column:hover {
+    background: rgba(255, 122, 24, 0.2);
+    border-color: rgba(255, 122, 24, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Adjust event column to account for header */
+.sched-event-column {
+    position: relative;
+    padding-top: 0;
+}
+
+/* Add column button in header */
+.btn-add-column-header {
+    padding: 8px 16px;
+    background: rgba(255, 122, 24, 0.1);
+    border: 1px solid rgba(255, 122, 24, 0.3);
+    border-radius: 4px;
+    color: #ff7a18;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.btn-add-column-header:hover {
+    background: rgba(255, 122, 24, 0.2);
+    border-color: rgba(255, 122, 24, 0.5);
+}

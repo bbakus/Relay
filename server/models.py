@@ -134,8 +134,8 @@ class Events(Base, SerializerMixin):
     process_point = Column(String, default='idle')
     # Track who last updated the process point (simple name field)
     process_point_updated_by_name = Column(String)
-    # Column assignment for schedule (0-3 for the 4 columns)
-    column_number = Column(Integer, default=0)
+    # Column assignment for schedule - references ScheduleColumn.id (can be null for unassigned events)
+    schedule_column_id = Column(Integer, ForeignKey('schedule_columns.id', ondelete='SET NULL'))
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'))
     assigned_personnel = Column(JSON, default=list)  # Array of assigned personnel with their details
 
@@ -144,6 +144,7 @@ class Events(Base, SerializerMixin):
     personnels = relationship('Personnel', secondary=personnel_event_association_table, back_populates='events')
     project = relationship('Project', back_populates='events')
     images = relationship('Image', back_populates='event', cascade='all, delete-orphan')
+    schedule_column = relationship('ScheduleColumn', foreign_keys=[schedule_column_id])
 
 
 class ShotRequest(Base, SerializerMixin):
@@ -164,12 +165,15 @@ class ShotRequest(Base, SerializerMixin):
     process_point_updated_by_name = Column(String)
     # Shot request status: 'open' or 'shot'
     status = Column(String, default='open')
+    # Column assignment for schedule - references ScheduleColumn.id (can be null for unassigned shot requests)
+    schedule_column_id = Column(Integer, ForeignKey('schedule_columns.id', ondelete='SET NULL'))
 
     # Relationships
     events = relationship('Events', secondary=event_request_association_table, back_populates='shot_requests')
     personnels = relationship('Personnel', secondary=personnel_shot_request_association_table, back_populates='shot_requests')
     projects = relationship('Project', secondary=project_requests_association_table, back_populates='shot_requests')
     images = relationship('Image', back_populates='shot_request', cascade='all, delete-orphan')
+    schedule_column = relationship('ScheduleColumn', foreign_keys=[schedule_column_id])
 
 
 class Personnel(Base, SerializerMixin):
@@ -213,6 +217,22 @@ class Project(Base, SerializerMixin):
     events = relationship('Events', back_populates='project', cascade='all, delete-orphan')
     shot_requests = relationship('ShotRequest', secondary=project_requests_association_table, back_populates='projects')
     personnels = relationship('Personnel', secondary=project_personnel_association_table, back_populates='projects')
+    schedule_columns = relationship('ScheduleColumn', back_populates='project', cascade='all, delete-orphan', order_by='ScheduleColumn.order_index')
+
+
+class ScheduleColumn(Base, SerializerMixin):
+    """Custom schedule columns per project for organizing events"""
+    __tablename__ = 'schedule_columns'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, default='New Column')
+    order_index = Column(Integer, nullable=False)  # Order of columns left to right
+    project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    project = relationship('Project', back_populates='schedule_columns')
 
 
 class Image(Base, SerializerMixin):

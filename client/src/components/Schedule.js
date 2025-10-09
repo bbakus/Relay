@@ -25,6 +25,9 @@ export const Schedule = () => {
     const [selectedPhotographerId, setSelectedPhotographerId] = useState('')
     const [currentView, setCurrentView] = useState('events') // 'events' or 'shot-requests'
     const [shotRequests, setShotRequests] = useState([])
+    const [scheduleColumns, setScheduleColumns] = useState([])
+    const [editingColumnId, setEditingColumnId] = useState(null)
+    const [editingColumnName, setEditingColumnName] = useState('')
 
     const [loading, setLoading] = useState(true)
     const [selectedEvent, setSelectedEvent] = useState(null)
@@ -146,6 +149,39 @@ export const Schedule = () => {
         }
     }
 
+    const fetchScheduleColumns = async () => {
+        if (!selectedProjectId) {
+            // If no project is selected, use default columns
+            setScheduleColumns([
+                { id: 1, name: 'Column 1', order_index: 0, project_id: null },
+                { id: 2, name: 'Column 2', order_index: 1, project_id: null },
+                { id: 3, name: 'Column 3', order_index: 2, project_id: null },
+                { id: 4, name: 'Column 4', order_index: 3, project_id: null },
+                { id: 5, name: 'Column 5', order_index: 4, project_id: null }
+            ])
+            return
+        }
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}`)
+            if (response.ok) {
+                const columns = await response.json()
+                setScheduleColumns(columns)
+            } else {
+                // Fallback to default columns if API fails
+                setScheduleColumns([
+                    { id: 1, name: 'Column 1', order_index: 0, project_id: selectedProjectId },
+                    { id: 2, name: 'Column 2', order_index: 1, project_id: selectedProjectId },
+                    { id: 3, name: 'Column 3', order_index: 2, project_id: selectedProjectId },
+                    { id: 4, name: 'Column 4', order_index: 3, project_id: selectedProjectId },
+                    { id: 5, name: 'Column 5', order_index: 4, project_id: selectedProjectId }
+                ])
+            }
+        } catch (error) {
+            console.error('Error fetching schedule columns:', error)
+        }
+    }
+
     const fetchEvents = async () => {
         try {
             setLoading(true)
@@ -203,12 +239,96 @@ export const Schedule = () => {
         }
     }
 
+    // Column management functions
+    const handleAddColumn = async () => {
+        if (!selectedProjectId) {
+            alert('Please select a project to add a column.')
+            return
+        }
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    project_id: selectedProjectId,
+                    name: `Column ${scheduleColumns.length + 1}`
+                })
+            })
+            
+            if (response.ok) {
+                fetchScheduleColumns()
+            }
+        } catch (error) {
+            console.error('Error adding column:', error)
+        }
+    }
+
+    const handleStartEditColumn = (column) => {
+        setEditingColumnId(column.id)
+        setEditingColumnName(column.name)
+    }
+
+    const handleSaveColumnName = async (columnId) => {
+        if (!editingColumnName.trim()) {
+            alert('Column name cannot be empty')
+            return
+        }
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns/${columnId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: editingColumnName.trim()
+                })
+            })
+            
+            if (response.ok) {
+                setEditingColumnId(null)
+                setEditingColumnName('')
+                fetchScheduleColumns()
+            }
+        } catch (error) {
+            console.error('Error updating column name:', error)
+        }
+    }
+
+    const handleCancelEditColumn = () => {
+        setEditingColumnId(null)
+        setEditingColumnName('')
+    }
+
+    const handleDeleteColumn = async (columnId) => {
+        if (!window.confirm('Are you sure you want to delete this column? Events in this column will be unassigned.')) {
+            return
+        }
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns/${columnId}`, {
+                method: 'DELETE'
+            })
+            
+            if (response.ok) {
+                fetchScheduleColumns()
+                fetchEvents() // Refresh events to show updated assignments
+            }
+        } catch (error) {
+            console.error('Error deleting column:', error)
+        }
+    }
+
     useEffect(() => {
         if (isAdmin) {
             fetchOrganizations()
         }
         fetchProjects()
         fetchPersonnel()
+        fetchScheduleColumns()
         fetchEvents()
         fetchShotRequests()
     }, [activeDate, selectedProjectId, isAdmin, user?.company_id, selectedCompanyId])
@@ -547,7 +667,7 @@ export const Schedule = () => {
     }
 
     // Handle column change when dragging events
-    const handleColumnChange = async (eventId, newColumnNumber) => {
+    const handleColumnChange = async (eventId, newScheduleColumnId) => {
         try {
             // Store current scroll position
             const scrollPosition = window.pageYOffset || document.documentElement.scrollTop
@@ -558,7 +678,7 @@ export const Schedule = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    column_number: newColumnNumber
+                    schedule_column_id: newScheduleColumnId
                 })
             })
 
@@ -567,7 +687,7 @@ export const Schedule = () => {
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event.id === eventId 
-                            ? { ...event, column_number: newColumnNumber }
+                            ? { ...event, schedule_column_id: newScheduleColumnId }
                             : event
                     )
                 )
@@ -588,7 +708,7 @@ export const Schedule = () => {
     const handleDragStart = (e, event) => {
         e.dataTransfer.setData('text/plain', JSON.stringify({
             eventId: event.id,
-            currentColumn: event.column_number || 0
+            currentColumn: event.schedule_column_id || null
         }))
         e.dataTransfer.effectAllowed = 'move'
     }
@@ -631,12 +751,12 @@ export const Schedule = () => {
     const handleShotRequestDragStart = (e, shotRequest) => {
         e.dataTransfer.setData('text/plain', JSON.stringify({
             shotRequestId: shotRequest.id,
-            currentSRColumn: shotRequest.column_number || 0
+            currentSRColumn: shotRequest.schedule_column_id || null
         }))
         e.dataTransfer.effectAllowed = 'move'
     }
 
-    const handleShotRequestColumnChange = async (shotRequestId, newColumnNumber) => {
+    const handleShotRequestColumnChange = async (shotRequestId, newScheduleColumnId) => {
         try {
             const scrollPosition = window.pageYOffset || document.documentElement.scrollTop
 
@@ -646,7 +766,7 @@ export const Schedule = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    column_number: newColumnNumber
+                    schedule_column_id: newScheduleColumnId
                 })
             })
 
@@ -655,7 +775,7 @@ export const Schedule = () => {
                 setShotRequests(prevRequests => 
                     prevRequests.map(sr => 
                         sr.id === shotRequestId 
-                            ? { ...sr, column_number: newColumnNumber }
+                            ? { ...sr, schedule_column_id: newScheduleColumnId }
                             : sr
                     )
                 )
@@ -876,12 +996,22 @@ export const Schedule = () => {
 
     // Group events by column
     const getEventsByColumn = () => {
-        const eventsByColumn = { 0: [], 1: [], 2: [], 3: [], 4: [] }
+        const eventsByColumn = {}
+        
+        // Initialize empty arrays for each schedule column
+        scheduleColumns.forEach(column => {
+            eventsByColumn[column.id] = []
+        })
+        
+        // Add an array for unassigned events (null column_id)
+        eventsByColumn['unassigned'] = []
         
         eventsWithPositions.forEach(event => {
-            const column = event.column_number || 0
-            if (eventsByColumn[column]) {
-                eventsByColumn[column].push(event)
+            const columnId = event.schedule_column_id
+            if (columnId && eventsByColumn[columnId]) {
+                eventsByColumn[columnId].push(event)
+            } else {
+                eventsByColumn['unassigned'].push(event)
             }
         })
         
@@ -889,7 +1019,7 @@ export const Schedule = () => {
     }
 
     const eventsWithPositions = useMemo(() => getEventsWithPositions(), [events, selectedPhotographerId])
-    const eventsByColumn = useMemo(() => getEventsByColumn(), [eventsWithPositions])
+    const eventsByColumn = useMemo(() => getEventsByColumn(), [eventsWithPositions, scheduleColumns])
 
     // Filter shot requests by photographer
     const filteredShotRequests = useMemo(() => {
@@ -907,21 +1037,29 @@ export const Schedule = () => {
 
     // Group shot requests by column
     const getShotRequestsByColumn = () => {
-        const srByColumn = { 0: [], 1: [], 2: [] }
+        const srByColumn = {}
+        
+        // Initialize empty arrays for each schedule column
+        scheduleColumns.forEach(column => {
+            srByColumn[column.id] = []
+        })
+        
+        // Add an array for unassigned shot requests
+        srByColumn['unassigned'] = []
         
         filteredShotRequests.forEach(sr => {
-            const column = sr.column_number !== undefined ? sr.column_number : Math.floor(filteredShotRequests.indexOf(sr) % 3)
-            if (srByColumn[column] !== undefined) {
-                srByColumn[column].push(sr)
+            const columnId = sr.schedule_column_id
+            if (columnId && srByColumn[columnId]) {
+                srByColumn[columnId].push(sr)
             } else {
-                srByColumn[0].push(sr)
+                srByColumn['unassigned'].push(sr)
             }
         })
         
         return srByColumn
     }
 
-    const shotRequestsByColumn = useMemo(() => getShotRequestsByColumn(), [filteredShotRequests])
+    const shotRequestsByColumn = useMemo(() => getShotRequestsByColumn(), [filteredShotRequests, scheduleColumns])
 
     // Project status calculation based on active date
     const getProjectStatus = (project) => {
@@ -949,8 +1087,8 @@ export const Schedule = () => {
 
  
 
-    // Fixed 5 columns
-    const columns = [0, 1, 2, 3, 4]
+    // Use dynamic schedule columns instead of fixed columns
+    // columns are now managed by scheduleColumns state
 
 
 
@@ -1148,22 +1286,48 @@ export const Schedule = () => {
 
 
                                     
-                                    {eventsWithPositions.length === 0 ? (
+                                    {scheduleColumns.length === 0 ? (
                                         <div className='no-events'>
-                                            <p>No events scheduled for {formatDateForHeader(activeDate)}</p>
+                                            <p>No columns configured. {isAdmin && selectedProjectId ? 'Add a column to get started.' : 'Please select a project.'}</p>
                                         </div>
                                     ) : (
-                                        // Render drop zones for each column
-                                        columns.map((columnIndex) => (
-                                            <div 
-                                                key={columnIndex} 
-                                                className='sched-event-column'
-                                                onDragOver={handleDragOver}
-                                                onDragLeave={handleDragLeave}
-                                                onDrop={(e) => handleDrop(e, columnIndex)}
-                                            >
-                                                {/* Render events for this column */}
-                                                {eventsByColumn[columnIndex]?.map(event => (
+                                        <>
+                                            {/* Render drop zones for each column */}
+                                            {scheduleColumns.map((column) => (
+                                                <div 
+                                                    key={column.id} 
+                                                    className='sched-event-column'
+                                                    onDragOver={handleDragOver}
+                                                    onDragLeave={handleDragLeave}
+                                                    onDrop={(e) => handleDrop(e, column.id)}
+                                                >
+                                                    {/* Column header with edit/delete for admins */}
+                                                    {isAdmin && (
+                                                        <div className='column-header'>
+                                                            {editingColumnId === column.id ? (
+                                                                <div className='column-edit-form'>
+                                                                    <input
+                                                                        type='text'
+                                                                        value={editingColumnName}
+                                                                        onChange={(e) => setEditingColumnName(e.target.value)}
+                                                                        onKeyPress={(e) => {
+                                                                            if (e.key === 'Enter') handleSaveColumnName(column.id)
+                                                                        }}
+                                                                        autoFocus
+                                                                    />
+                                                                    <button onClick={() => handleSaveColumnName(column.id)} className='btn-save'>✓</button>
+                                                                    <button onClick={handleCancelEditColumn} className='btn-cancel'>✕</button>
+                                                                </div>
+                                                            ) : (
+                                                                <div className='column-title-row'>
+                                                                    <h4 onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</h4>
+                                                                    <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column'>🗑</button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {/* Render events for this column */}
+                                                    {eventsByColumn[column.id]?.map(event => (
                                                     <div
                                                         key={event.id}
                                                         className={`sched-event-card process-${(event.process_point || 'idle').toLowerCase()}`}
@@ -1194,7 +1358,14 @@ export const Schedule = () => {
                                                     </div>
                                                 ))}
                                             </div>
-                                        ))
+                                        ))}
+                                            {/* Add Column Button for admins */}
+                                            {isAdmin && selectedProjectId && (
+                                                <div className='add-column-btn-container'>
+                                                    <button onClick={handleAddColumn} className='btn-add-column'>+ Add Column</button>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -1212,23 +1383,23 @@ export const Schedule = () => {
                                 </div>
 
                                 {/* Mobile columns */}
-                                {eventsWithPositions.length === 0 ? (
+                                {scheduleColumns.length === 0 ? (
                                     <div className='mobile-column-wrapper'>
                                         <div className='mobile-column-header'>
-                                            <h3>No Events</h3>
+                                            <h3>No Columns</h3>
                                         </div>
                                         <div className='mobile-events-container'>
-                                            <p>No events scheduled for {formatDateForHeader(activeDate)}</p>
+                                            <p>No columns configured. {isAdmin && selectedProjectId ? 'Add a column to get started.' : 'Please select a project.'}</p>
                                         </div>
                                     </div>
                                 ) : (
-                                    columns.map((columnIndex) => (
-                                        <div key={columnIndex} className='mobile-column-wrapper'>
+                                    scheduleColumns.map((column) => (
+                                        <div key={column.id} className='mobile-column-wrapper'>
                                             <div className='mobile-column-header'>
-                                                <h3>Column {columnIndex + 1}</h3>
+                                                <h3>{column.name}</h3>
                                             </div>
                                             <div className='mobile-events-container'>
-                                                {eventsByColumn[columnIndex]?.map(event => (
+                                                {eventsByColumn[column.id]?.map(event => (
                                                     <div
                                                         key={event.id}
                                                         className='mobile-event-card'
@@ -1294,26 +1465,54 @@ export const Schedule = () => {
                     {/* Shot Requests area */}
                     <div className='events-area'>
                         <div className='events-header'>
-                            <div className='column-header'>Column 1</div>
-                            <div className='column-header'>Column 2</div>
-                            <div className='column-header'>Column 3</div>
+                            {scheduleColumns.map(column => (
+                                <div key={column.id} className='column-header'>
+                                    {isAdmin ? (
+                                        editingColumnId === column.id ? (
+                                            <div className='column-edit-form'>
+                                                <input
+                                                    type='text'
+                                                    value={editingColumnName}
+                                                    onChange={(e) => setEditingColumnName(e.target.value)}
+                                                    onKeyPress={(e) => {
+                                                        if (e.key === 'Enter') handleSaveColumnName(column.id)
+                                                    }}
+                                                    autoFocus
+                                                />
+                                                <button onClick={() => handleSaveColumnName(column.id)} className='btn-save'>✓</button>
+                                                <button onClick={handleCancelEditColumn} className='btn-cancel'>✕</button>
+                                            </div>
+                                        ) : (
+                                            <div className='column-title-row'>
+                                                <span onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</span>
+                                                <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column'>🗑</button>
+                                            </div>
+                                        )
+                                    ) : (
+                                        column.name
+                                    )}
+                                </div>
+                            ))}
+                            {isAdmin && selectedProjectId && (
+                                <button onClick={handleAddColumn} className='btn-add-column-header'>+</button>
+                            )}
                         </div>
                         
                         <div className='sched-events-container'>
-                            {filteredShotRequests.length === 0 ? (
+                            {scheduleColumns.length === 0 ? (
                                 <div className='no-events'>
-                                    <p>No shot requests for {selectedPhotographerId ? 'this photographer' : 'this date'}</p>
+                                    <p>No columns configured. {isAdmin && selectedProjectId ? 'Add a column to get started.' : 'Please select a project.'}</p>
                                 </div>
                             ) : (
-                                [0, 1, 2].map((columnIndex) => (
+                                scheduleColumns.map((column) => (
                                     <div 
-                                        key={columnIndex} 
+                                        key={column.id} 
                                         className='sched-event-column'
                                         onDragOver={handleDragOver}
                                         onDragLeave={handleDragLeave}
-                                        onDrop={(e) => handleDrop(e, columnIndex)}
+                                        onDrop={(e) => handleDrop(e, column.id)}
                                     >
-                                        {shotRequestsByColumn[columnIndex]?.map(sr => {
+                                        {shotRequestsByColumn[column.id]?.map(sr => {
                                             // Default to 6:00 AM - 7:00 AM if no time is specified
                                             const startTime = (sr.start_time && sr.start_time.trim() !== '') ? sr.start_time : '06:00'
                                             const endTime = (sr.end_time && sr.end_time.trim() !== '') ? sr.end_time : '07:00'
