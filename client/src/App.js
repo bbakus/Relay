@@ -6,6 +6,7 @@ import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
+import { WebSocketProvider } from './context/WebSocketContext'
 import { Settings } from './components/Settings';
 import { Schedule } from './components/Schedule';
 import { Personnel } from './components/Personnel';
@@ -41,21 +42,23 @@ function App() {
   return (
     <div className="App">
       <AuthProvider>
-        <NotificationProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path='/' element={<Login />}/>
-              <Route path='/:userId/dashboard' element={<Dashboard />}/>
-              <Route path='/:userId/settings' element={<Settings/>}/>
-              <Route path='/:userId/schedule' element={<Schedule/>}/>
-              <Route path='/:userId/personnel' element={<Personnel/>}/>
-              <Route path='/:userId/events' element={<Events/>}/>
-              <Route path='/:userId/requests' element={<ShotRequest/>}/>
-              <Route path='/:userId/deliver' element={<Deliver/>}/>
-              <Route path='/:userId/map' element={<Map/>}/>
-            </Routes>
-          </BrowserRouter>
-        </NotificationProvider>
+        <WebSocketProvider>
+          <NotificationProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path='/' element={<Login />}/>
+                <Route path='/:userId/dashboard' element={<Dashboard />}/>
+                <Route path='/:userId/settings' element={<Settings/>}/>
+                <Route path='/:userId/schedule' element={<Schedule/>}/>
+                <Route path='/:userId/personnel' element={<Personnel/>}/>
+                <Route path='/:userId/events' element={<Events/>}/>
+                <Route path='/:userId/requests' element={<ShotRequest/>}/>
+                <Route path='/:userId/deliver' element={<Deliver/>}/>
+                <Route path='/:userId/map' element={<Map/>}/>
+              </Routes>
+            </BrowserRouter>
+          </NotificationProvider>
+        </WebSocketProvider>
       </AuthProvider>
     </div>
   );

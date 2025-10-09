@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useWebSocket } from './WebSocketContext'
 
 const NotificationContext = createContext()
 
@@ -17,6 +18,7 @@ export const NotificationProvider = ({ children }) => {
     events: new Set(),
     shotRequests: new Set()
   })
+  const { subscribe, isConnected } = useWebSocket()
 
   // Clear all notifications on mount
   useEffect(() => {
@@ -88,6 +90,62 @@ export const NotificationProvider = ({ children }) => {
 
     return () => clearInterval(interval)
   }, [])
+
+  // Listen for WebSocket notifications
+  useEffect(() => {
+    if (!isConnected) return
+
+    // Listen for general notifications
+    const unsubNotification = subscribe('notification', (data) => {
+      console.log('📨 Received notification:', data)
+      if (data.notification) {
+        addNotification(data.notification)
+      }
+    })
+
+    // Listen for event updates
+    const unsubEventUpdate = subscribe('event_update', (data) => {
+      console.log('📨 Received event update:', data)
+      const { action, event } = data
+      
+      if (action === 'create' && event) {
+        addNotification({
+          type: 'event',
+          title: 'New Event Created',
+          message: `${event.name || 'Untitled Event'} has been created`
+        })
+        markAsNew('events', event.id)
+      } else if (action === 'update' && event) {
+        // Optionally notify on updates
+        console.log('Event updated:', event.id)
+      }
+    })
+
+    // Listen for shot request updates
+    const unsubShotRequestUpdate = subscribe('shot_request_update', (data) => {
+      console.log('📨 Received shot request update:', data)
+      const { action, shotRequest } = data
+      
+      if (action === 'create' && shotRequest) {
+        addNotification({
+          type: 'shotRequest',
+          title: 'New Shot Request',
+          message: `Shot request for ${shotRequest.event_name || 'event'} has been submitted`
+        })
+        markAsNew('shotRequests', shotRequest.id)
+      } else if (action === 'update' && shotRequest) {
+        // Optionally notify on updates
+        console.log('Shot request updated:', shotRequest.id)
+      }
+    })
+
+    // Cleanup subscriptions
+    return () => {
+      unsubNotification()
+      unsubEventUpdate()
+      unsubShotRequestUpdate()
+    }
+  }, [isConnected, subscribe])
 
   const value = {
     notifications,

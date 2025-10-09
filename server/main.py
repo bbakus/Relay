@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
@@ -87,6 +88,9 @@ app = Flask(__name__)
 cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
 CORS(app, origins=cors_origins)  # Enable CORS for specified origins
 api = Api(app)
+
+# Initialize SocketIO with CORS support
+socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode='eventlet', logger=True, engineio_logger=True)
 
 # Upload configuration from environment variables
 UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')
@@ -1020,7 +1024,8 @@ class EventsResource(Resource):
             
             session.commit()
             
-            return {
+            # Prepare response data
+            response_data = {
                 'id': new_event.id,
                 'name': new_event.name,
                 'date': new_event.date,
@@ -1034,7 +1039,12 @@ class EventsResource(Resource):
                 'column_number': getattr(new_event, 'column_number', 0),
                 'project_id': new_event.project_id,
                 'assigned_personnel': getattr(new_event, 'assigned_personnel', [])
-            }, 201
+            }
+            
+            # Broadcast event creation to all connected clients
+            broadcast_event_update(response_data, action='create')
+            
+            return response_data, 201
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
@@ -1129,7 +1139,9 @@ class EventDetail(Resource):
                     setattr(event, key, value)
             
             session.commit()
-            return {
+            
+            # Prepare response data
+            response_data = {
                 'id': event.id,
                 'name': event.name,
                 'date': event.date,
@@ -1146,7 +1158,12 @@ class EventDetail(Resource):
                 'column_number': getattr(event, 'column_number', 0),
                 'project_id': event.project_id,
                 'assigned_personnel': getattr(event, 'assigned_personnel', [])
-            }, 200
+            }
+            
+            # Broadcast event update to all connected clients
+            broadcast_event_update(response_data, action='update')
+            
+            return response_data, 200
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
@@ -1161,6 +1178,9 @@ class EventDetail(Resource):
             if not event:
                 return {'error': 'Event not found'}, 404
             
+            # Store event data for broadcast before deletion
+            event_data = {'id': event.id, 'name': event.name}
+            
             # Clear all associations before deleting
             # Clear personnel associations
             event.personnels = []
@@ -1171,6 +1191,10 @@ class EventDetail(Resource):
             # Now delete the event
             session.delete(event)
             session.commit()
+            
+            # Broadcast event deletion to all connected clients
+            broadcast_event_update(event_data, action='delete')
+            
             return {'message': 'Event deleted successfully'}, 200
         except Exception as e:
             session.rollback()
@@ -1578,7 +1602,8 @@ class ShotRequests(Resource):
             
             session.commit()
             
-            return {
+            # Prepare response data
+            response_data = {
                 'id': new_request.id,
                 'request': new_request.request,
                 'notes': new_request.notes,
@@ -1587,8 +1612,14 @@ class ShotRequests(Resource):
                 'date': new_request.date,
                 'start_time': new_request.start_time,
                 'end_time': new_request.end_time,
-                'deadline': new_request.deadline
-            }, 201
+                'deadline': new_request.deadline,
+                'event_name': new_request.events[0].name if new_request.events else None
+            }
+            
+            # Broadcast shot request creation to all connected clients
+            broadcast_shot_request_update(response_data, action='create')
+            
+            return response_data, 201
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
@@ -1670,7 +1701,9 @@ class ShotRequestDetail(Resource):
                     setattr(shot_request, key, value)
             
             session.commit()
-            return {
+            
+            # Prepare response data
+            response_data = {
                 'id': shot_request.id,
                 'request': shot_request.request,
                 'notes': shot_request.notes,
@@ -1683,7 +1716,12 @@ class ShotRequestDetail(Resource):
                 'deadline': shot_request.deadline,
                 'process_point': getattr(shot_request, 'process_point', 'idle'),
                 'status': getattr(shot_request, 'status', 'open')
-            }, 200
+            }
+            
+            # Broadcast shot request update to all connected clients
+            broadcast_shot_request_update(response_data, action='update')
+            
+            return response_data, 200
         except Exception as e:
             session.rollback()
             return {'error': str(e)}, 500
@@ -1698,8 +1736,15 @@ class ShotRequestDetail(Resource):
             if not shot_request:
                 return {'error': 'Shot request not found'}, 404
             
+            # Store shot request data for broadcast before deletion
+            shot_request_data = {'id': shot_request.id, 'request': shot_request.request}
+            
             session.delete(shot_request)
             session.commit()
+            
+            # Broadcast shot request deletion to all connected clients
+            broadcast_shot_request_update(shot_request_data, action='delete')
+            
             return {'message': 'Shot request deleted successfully'}, 200
         except Exception as e:
             session.rollback()
@@ -2513,6 +2558,62 @@ def check_database_health():
     finally:
         session.close()
 
+# ======================= WebSocket Event Handlers =======================
+
+@socketio.on('connect')
+def handle_connect():
+    """Handle client connection"""
+    print(f"🔌 Client connected: {request.sid}")
+    emit('connection_response', {'status': 'connected', 'message': 'Successfully connected to Relay server'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handle client disconnection"""
+    print(f"🔌 Client disconnected: {request.sid}")
+
+@socketio.on('ping')
+def handle_ping():
+    """Handle ping from client for connection testing"""
+    emit('pong', {'timestamp': datetime.datetime.now().isoformat()})
+
+# Helper function to broadcast updates to all connected clients
+def broadcast_event_update(event_data, action='update'):
+    """Broadcast event updates to all connected clients"""
+    try:
+        socketio.emit('event_update', {
+            'action': action,  # 'create', 'update', 'delete'
+            'event': event_data,
+            'timestamp': datetime.datetime.now().isoformat()
+        })
+        print(f"📡 Broadcasted event {action}: {event_data.get('id', 'unknown')}")
+    except Exception as e:
+        print(f"❌ Error broadcasting event update: {e}")
+
+def broadcast_shot_request_update(shot_request_data, action='update'):
+    """Broadcast shot request updates to all connected clients"""
+    try:
+        socketio.emit('shot_request_update', {
+            'action': action,  # 'create', 'update', 'delete'
+            'shotRequest': shot_request_data,
+            'timestamp': datetime.datetime.now().isoformat()
+        })
+        print(f"📡 Broadcasted shot request {action}: {shot_request_data.get('id', 'unknown')}")
+    except Exception as e:
+        print(f"❌ Error broadcasting shot request update: {e}")
+
+def broadcast_notification(notification_data):
+    """Broadcast general notifications to all connected clients"""
+    try:
+        socketio.emit('notification', {
+            'notification': notification_data,
+            'timestamp': datetime.datetime.now().isoformat()
+        })
+        print(f"📡 Broadcasted notification: {notification_data.get('title', 'unknown')}")
+    except Exception as e:
+        print(f"❌ Error broadcasting notification: {e}")
+
+# ======================= End WebSocket Handlers =======================
+
 if __name__ == '__main__':
     # Run database health check on startup
     check_database_health()
@@ -2524,6 +2625,7 @@ if __name__ == '__main__':
     print(f"🚀 Starting Relay server on port {port}")
     print(f"🔧 Debug mode: {debug_mode}")
     print(f"🌐 CORS origins: {cors_origins}")
+    print(f"🔌 WebSocket support enabled")
     
-    app.run(debug=debug_mode, host='0.0.0.0', port=port)
+    socketio.run(app, debug=debug_mode, host='0.0.0.0', port=port)
 
