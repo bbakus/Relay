@@ -124,6 +124,7 @@ class Events(Base, SerializerMixin):
     end_time = Column(String)
     location = Column(String)
     notes = Column(String)
+    details = Column(String)  # Raw text details field (no checklist)
     photographer_notes = Column(String)  # Notes from photographers for editors and staff
     completed_notes = Column(JSON, default=list)  # Array of completed note items
     quick_turn = Column(Boolean)

@@ -68,6 +68,7 @@ export const Events = () => {
         end_time: '',
         location: '',
         notes: '',
+        details: '',
         quick_turn: false,
         deadline: '',
         project_id: '',
@@ -559,6 +560,7 @@ export const Events = () => {
                     end_time: '',
                     location: '',
                     notes: '',
+                    details: '',
                     quick_turn: false,
                     deadline: '',
                     project_id: '',
@@ -604,6 +606,7 @@ export const Events = () => {
                     end_time: '',
                     location: '',
                     notes: '',
+                    details: '',
                     quick_turn: false,
                     deadline: '',
                     project_id: '',
@@ -628,6 +631,7 @@ export const Events = () => {
             end_time: event.end_time || '',
             location: event.location || '',
             notes: event.notes || '',
+            details: event.details || '',
             quick_turn: event.quick_turn || false,
             deadline: event.deadline || '',
             project_id: event.project_id || '',
@@ -770,6 +774,13 @@ export const Events = () => {
                             <div className="events-detail-row">
                                 <strong>Notes:</strong>
                                 <span>{event.notes}</span>
+                            </div>
+                        )}
+
+                        {event.details && (
+                            <div className="events-detail-row">
+                                <strong>Details:</strong>
+                                <span style={{ whiteSpace: 'pre-wrap' }}>{event.details}</span>
                             </div>
                         )}
 
@@ -1117,11 +1128,21 @@ export const Events = () => {
                                 </div>
                                 
                                 <div className="events-form-group">
-                                    <label>Notes:</label>
+                                    <label>Notes (comma-separated for checklist):</label>
                                     <textarea
                                         value={eventForm.notes}
                                         onChange={(e) => setEventForm({...eventForm, notes: e.target.value})}
                                         rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="events-form-group">
+                                    <label>Details (raw text):</label>
+                                    <textarea
+                                        value={eventForm.details}
+                                        onChange={(e) => setEventForm({...eventForm, details: e.target.value})}
+                                        rows="4"
+                                        placeholder="Additional event details..."
                                     />
                                 </div>
                                 
@@ -1282,11 +1303,21 @@ export const Events = () => {
                                 </div>
                                 
                                 <div className="events-form-group">
-                                    <label>Notes:</label>
+                                    <label>Notes (comma-separated for checklist):</label>
                                     <textarea
                                         value={eventForm.notes}
                                         onChange={(e) => setEventForm({...eventForm, notes: e.target.value})}
                                         rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="events-form-group">
+                                    <label>Details (raw text):</label>
+                                    <textarea
+                                        value={eventForm.details}
+                                        onChange={(e) => setEventForm({...eventForm, details: e.target.value})}
+                                        rows="4"
+                                        placeholder="Additional event details..."
                                     />
                                 </div>
                                 
