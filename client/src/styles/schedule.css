@@ -1228,30 +1228,24 @@
     padding-top: 0;
 }
 
-/* Add column button wrapper - makes it act like a column */
-.add-column-header-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Add column button in header */
-.btn-add-column-header {
-    padding: 8px 16px;
+/* Add column button in top header */
+.btn-add-column-top {
+    padding: 10px 20px;
     background: rgba(255, 122, 24, 0.15);
     border: 2px solid rgba(255, 122, 24, 0.4);
-    border-radius: 6px;
+    border-radius: 8px;
     color: #ff7a18;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    margin-left: 20px;
 }
 
-.btn-add-column-header:hover {
+.btn-add-column-top:hover {
     background: rgba(255, 122, 24, 0.25);
     border-color: rgba(255, 122, 24, 0.6);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(255, 122, 24, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
 }

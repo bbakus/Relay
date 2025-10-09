@@ -1356,6 +1356,11 @@ export const Schedule = () => {
                                         ))}
                                 </select>
                             </div>
+                            {isAdmin && selectedProjectId && (
+                                <button onClick={handleAddColumn} className='btn-add-column-top' title='Add new column'>
+                                    + Add Column
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -1423,11 +1428,6 @@ export const Schedule = () => {
                                                     )}
                                                 </div>
                                             ))}
-                                            {isAdmin && selectedProjectId && (
-                                                <div className='column-header add-column-header-wrapper'>
-                                                    <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
-                                                </div>
-                                            )}
                                         </div>
                                         
                                         {/* Event columns container */}
@@ -1612,11 +1612,6 @@ export const Schedule = () => {
                                     )}
                                 </div>
                             ))}
-                            {isAdmin && selectedProjectId && (
-                                <div className='column-header add-column-header-wrapper'>
-                                    <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
-                                </div>
-                            )}
                         </div>
                         
                         <div className='sched-events-container'>
