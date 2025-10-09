@@ -1222,6 +1222,13 @@
     padding-top: 0;
 }
 
+/* Add column button wrapper - makes it act like a column */
+.add-column-header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Add column button in header */
 .btn-add-column-header {
     padding: 8px 16px;
@@ -1234,8 +1241,6 @@
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
-    height: fit-content;
-    align-self: center;
 }
 
 .btn-add-column-header:hover {

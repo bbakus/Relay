@@ -166,7 +166,26 @@ export const Schedule = () => {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}`)
             if (response.ok) {
                 const columns = await response.json()
-                setScheduleColumns(columns)
+                // Ensure minimum of 5 columns
+                if (columns.length >= 5) {
+                    setScheduleColumns(columns)
+                } else {
+                    // If fewer than 5, create default columns (this shouldn't happen with migration)
+                    const defaultColumns = []
+                    for (let i = 0; i < 5; i++) {
+                        if (columns[i]) {
+                            defaultColumns.push(columns[i])
+                        } else {
+                            defaultColumns.push({
+                                id: `temp-${i}`,
+                                name: `Column ${i + 1}`,
+                                order_index: i,
+                                project_id: selectedProjectId
+                            })
+                        }
+                    }
+                    setScheduleColumns(defaultColumns)
+                }
             } else {
                 // Fallback to default columns if API fails
                 setScheduleColumns([
@@ -304,6 +323,12 @@ export const Schedule = () => {
     }
 
     const handleDeleteColumn = async (columnId) => {
+        // Prevent deletion if only 5 columns remain
+        if (scheduleColumns.length <= 5) {
+            alert('Cannot delete column. A minimum of 5 columns is required.')
+            return
+        }
+        
         if (!window.confirm('Are you sure you want to delete this column? Events in this column will be unassigned.')) {
             return
         }
@@ -1367,7 +1392,7 @@ export const Schedule = () => {
                                     <div className='events-area'>
                                         {/* Events header to match time header */}
                                         <div className='events-header'>
-                                            {scheduleColumns.map(column => (
+                                            {scheduleColumns.map((column, index) => (
                                                 <div key={column.id} className='column-header'>
                                                     {isAdmin ? (
                                                         editingColumnId === column.id ? (
@@ -1387,7 +1412,10 @@ export const Schedule = () => {
                                                         ) : (
                                                             <div className='column-title-row'>
                                                                 <span onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</span>
-                                                                <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column' title='Delete column'>🗑</button>
+                                                                {/* Only show delete button for columns 6+ (index 5+) */}
+                                                                {index >= 5 && (
+                                                                    <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column' title='Delete column'>🗑</button>
+                                                                )}
                                                             </div>
                                                         )
                                                     ) : (
@@ -1396,7 +1424,9 @@ export const Schedule = () => {
                                                 </div>
                                             ))}
                                             {isAdmin && selectedProjectId && (
-                                                <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
+                                                <div className='column-header add-column-header-wrapper'>
+                                                    <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
+                                                </div>
                                             )}
                                         </div>
                                         
@@ -1551,7 +1581,7 @@ export const Schedule = () => {
                     {/* Shot Requests area */}
                     <div className='events-area'>
                         <div className='events-header'>
-                            {scheduleColumns.map(column => (
+                            {scheduleColumns.map((column, index) => (
                                 <div key={column.id} className='column-header'>
                                     {isAdmin ? (
                                         editingColumnId === column.id ? (
@@ -1571,7 +1601,10 @@ export const Schedule = () => {
                                         ) : (
                                             <div className='column-title-row'>
                                                 <span onClick={() => handleStartEditColumn(column)} style={{cursor: 'pointer'}}>{column.name}</span>
-                                                <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column' title='Delete column'>🗑</button>
+                                                {/* Only show delete button for columns 6+ (index 5+) */}
+                                                {index >= 5 && (
+                                                    <button onClick={() => handleDeleteColumn(column.id)} className='btn-delete-column' title='Delete column'>🗑</button>
+                                                )}
                                             </div>
                                         )
                                     ) : (
@@ -1580,7 +1613,9 @@ export const Schedule = () => {
                                 </div>
                             ))}
                             {isAdmin && selectedProjectId && (
-                                <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
+                                <div className='column-header add-column-header-wrapper'>
+                                    <button onClick={handleAddColumn} className='btn-add-column-header' title='Add new column'>+ Add Column</button>
+                                </div>
                             )}
                         </div>
                         
