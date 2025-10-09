@@ -23,6 +23,9 @@ export const Events = () => {
     const [lastCreatedEventId, setLastCreatedEventId] = useState(null)
     const [expandedEventIds, setExpandedEventIds] = useState(new Set())
     
+    // Search state
+    const [searchQuery, setSearchQuery] = useState('')
+    
     // Filter states for All Events section (use global selectedDate for date filtering)
     const [filterQuickTurn, setFilterQuickTurn] = useState('all')
     const [filterProcessPoint, setFilterProcessPoint] = useState('all')
@@ -366,9 +369,32 @@ export const Events = () => {
         return dates.sort()
     }, [projects, selectedProjectId])
     
+    // Helper function to filter events by search query
+    const filterBySearch = (events) => {
+        if (!searchQuery.trim()) return events
+        
+        const query = searchQuery.toLowerCase().trim()
+        return events.filter(event => {
+            const name = (event.name || '').toLowerCase()
+            const location = (event.location || '').toLowerCase()
+            const notes = (event.notes || '').toLowerCase()
+            const photographerNotes = (event.photographer_notes || '').toLowerCase()
+            const completedNotes = (event.completed_notes || '').toLowerCase()
+            
+            return name.includes(query) || 
+                   location.includes(query) || 
+                   notes.includes(query) ||
+                   photographerNotes.includes(query) ||
+                   completedNotes.includes(query)
+        })
+    }
+    
     // Filtered events for All Events section (show ALL events in project, not filtered by global date)
     const filteredProjectEvents = useMemo(() => {
         let filtered = projectEvents
+        
+        // Filter by search query
+        filtered = filterBySearch(filtered)
         
         // Filter by date (if a specific date is selected)
         if (filterDate !== 'all') {
@@ -401,7 +427,7 @@ export const Events = () => {
         })
         
         return filtered
-    }, [projectEvents, filterQuickTurn, filterProcessPoint, filterDate])
+    }, [projectEvents, filterQuickTurn, filterProcessPoint, filterDate, searchQuery])
     
     // Event filtering by status and date (use global selectedDate, fallback to today)
     const todaysEvents = useMemo(() => {
@@ -412,6 +438,9 @@ export const Events = () => {
     // Filtered today's events
     const filteredTodaysEvents = useMemo(() => {
         let filtered = todaysEvents
+        
+        // Filter by search query
+        filtered = filterBySearch(filtered)
         
         // Filter by quick turn
         if (todayFilterQuickTurn !== 'all') {
@@ -433,29 +462,39 @@ export const Events = () => {
         })
         
         return filtered
-    }, [todaysEvents, todayFilterQuickTurn, todayFilterProcessPoint])
+    }, [todaysEvents, todayFilterQuickTurn, todayFilterProcessPoint, searchQuery])
     
     const upcomingEvents = useMemo(() => {
         const targetDate = selectedDate || new Date().toISOString().split('T')[0]
-        return projectEvents.filter(event => {
+        let filtered = projectEvents.filter(event => {
             // Filter by selected date first
             if (event.date !== targetDate) return false
             
             const status = getEventStatus(event)
             return status === 'upcoming' || status === 'starting-soon'
         })
-    }, [projectEvents, selectedDate, currentTimeTick])
+        
+        // Apply search filter
+        filtered = filterBySearch(filtered)
+        
+        return filtered
+    }, [projectEvents, selectedDate, currentTimeTick, searchQuery])
     
     const liveEvents = useMemo(() => {
         const targetDate = selectedDate || new Date().toISOString().split('T')[0]
-        return projectEvents.filter(event => {
+        let filtered = projectEvents.filter(event => {
             // Filter by selected date first
             if (event.date !== targetDate) return false
             
             const status = getEventStatus(event)
             return status === 'ongoing'
         })
-    }, [projectEvents, selectedDate, currentTimeTick])
+        
+        // Apply search filter
+        filtered = filterBySearch(filtered)
+        
+        return filtered
+    }, [projectEvents, selectedDate, currentTimeTick, searchQuery])
     
     // Event management functions (removed modal functions, now using collapsible cards)
     
@@ -826,13 +865,34 @@ export const Events = () => {
                 <div className="events-main-container">
                     <div className='event-page-header'>
                         <h1>EVENTS</h1>
-                        <button onClick={() => setShowAddEventModal(true)}>Add Event</button>
+                        <div className='event-header-controls'>
+                            <input 
+                                type="text"
+                                placeholder="Search events by name, location, or notes..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="events-search-input"
+                            />
+                            {searchQuery && (
+                                <button 
+                                    onClick={() => setSearchQuery('')}
+                                    className="events-search-clear"
+                                    title="Clear search"
+                                >
+                                    ×
+                                </button>
+                            )}
+                            <button onClick={() => setShowAddEventModal(true)}>Add Event</button>
+                        </div>
                     </div>
                 <div className="events-main-grid">
                     {/* Today's Events - or Selected Date Events */}
                     <div className="events-panel-section">
                         <div className="events-section-header">
-                            <h2>{selectedDate ? `Events for ${formatDateForHeader(selectedDate)}` : "Today's Events"}</h2>
+                            <h2>
+                                {selectedDate ? `Events for ${formatDateForHeader(selectedDate)}` : "Today's Events"}
+                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                            </h2>
                             <span className="events-count-badge">{filteredTodaysEvents.length}</span>
                         </div>
                         
@@ -882,7 +942,10 @@ export const Events = () => {
                     {/* Live Events */}
                     <div className="events-panel-section">
                         <div className="events-section-header">
-                            <h2>Live Events</h2>
+                            <h2>
+                                Live Events
+                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                            </h2>
                             <span className="events-count-badge">{liveEvents.length}</span>
                         </div>
                         <div className="events-panel-list">
@@ -899,7 +962,10 @@ export const Events = () => {
                     {/* Upcoming Events */}
                     <div className="events-panel-section">
                         <div className="events-section-header">
-                            <h2>Upcoming Events</h2>
+                            <h2>
+                                Upcoming Events
+                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                            </h2>
                             <span className="events-count-badge">{upcomingEvents.length}</span>
                         </div>
                         <div className="events-panel-list">
@@ -916,7 +982,10 @@ export const Events = () => {
                     {/* All Events */}
                     <div className="events-panel-section">
                         <div className="events-section-header">
-                            <h2>All Events in Project</h2>
+                            <h2>
+                                All Events in Project
+                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                            </h2>
                             <span className="events-count-badge">{filteredProjectEvents.length}</span>
                         </div>
                         

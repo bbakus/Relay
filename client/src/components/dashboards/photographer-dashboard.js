@@ -1063,7 +1063,7 @@ export const PhotographerDashboardView = () => {
                                         </div>
                                     ) : (
                                         <div className="notes-checkboxes-display">
-                                            {selectedEvent.notes && selectedEvent.notes.split(/[,-]/).map((note, index) => {
+                                            {selectedEvent.notes && selectedEvent.notes.split(',').map((note, index) => {
                                                 const noteValue = note.trim();
                                                 const isCompleted = completedNotes.includes(noteValue);
                                                 return (
@@ -1223,7 +1223,7 @@ export const PhotographerDashboardView = () => {
                                 <div className="photographer-detail-row">
                                     <label>Notes:</label>
                                     <div className="notes-checkboxes-display">
-                                        {selectedShotRequest.notes.split(/[,-]/).map((note, index) => {
+                                        {selectedShotRequest.notes.split(',').map((note, index) => {
                                             const noteValue = note.trim();
                                             if (!noteValue) return null;
                                             const isCompleted = (completedShotRequestNotes || []).includes(noteValue);

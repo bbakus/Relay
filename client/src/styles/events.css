@@ -58,6 +58,81 @@
     box-shadow: 0 4px 12px rgba(255, 122, 24, 0.4);
 }
 
+/* Event Header Controls */
+.event-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.events-search-input {
+    width: 350px;
+    padding: 12px 40px 12px 16px;
+    border: 2px solid rgba(255, 122, 24, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.events-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.events-search-input:focus {
+    outline: none;
+    border-color: #ff7a18;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.1);
+}
+
+.events-search-clear {
+    position: absolute;
+    right: 150px;
+    background: rgba(255, 122, 24, 0.2);
+    color: #ffffff;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.events-search-clear:hover {
+    background: rgba(255, 122, 24, 0.4);
+    transform: scale(1.1);
+}
+
+.events-search-indicator {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 4px 12px;
+    background: rgba(255, 122, 24, 0.2);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #ff9f40;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
 .current-project-info {
     text-align: center;
     margin: 0;
@@ -599,6 +674,29 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .event-page-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .event-header-controls {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+    
+    .events-search-input {
+        width: 100%;
+    }
+    
+    .events-search-clear {
+        right: 10px;
+    }
+    
+    .event-page-header button {
+        width: 100%;
+    }
+    
     .events-header {
         flex-direction: column;
         text-align: center;
@@ -673,6 +771,17 @@
     
     .events-form {
         padding: 20px;
+    }
+    
+    .events-search-indicator {
+        display: block;
+        margin-left: 0;
+        margin-top: 8px;
+        font-size: 0.7rem;
+    }
+    
+    .events-search-input {
+        font-size: 16px; /* Prevent zoom on iOS */
     }
 }
 
