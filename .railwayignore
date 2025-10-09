@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+relay.db
+
+# Uploads and media files
+server/uploads/
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.cr3
+*.cr2
+*.nef
+*.tiff
+
+# Node
+node_modules/
+client/node_modules/
+client/build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Misc
+*.log
+.cache/
+

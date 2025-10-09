@@ -90,7 +90,8 @@ CORS(app, origins=cors_origins)  # Enable CORS for specified origins
 api = Api(app)
 
 # Initialize SocketIO with CORS support
-socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode='eventlet', logger=True, engineio_logger=True)
+# Use 'threading' mode for better compatibility across environments
+socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode='threading', logger=True, engineio_logger=True)
 
 # Upload configuration from environment variables
 UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')

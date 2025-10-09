@@ -3,7 +3,6 @@ Flask-CORS==4.0.0
 Flask-RESTful==0.3.10
 Flask-SocketIO==5.3.4
 python-socketio==5.9.0
-eventlet==0.33.3
 SQLAlchemy==2.0.21
 psycopg2-binary==2.9.7
 python-dotenv==1.0.0
