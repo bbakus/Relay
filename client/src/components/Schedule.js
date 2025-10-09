@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
+import { useWebSocket } from '../context/WebSocketContext'
 import { Nav } from './Nav'
 // import { NotificationCenter } from './NotificationCenter' // Temporarily disabled
 import { formatDateForHeader } from '../utils/dateUtils'
@@ -10,6 +11,7 @@ import '../styles/schedule-mobile.css'
 
 export const Schedule = () => {
     const { user, selectedDate, selectedProjectId, selectedCompanyId } = useAuth()
+    const { subscribe, isConnected } = useWebSocket()
     // Use global selectedDate from AuthContext, fallback to today if not set
     const activeDate = selectedDate || new Date().toISOString().split('T')[0]
     
@@ -211,7 +213,27 @@ export const Schedule = () => {
         fetchShotRequests()
     }, [activeDate, selectedProjectId, isAdmin, user?.company_id, selectedCompanyId])
 
+    // WebSocket: Listen for real-time event updates
+    useEffect(() => {
+        if (!isConnected) return
 
+        const unsubscribeEvent = subscribe('event_update', (data) => {
+            console.log('🔴 LIVE UPDATE: Event changed', data)
+            // Refresh events to show the update
+            fetchEvents()
+        })
+
+        const unsubscribeShotRequest = subscribe('shot_request_update', (data) => {
+            console.log('🔴 LIVE UPDATE: Shot request changed', data)
+            // Refresh shot requests to show the update
+            fetchShotRequests()
+        })
+
+        return () => {
+            unsubscribeEvent()
+            unsubscribeShotRequest()
+        }
+    }, [isConnected, subscribe, activeDate, selectedProjectId])
 
 
 

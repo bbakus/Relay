@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
+import { useWebSocket } from '../context/WebSocketContext'
 import { Nav } from './Nav'
 import '../styles/shot_request.css'
 import '../styles/quick-turn-dot.css'
 
 export const ShotRequest = () => {
     const { user, selectedOrganizationId, selectedProjectId, selectedDate, selectedCompanyId } = useAuth()
+    const { subscribe, isConnected } = useWebSocket()
     const [shotRequests, setShotRequests] = useState([])
     const [events, setEvents] = useState([])
     const [projects, setProjects] = useState([])
@@ -92,6 +94,20 @@ export const ShotRequest = () => {
         fetchProjects()
         fetchPersonnel()
     }, [])
+
+    // WebSocket: Listen for real-time shot request updates
+    useEffect(() => {
+        if (!isConnected) return
+
+        const unsubscribeShotRequest = subscribe('shot_request_update', (data) => {
+            console.log('🔴 LIVE UPDATE: Shot request changed', data)
+            fetchShotRequests()
+        })
+
+        return () => {
+            unsubscribeShotRequest()
+        }
+    }, [isConnected, subscribe])
 
     const fetchShotRequests = async () => {
         try {

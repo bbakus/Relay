@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { API_CONFIG } from '../utils/apiConfig'
 import { useAuth } from '../context/AuthContext'
+import { useWebSocket } from '../context/WebSocketContext'
 import { Nav } from './Nav'
 import { formatDateForHeader } from '../utils/dateUtils'
 import '../styles/events.css'
@@ -8,6 +9,7 @@ import '../styles/quick-turn-dot.css'
 
 export const Events = () => {
     const { user, selectedCompanyId, selectedOrganizationId, selectedProjectId, selectedDate } = useAuth()
+    const { subscribe, isConnected } = useWebSocket()
     
     // State management
     const [events, setEvents] = useState([])
@@ -99,6 +101,20 @@ export const Events = () => {
             setLoading(false)
         })
     }, [])
+    
+    // WebSocket: Listen for real-time event updates
+    useEffect(() => {
+        if (!isConnected) return
+
+        const unsubscribeEvent = subscribe('event_update', (data) => {
+            console.log('🔴 LIVE UPDATE: Event changed', data)
+            fetchEvents()
+        })
+
+        return () => {
+            unsubscribeEvent()
+        }
+    }, [isConnected, subscribe])
     
     const fetchEvents = async () => {
         try {
