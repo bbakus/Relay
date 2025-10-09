@@ -229,8 +229,18 @@ export const Settings = () => {
     useEffect(() => {
         if (user?.is_super_admin) {
             fetchCompanies()
+        } else if (user?.company_id) {
+            // For regular admins, fetch their company info so fetchCompanyData can work
+            console.log('🔍 Regular admin - fetching company info for company_id:', user.company_id)
+            fetch(`${API_CONFIG.baseUrl}/api/companies/${user.company_id}`)
+                .then(response => response.json())
+                .then(companyData => {
+                    console.log('🔍 Regular admin - company data loaded:', companyData)
+                    setCompanies([companyData])
+                })
+                .catch(error => console.error('❌ Error fetching user company:', error))
         }
-    }, [user?.is_super_admin])
+    }, [user?.is_super_admin, user?.company_id])
     
     // Auto-select Relay company for Super Admin if no company is selected
     useEffect(() => {
@@ -289,11 +299,11 @@ export const Settings = () => {
     
     // Effect for regular admin - always load their company's data
     useEffect(() => {
-        if (!user?.is_super_admin && user?.company_id) {
+        if (!user?.is_super_admin && user?.company_id && companies.length > 0) {
             console.log('🔍 Regular admin loading company data for:', user.company_id)
             fetchCompanyData(user.company_id.toString())
         }
-    }, [user?.company_id, user?.is_super_admin])
+    }, [user?.company_id, user?.is_super_admin, companies.length])
     
     // Reset forms when company changes (for super admin)
     useEffect(() => {
@@ -2577,6 +2587,12 @@ export const Settings = () => {
                                 )}
 
                                 <div className='settings-items-list'>
+                                    {console.log('🔍 Settings.js - Rendering organizations list, count:', organizations?.length || 0)}
+                                    {(!organizations || organizations.length === 0) && (
+                                        <div className='no-items-message'>
+                                            No organizations yet. Click "Add Organization" above to create one.
+                                        </div>
+                                    )}
                                     {organizations && organizations.map(org => (
                                         <div 
                                             key={org.id} 
