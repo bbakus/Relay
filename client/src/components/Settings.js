@@ -3377,26 +3377,24 @@ export const Settings = () => {
                             
                             <div className='form-group'>
                                 <label>Select User to Attach:</label>
+                                <p className='helper-text'>Note: Users can be attached to multiple personnel records across different companies.</p>
                                 <select
                                     value={selectedUserForAttach}
                                     onChange={(e) => setSelectedUserForAttach(e.target.value)}
                                     className='form-input'
                                 >
                                     <option value=''>Select a user...</option>
-                                    {users
-                                        .filter(user => !user.personnel) // Only show users not already attached to personnel
-                                        .map(user => (
-                                            <option key={user.id} value={user.id}>
-                                                {user.name} ({user.email}) - {user.access}
-                                            </option>
-                                        ))
-                                    }
+                                    {users.map(user => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.name} ({user.email}) - {user.access}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             
-                            {users.filter(user => !user.personnel).length === 0 && (
+                            {users.length === 0 && (
                                 <div className='no-users-message'>
-                                    <p>No available users to attach. All users are already attached to personnel.</p>
+                                    <p>No users found. Please create a user account first.</p>
                                 </div>
                             )}
                         </div>

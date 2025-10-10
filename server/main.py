@@ -326,18 +326,30 @@ def authenticate_user(email, password):
 # User endpoints
 class Users(Resource):
     def get(self):
-        """Get users filtered by company (for company admins) or all users (for super admin)"""
+        """Get users filtered by company (for company admins) or all users (for super admin)
+        
+        Query params:
+        - company_id: filter by company
+        - email_search: search users by email (case-insensitive, partial match)
+        """
         session = Session()
         try:
-            # Get company_id from query parameter (for super admin company filtering)
+            # Get query parameters
             company_id = request.args.get('company_id')
+            email_search = request.args.get('email_search')
             
+            # Start with base query
+            query = session.query(User)
+            
+            # Filter by company if provided
             if company_id:
-                # Filter by specific company (used by super admin when selecting a company)
-                users = session.query(User).filter_by(company_id=int(company_id)).all()
-            else:
-                # Return all users (only super admin should access this without company_id)
-                users = session.query(User).all()
+                query = query.filter_by(company_id=int(company_id))
+            
+            # Filter by email search if provided
+            if email_search:
+                query = query.filter(User.email.ilike(f'%{email_search}%'))
+            
+            users = query.all()
             
             payload = [
                 {
@@ -348,6 +360,7 @@ class Users(Resource):
                     'avatar': u.avatar,
                     'organization_id': getattr(u, 'organization_id', None),
                     'company_id': getattr(u, 'company_id', None),
+                    'personnel_count': len(u.personnel_records) if hasattr(u, 'personnel_records') else 0
                 }
                 for u in users
             ]
@@ -1461,13 +1474,8 @@ class PersonnelDetail(Resource):
                     if not user:
                         return {'error': 'User not found'}, 404
                     
-                    # Check if personnel and user belong to same company
-                    if personnel.company_id != user.company_id:
-                        return {'error': 'Personnel and user must belong to the same company'}, 400
-                    
-                    # Check if personnel is already attached to another user
-                    if personnel.user_id and personnel.user_id != user_id:
-                        return {'error': 'Personnel is already attached to another user'}, 400
+                    # Note: We now allow users to have multiple personnel records across different companies
+                    # This enables contractors to work for multiple companies
                     
                     personnel.user_id = user_id
             

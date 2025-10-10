@@ -90,8 +90,8 @@ class User(Base, SerializerMixin):
     organization_id = Column(Integer, ForeignKey('organizations.id', ondelete='SET NULL'))
     organization = relationship('Organization', back_populates='users')
     
-    # 1-1 link to Personnel (optional)
-    personnel = relationship('Personnel', back_populates='user', uselist=False)
+    # 1-to-many link to Personnel (optional, allows user to have multiple personnel records across companies)
+    personnel_records = relationship('Personnel', back_populates='user')
     
     @property
     def is_super_admin(self):
@@ -190,9 +190,9 @@ class Personnel(Base, SerializerMixin):
     company_id = Column(Integer, ForeignKey('companies.id', ondelete='CASCADE'))
     company = relationship('Company', back_populates='personnels')
     
-    # Optional 1-1 link back to User
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'), unique=True)
-    user = relationship('User', back_populates='personnel')
+    # Optional many-to-1 link back to User (allows multiple personnel records per user across companies)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
+    user = relationship('User', back_populates='personnel_records')
 
     # Relationships
     events = relationship('Events', secondary=personnel_event_association_table, back_populates='personnels')
