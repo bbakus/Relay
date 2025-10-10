@@ -45,6 +45,29 @@ export const Events = () => {
         const intervalId = setInterval(() => setCurrentTimeTick(Date.now()), 30000)
         return () => clearInterval(intervalId)
     }, [])
+    
+    // Get unique dates from the selected project for date dropdown
+    const projectDates = useMemo(() => {
+        if (!selectedProjectId) return []
+        
+        // Get all events for the selected project
+        const projectEvents = events.filter(event => event.project_id === selectedProjectId)
+        
+        // Extract unique dates and sort them
+        const uniqueDates = [...new Set(projectEvents.map(event => event.date))].filter(Boolean)
+        return uniqueDates.sort()
+    }, [events, selectedProjectId])
+    
+    // Auto-populate date when Add Event modal opens
+    useEffect(() => {
+        if (showAddEventModal && selectedDate) {
+            setEventForm(prev => ({
+                ...prev,
+                date: selectedDate,
+                project_id: selectedProjectId || ''
+            }))
+        }
+    }, [showAddEventModal, selectedDate, selectedProjectId])
 
     // Toggle expanded state for event cards
     const toggleEventExpansion = (panelId, eventId) => {
@@ -1104,12 +1127,23 @@ export const Events = () => {
                                 <div className="events-form-row">
                                     <div className="events-form-group">
                                         <label>Date:</label>
-                                        <input
-                                            type="date"
+                                        <select
                                             value={eventForm.date}
                                             onChange={(e) => setEventForm({...eventForm, date: e.target.value})}
                                             required
-                                        />
+                                        >
+                                            <option value="">Select a date</option>
+                                            {projectDates.map(date => (
+                                                <option key={date} value={date}>
+                                                    {new Date(date + 'T00:00:00').toLocaleDateString('en-US', { 
+                                                        weekday: 'short', 
+                                                        month: 'short', 
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    })}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                     
                                     <div className="events-form-group">
