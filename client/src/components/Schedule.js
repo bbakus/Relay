@@ -244,10 +244,6 @@ export const Schedule = () => {
             if (response.ok) {
                 const allShotRequests = await response.json()
                 
-                console.log('📅 Schedule: Fetched', allShotRequests.length, 'shot requests')
-                console.log('📅 Schedule: activeDate:', activeDate)
-                console.log('📅 Schedule: selectedProjectId:', selectedProjectId)
-                
                 // Filter shot requests for selected date and project
                 const filteredShotRequests = allShotRequests.filter(sr => {
                     // Check if shot request has events on the selected date
@@ -276,12 +272,9 @@ export const Schedule = () => {
                         projectMatch = hasMatchingEvent || hasMatchingProject
                     }
                     
-                    console.log(`📅 SR ${sr.id} (${sr.request}): date="${sr.date}", events=${sr.events?.length}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, projectMatch=${projectMatch}, PASS=${dateMatch && projectMatch}`)
-                    
                     return dateMatch && projectMatch
                 })
                 
-                console.log('📅 Schedule: Filtered to', filteredShotRequests.length, 'shot requests')
                 setShotRequests(filteredShotRequests)
             }
         } catch (error) {
@@ -375,35 +368,6 @@ export const Schedule = () => {
             }
         } catch (error) {
             console.error('Error deleting column:', error)
-        }
-    }
-
-    const handleFixEventColumns = async () => {
-        if (!selectedProjectId) {
-            alert('Please select a project first')
-            return
-        }
-
-        try {
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/fix-columns`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ project_id: selectedProjectId })
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                alert(`✓ Fixed ${data.fixed_count} events! They should now appear in columns.`)
-                // Refresh events to show updated assignments
-                fetchEvents()
-                fetchShotRequests()
-            } else {
-                const data = await response.json()
-                alert(data.error || 'Failed to fix event columns')
-            }
-        } catch (error) {
-            console.error('Error fixing event columns:', error)
-            alert('Failed to fix event columns')
         }
     }
 
@@ -1417,14 +1381,9 @@ export const Schedule = () => {
                                 </select>
                             </div>
                             {isAdmin && selectedProjectId && (
-                                <>
-                                    <button onClick={handleAddColumn} className='btn-add-column-top' title='Add new column'>
-                                        + Add Column
-                                    </button>
-                                    <button onClick={handleFixEventColumns} className='btn-fix-events' title='Assign columns to events with missing columns'>
-                                        Fix Events
-                                    </button>
-                                </>
+                                <button onClick={handleAddColumn} className='btn-add-column-top' title='Add new column'>
+                                    + Add Column
+                                </button>
                             )}
                         </div>
                     </div>
