@@ -48,23 +48,10 @@ export const Events = () => {
     
     // Get all dates in the selected project's date range for date dropdown
     const projectDates = useMemo(() => {
-        // Use eventForm.project_id if available, otherwise fall back to selectedProjectId
-        const projectId = eventForm.project_id || selectedProjectId
-        if (!projectId) {
-            console.log('No project selected for date dropdown')
-            return []
-        }
+        if (!selectedProjectId) return []
         
-        const project = projects.find(p => p.id === parseInt(projectId))
-        if (!project) {
-            console.log('Project not found:', projectId, 'Available projects:', projects)
-            return []
-        }
-        
-        if (!project.start_date || !project.end_date) {
-            console.log('Project missing date range:', project)
-            return []
-        }
+        const project = projects.find(p => p.id === parseInt(selectedProjectId))
+        if (!project || !project.start_date || !project.end_date) return []
         
         // Generate all dates between start_date and end_date
         const dates = []
@@ -78,9 +65,8 @@ export const Events = () => {
             currentDate.setDate(currentDate.getDate() + 1)
         }
         
-        console.log('Generated project dates:', dates.length, 'dates from', project.start_date, 'to', project.end_date)
         return dates
-    }, [projects, selectedProjectId, eventForm.project_id])
+    }, [projects, selectedProjectId])
     
     // Auto-populate date and project when Add Event modal opens
     useEffect(() => {
