@@ -996,11 +996,10 @@ export const Settings = () => {
                     fetchUsers()
                     fetchPersonnel() // Refresh personnel since user deletion may delete personnel
                 }
-                
             } else {
                 const data = await response.json()
                 alert(data.error || `Failed to delete ${type}`)
-                }
+            }
         } catch (error) {
             console.error(`Error deleting ${type}:`, error)
             alert(`Failed to delete ${type}`)
@@ -2060,7 +2059,7 @@ export const Settings = () => {
                                     </select>
                                 </div>
 
-                                {showPersonnelForm && (
+                                {showPersonnelForm && !editingItem && (
                                     <form className='settings-item-form' onSubmit={handlePersonnelSubmit}>
                                         <div className='personnel-form-grid'>
                                             <div className='form-row'>
@@ -2191,6 +2190,106 @@ export const Settings = () => {
                                                     <p><strong>Availability:</strong> {person.availability}</p>
                                                 )}
                                             </div>
+                                            
+                                            {/* Inline edit form */}
+                                            {editingItem && editingItem.id === person.id && showPersonnelForm && (
+                                                <form className='settings-item-form' onSubmit={handlePersonnelSubmit} onClick={(e) => e.stopPropagation()}>
+                                                    <div className='personnel-form-grid'>
+                                                        <div className='form-row'>
+                                                            <div className='form-field'>
+                                                                <label>Full Name *</label>
+                                                                <input
+                                                                    type='text'
+                                                                    placeholder='Enter full name'
+                                                                    value={personnelForm.name}
+                                                                    onChange={(e) => setPersonnelForm({...personnelForm, name: e.target.value})}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                            <div className='form-field'>
+                                                                <label>Role *</label>
+                                                                <select
+                                                                    value={personnelForm.role}
+                                                                    onChange={(e) => setPersonnelForm({...personnelForm, role: e.target.value})}
+                                                                    required
+                                                                >
+                                                                    <option value=''>Select a role</option>
+                                                                    <option value='Client'>Client</option>
+                                                                    <option value='Coordinator'>Coordinator</option>
+                                                                    <option value='Photographer'>Photographer</option>
+                                                                    <option value='Lead Photographer'>Lead Photographer</option>
+                                                                    <option value='Videographer'>Videographer</option>
+                                                                    <option value='Editor'>Editor</option>
+                                                                    <option value='Admin'>Admin</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className='form-row'>
+                                                            <div className='form-field'>
+                                                                <label>Email</label>
+                                                                <input
+                                                                    type='email'
+                                                                    placeholder='Enter email address'
+                                                                    value={personnelForm.email}
+                                                                    onChange={(e) => setPersonnelForm({...personnelForm, email: e.target.value})}
+                                                                />
+                                                            </div>
+                                                            <div className='form-field'>
+                                                                <label>Phone</label>
+                                                                <input
+                                                                    type='tel'
+                                                                    placeholder='Enter phone number'
+                                                                    value={personnelForm.phone}
+                                                                    onChange={(e) => setPersonnelForm({...personnelForm, phone: e.target.value})}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className='form-row'>
+                                                            <div className='form-field full-width'>
+                                                                <label>Project Assignment (Optional)</label>
+                                                                <select
+                                                                    value={personnelForm.project_id}
+                                                                    onChange={(e) => setPersonnelForm({...personnelForm, project_id: e.target.value})}
+                                                                >
+                                                                    <option value=''>No Project Assignment</option>
+                                                                    {projects.map(project => {
+                                                                        const org = organizations.find(o => o.id === project.organization_id)
+                                                                        return (
+                                                                            <option key={project.id} value={project.id}>
+                                                                                {project.name} - {org?.name || 'Unknown Org'}
+                                                                            </option>
+                                                                        )
+                                                                    })}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className='form-row'>
+                                                            <div className='form-field full-width'>
+                                                                <label>Availability Notes</label>
+                                                                <textarea
+                                                                    placeholder='Enter availability information, schedule preferences, or any other relevant notes'
+                                                                    value={personnelForm.availability}
+                                                                    onChange={(e) => setPersonnelForm({...personnelForm, availability: e.target.value})}
+                                                                    rows='3'
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className='form-actions'>
+                                                            <button type='submit' className='save-btn'>
+                                                                Update Personnel
+                                                            </button>
+                                                            <button type='button' className='cancel-btn' onClick={resetPersonnelForm}>
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            )}
+                                            
                                             <div className={`settings-item-actions ${expandedPersonnelCards.has(person.id) ? 'expanded' : ''}`}>
                                                 <button 
                                                     className='edit-btn'
