@@ -2621,6 +2621,140 @@ api.add_resource(AccessRequestDetail, '/api/access-requests/<int:request_id>')
 api.add_resource(ScheduleColumnsResource, '/api/schedule-columns')
 api.add_resource(ScheduleColumnDetail, '/api/schedule-columns/<int:column_id>')
 
+@app.route('/api/events/fix-columns', methods=['POST'])
+def fix_event_columns():
+    """Assign schedule columns to events that have null schedule_column_id"""
+    session = Session()
+    try:
+        data = request.get_json() or {}
+        project_id = data.get('project_id')
+        
+        if not project_id:
+            return jsonify({'error': 'project_id is required'}), 400
+        
+        # Get all events with null schedule_column_id for this project
+        null_events = session.query(EventModel).filter_by(
+            project_id=project_id,
+            schedule_column_id=None
+        ).all()
+        
+        if not null_events:
+            return jsonify({'message': 'No events need fixing', 'fixed_count': 0}), 200
+        
+        # Get schedule columns for this project
+        schedule_columns = session.query(ScheduleColumn).filter_by(
+            project_id=project_id
+        ).order_by(ScheduleColumn.order_index).all()
+        
+        if not schedule_columns:
+            return jsonify({'error': 'No schedule columns found for this project'}), 400
+        
+        fixed_count = 0
+        updated_events = []
+        
+        for event in null_events:
+            # Get all events for the same date
+            existing_events = session.query(EventModel).filter_by(
+                date=event.date,
+                project_id=project_id
+            ).filter(EventModel.schedule_column_id.isnot(None)).all()
+            
+            # Check each column for conflicts and count events
+            column_options = []
+            for col in schedule_columns:
+                events_in_column = [e for e in existing_events if e.schedule_column_id == col.id]
+                
+                # Check for time conflicts if start/end times are provided
+                has_conflict = False
+                if event.start_time and event.end_time:
+                    for existing_event in events_in_column:
+                        if existing_event.start_time and existing_event.end_time:
+                            # Convert times to minutes for comparison
+                            def time_to_minutes(time_str):
+                                if not time_str:
+                                    return None
+                                try:
+                                    hours, minutes = map(int, time_str.split(':'))
+                                    return hours * 60 + minutes
+                                except:
+                                    return None
+                            
+                            event_start_min = time_to_minutes(event.start_time)
+                            event_end_min = time_to_minutes(event.end_time)
+                            existing_start_min = time_to_minutes(existing_event.start_time)
+                            existing_end_min = time_to_minutes(existing_event.end_time)
+                            
+                            if all(t is not None for t in [event_start_min, event_end_min, existing_start_min, existing_end_min]):
+                                # Check for overlap
+                                if not (event_end_min <= existing_start_min or event_start_min >= existing_end_min):
+                                    has_conflict = True
+                                    break
+                
+                if not has_conflict:
+                    column_options.append((col.id, len(events_in_column)))
+            
+            # Pick column with least events (or first column if all have conflicts)
+            if column_options:
+                chosen_column_id = min(column_options, key=lambda x: x[1])[0]
+            else:
+                # All columns have conflicts, distribute evenly
+                column_counts = {col.id: 0 for col in schedule_columns}
+                for e in existing_events:
+                    if e.schedule_column_id in column_counts:
+                        column_counts[e.schedule_column_id] += 1
+                chosen_column_id = min(column_counts, key=column_counts.get)
+            
+            # Assign the event to the chosen column
+            event.schedule_column_id = chosen_column_id
+            fixed_count += 1
+            
+            # Prepare response data
+            updated_events.append({
+                'id': event.id,
+                'name': event.name,
+                'date': event.date,
+                'schedule_column_id': event.schedule_column_id
+            })
+        
+        session.commit()
+        
+        # Broadcast updates for all fixed events
+        for event_data in updated_events:
+            # Get full event data for broadcast
+            event = session.query(EventModel).filter_by(id=event_data['id']).first()
+            if event:
+                broadcast_data = {
+                    'id': event.id,
+                    'name': event.name,
+                    'date': event.date,
+                    'start_time': event.start_time,
+                    'end_time': event.end_time,
+                    'location': event.location,
+                    'notes': event.notes,
+                    'details': getattr(event, 'details', None),
+                    'photographer_notes': getattr(event, 'photographer_notes', None),
+                    'completed_notes': getattr(event, 'completed_notes', []),
+                    'quick_turn': event.quick_turn,
+                    'deadline': event.deadline,
+                    'process_point': getattr(event, 'process_point', 'idle'),
+                    'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
+                    'schedule_column_id': event.schedule_column_id,
+                    'project_id': event.project_id,
+                    'assigned_personnel': getattr(event, 'assigned_personnel', [])
+                }
+                broadcast_event_update(broadcast_data, action='update')
+        
+        return jsonify({
+            'message': f'Fixed {fixed_count} events',
+            'fixed_count': fixed_count,
+            'events': updated_events
+        }), 200
+        
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
 
 @app.route('/')
 def home():

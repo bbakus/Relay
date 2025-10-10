@@ -1294,3 +1294,25 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 122, 24, 0.3);
 }
+
+/* Fix events button in top header */
+.btn-fix-events {
+    padding: 10px 20px;
+    background: rgba(74, 144, 226, 0.15);
+    border: 2px solid rgba(74, 144, 226, 0.4);
+    border-radius: 8px;
+    color: #4a90e2;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    margin-left: 10px;
+}
+
+.btn-fix-events:hover {
+    background: rgba(74, 144, 226, 0.25);
+    border-color: rgba(74, 144, 226, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}

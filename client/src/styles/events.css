@@ -1053,6 +1053,23 @@
     box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
 }
 
+.events-delete-btn {
+    background: linear-gradient(45deg, #e74c3c, #ff6b6b);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.events-delete-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+    background: linear-gradient(45deg, #c0392b, #e74c3c);
+}
+
 /* Photographer Selection */
 .photographer-selection {
     display: flex;

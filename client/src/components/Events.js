@@ -695,6 +695,41 @@ export const Events = () => {
         })
         setShowEditEventModal(true)
     }
+
+    const handleDeleteEvent = async (eventId, eventName) => {
+        // Confirm deletion
+        const confirmed = window.confirm(`Are you sure you want to delete the event "${eventName}"? This action cannot be undone.`)
+        if (!confirmed) return
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            
+            if (response.ok) {
+                // Remove event from local state
+                setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId))
+                // Close expanded view if this event was expanded
+                setExpandedEventIds(prev => {
+                    const newSet = new Set(prev)
+                    // Remove all entries for this event (both panels)
+                    newSet.forEach(key => {
+                        if (key.endsWith(`-${eventId}`)) {
+                            newSet.delete(key)
+                        }
+                    })
+                    return newSet
+                })
+            } else {
+                const data = await response.json()
+                alert(data.error || 'Failed to delete event')
+            }
+        } catch (error) {
+            console.error('Error deleting event:', error)
+            alert('Failed to delete event')
+        }
+    }
     
     const handleAddShotRequest = async (e) => {
         e.preventDefault()
@@ -906,6 +941,15 @@ export const Events = () => {
                                 className="events-add-shot-btn"
                             >
                                 Add Shot Request
+                            </button>
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDeleteEvent(event.id, event.name)
+                                }}
+                                className="events-delete-btn"
+                            >
+                                Delete Event
                             </button>
                         </div>
                     </div>

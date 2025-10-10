@@ -221,11 +221,6 @@ export const Schedule = () => {
                     })
                 
                 console.log(`📅 Schedule fetchEvents: Filtered to ${dayEvents.length} events`)
-                console.log(`📅 Schedule fetchEvents: Event details:`, dayEvents.map(e => ({
-                    id: e.id, 
-                    name: e.name, 
-                    schedule_column_id: e.schedule_column_id
-                })))
                 setEvents(dayEvents)
             }
         } catch (error) {
@@ -372,6 +367,35 @@ export const Schedule = () => {
             }
         } catch (error) {
             console.error('Error deleting column:', error)
+        }
+    }
+
+    const handleFixEventColumns = async () => {
+        if (!selectedProjectId) {
+            alert('Please select a project first')
+            return
+        }
+
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/fix-columns`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_id: selectedProjectId })
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                alert(`✓ Fixed ${data.fixed_count} events! They should now appear in columns.`)
+                // Refresh events to show updated assignments
+                fetchEvents()
+                fetchShotRequests()
+            } else {
+                const data = await response.json()
+                alert(data.error || 'Failed to fix event columns')
+            }
+        } catch (error) {
+            console.error('Error fixing event columns:', error)
+            alert('Failed to fix event columns')
         }
     }
 
@@ -1153,20 +1177,14 @@ export const Schedule = () => {
         // Add an array for unassigned events (null column_id)
         eventsByColumn['unassigned'] = []
         
-        console.log('📅 getEventsByColumn: scheduleColumns=', scheduleColumns.map(c => c.id))
-        console.log('📅 getEventsByColumn: eventsWithPositions=', eventsWithPositions.length)
-        
         eventsWithPositions.forEach(event => {
             const columnId = event.schedule_column_id
-            console.log(`📅 Event ${event.id} "${event.name}": schedule_column_id=${columnId}, exists in columns=${columnId && eventsByColumn[columnId] !== undefined}`)
             if (columnId && eventsByColumn[columnId]) {
                 eventsByColumn[columnId].push(event)
             } else {
                 eventsByColumn['unassigned'].push(event)
             }
         })
-        
-        console.log('📅 getEventsByColumn result:', Object.keys(eventsByColumn).map(key => `${key}: ${eventsByColumn[key].length} events`))
         
         return eventsByColumn
     }
@@ -1391,9 +1409,14 @@ export const Schedule = () => {
                                 </select>
                             </div>
                             {isAdmin && selectedProjectId && (
-                                <button onClick={handleAddColumn} className='btn-add-column-top' title='Add new column'>
-                                    + Add Column
-                                </button>
+                                <>
+                                    <button onClick={handleAddColumn} className='btn-add-column-top' title='Add new column'>
+                                        + Add Column
+                                    </button>
+                                    <button onClick={handleFixEventColumns} className='btn-fix-events' title='Assign columns to events with missing columns'>
+                                        Fix Events
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
