@@ -1360,6 +1360,11 @@ class PersonnelResource(Resource):
                 'role': person.role,
                 'avatar': person.avatar,
                 'user_id': person.user_id,
+                'user': {
+                    'id': person.user.id,
+                    'name': person.user.name,
+                    'email': person.user.email
+                } if person.user_id and person.user else None,
                 'company_id': person.company_id,
                 'event_ids': [event.id for event in person.events],
                 'project_ids': [project.id for project in person.projects]
@@ -1380,7 +1385,8 @@ class PersonnelResource(Resource):
                 phone=data.get('phone'),
                 role=data.get('role'),
                 avatar=data.get('avatar'),
-                company_id=data.get('company_id')  # Add company_id field
+                company_id=data.get('company_id'),  # Add company_id field
+                user_id=data.get('user_id')  # Handle user_id for linking to existing user
             )
             
             session.add(new_personnel)
@@ -1427,6 +1433,11 @@ class PersonnelDetail(Resource):
                     'role': personnel.role,
                     'avatar': personnel.avatar,
                     'user_id': personnel.user_id,
+                    'user': {
+                        'id': personnel.user.id,
+                        'name': personnel.user.name,
+                        'email': personnel.user.email
+                    } if personnel.user_id and personnel.user else None,
                     'event_ids': [event.id for event in personnel.events],
                     'project_ids': [project.id for project in personnel.projects]
                 }, 200

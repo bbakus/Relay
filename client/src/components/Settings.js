@@ -2171,7 +2171,7 @@ export const Settings = () => {
                                                 <span className='item-meta'>{person.email} • {person.phone}</span>
                                                 {person.user_id && expandedPersonnelCards.has(person.id) && (
                                                     <div className='user-attachment'>
-                                                        <strong>Attached to User:</strong> {users.find(u => u.id === person.user_id)?.name || 'Unknown User'}
+                                                        <strong>Attached to User:</strong> {person.user?.name || users.find(u => u.id === person.user_id)?.name || 'Unknown User'} ({person.user?.email || 'No email'})
                                                     </div>
                                                 )}
                                                 {!person.user_id && expandedPersonnelCards.has(person.id) && (
@@ -2412,7 +2412,7 @@ export const Settings = () => {
                                                     <span className='item-meta'>{person.email} • {person.phone}</span>
                                                     {person.user_id && expandedPersonnelCards.has(person.id) && (
                                                         <div className='user-attachment'>
-                                                            <strong>Attached to User:</strong> {users.find(u => u.id === person.user_id)?.name || 'Unknown User'}
+                                                            <strong>Attached to User:</strong> {person.user?.name || users.find(u => u.id === person.user_id)?.name || 'Unknown User'} ({person.user?.email || 'No email'})
                                                         </div>
                                                     )}
                                                     {!person.user_id && expandedPersonnelCards.has(person.id) && (
