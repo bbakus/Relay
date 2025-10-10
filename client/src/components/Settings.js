@@ -871,110 +871,110 @@ export const Settings = () => {
         }
     }
 
-                const deleteItem = async (type, id) => {
-            // Special confirmation for project deletion
-            if (type === 'project') {
-                const project = projects.find(p => p.id === id)
-                const projectName = project ? project.name : 'this project'
-                
-                const confirmed = window.confirm(
-                    `⚠️ WARNING: You are about to delete "${projectName}"\n\n` +
-                    `This action will permanently remove:\n` +
-                    `• All events in this project\n` +
-                    `• All shot requests in this project\n` +
-                    `• All personnel assignments to this project\n` +
-                    `• All images and files associated with this project\n\n` +
-                    `This action cannot be undone.\n\n` +
-                    `Are you sure you want to continue?`
-                )
-                
-                if (!confirmed) {
-                    return
-                }
-            }
+    const deleteItem = async (type, id) => {
+        // Special confirmation for project deletion
+        if (type === 'project') {
+            const project = projects.find(p => p.id === id)
+            const projectName = project ? project.name : 'this project'
             
-            // Special confirmation for organization deletion
-            if (type === 'organization') {
-                const organization = organizations.find(o => o.id === id)
-                const orgName = organization ? organization.name : 'this organization'
-                
-                const confirmed = window.confirm(
-                    `⚠️ WARNING: You are about to delete "${orgName}"\n\n` +
-                    `This action will permanently remove:\n` +
-                    `• All projects in this organization\n` +
-                    `• All events in those projects\n` +
-                    `• All shot requests in those projects\n` +
-                    `• All personnel assignments to those projects\n` +
-                    `• All images and files associated with those projects\n\n` +
-                    `This action cannot be undone.\n\n` +
-                    `Are you sure you want to continue?`
-                )
-                
-                if (!confirmed) {
-                    return
-                }
-            }
+            const confirmed = window.confirm(
+                `⚠️ WARNING: You are about to delete "${projectName}"\n\n` +
+                `This action will permanently remove:\n` +
+                `• All events in this project\n` +
+                `• All shot requests in this project\n` +
+                `• All personnel assignments to this project\n` +
+                `• All images and files associated with this project\n\n` +
+                `This action cannot be undone.\n\n` +
+                `Are you sure you want to continue?`
+            )
             
-            // Special confirmation for user deletion
-            if (type === 'user') {
-                const user = users.find(u => u.id === id)
-                const userName = user ? user.name : 'this user'
-                
-                const confirmed = window.confirm(
-                    `⚠️ WARNING: You are about to delete "${userName}"\n\n` +
-                    `This action will permanently remove:\n` +
-                    `• The user account and all associated data\n` +
-                    `• Any personnel records associated with this user\n` +
-                    `• All user preferences and settings\n\n` +
-                    `This action cannot be undone.\n\n` +
-                    `Are you sure you want to continue?`
-                )
-                
-                if (!confirmed) {
-                    return
-                }
+            if (!confirmed) {
+                return
             }
+        }
+        
+        // Special confirmation for organization deletion
+        if (type === 'organization') {
+            const organization = organizations.find(o => o.id === id)
+            const orgName = organization ? organization.name : 'this organization'
             
-            // Special confirmation for personnel deletion
-            if (type === 'personnel') {
-                const personnelItem = personnel.find(p => p.id === id)
-                const personnelName = personnelItem ? personnelItem.name : 'this personnel'
-                
-                const confirmed = window.confirm(
-                    `⚠️ WARNING: You are about to delete "${personnelName}"\n\n` +
-                    `This action will permanently remove:\n` +
-                    `• The personnel record and all associated data\n` +
-                    `• All project assignments for this personnel\n` +
-                    `• All event assignments for this personnel\n\n` +
-                    `This action cannot be undone.\n\n` +
-                    `Are you sure you want to continue?`
-                )
-                
-                if (!confirmed) {
-                    return
-                }
-            }
+            const confirmed = window.confirm(
+                `⚠️ WARNING: You are about to delete "${orgName}"\n\n` +
+                `This action will permanently remove:\n` +
+                `• All projects in this organization\n` +
+                `• All events in those projects\n` +
+                `• All shot requests in those projects\n` +
+                `• All personnel assignments to those projects\n` +
+                `• All images and files associated with those projects\n\n` +
+                `This action cannot be undone.\n\n` +
+                `Are you sure you want to continue?`
+            )
             
-            // Special confirmation for event deletion
-            if (type === 'event') {
-                const event = events.find(e => e.id === id)
-                const eventName = event ? event.name : 'this event'
-                
-                const confirmed = window.confirm(
-                    `⚠️ WARNING: You are about to delete "${eventName}"\n\n` +
-                    `This action will permanently remove:\n` +
-                    `• The event and all associated data\n` +
-                    `• All shot requests for this event\n` +
-                    `• All personnel assignments to this event\n` +
-                    `• All images and files associated with this event\n\n` +
-                    `This action cannot be undone.\n\n` +
-                    `Are you sure you want to continue?`
-                )
-                
-                if (!confirmed) {
-                    return
-                }
+            if (!confirmed) {
+                return
             }
+        }
+        
+        // Special confirmation for user deletion
+        if (type === 'user') {
+            const user = users.find(u => u.id === id)
+            const userName = user ? user.name : 'this user'
+            
+            const confirmed = window.confirm(
+                `⚠️ WARNING: You are about to delete "${userName}"\n\n` +
+                `This action will permanently remove:\n` +
+                `• The user account and all associated data\n` +
+                `• Any personnel records associated with this user\n` +
+                `• All user preferences and settings\n\n` +
+                `This action cannot be undone.\n\n` +
+                `Are you sure you want to continue?`
+            )
+            
+            if (!confirmed) {
+                return
+            }
+        }
+        
+        // Special confirmation for personnel deletion
+        if (type === 'personnel') {
+            const personnelItem = personnel.find(p => p.id === id)
+            const personnelName = personnelItem ? personnelItem.name : 'this personnel'
+            
+            const confirmed = window.confirm(
+                `⚠️ WARNING: You are about to delete "${personnelName}"\n\n` +
+                `This action will permanently remove:\n` +
+                `• The personnel record and all associated data\n` +
+                `• All project assignments for this personnel\n` +
+                `• All event assignments for this personnel\n\n` +
+                `This action cannot be undone.\n\n` +
+                `Are you sure you want to continue?`
+            )
+            
+            if (!confirmed) {
+                return
+            }
+        }
+        
+        // Special confirmation for event deletion
+        if (type === 'event') {
+            const event = events.find(e => e.id === id)
+            const eventName = event ? event.name : 'this event'
+            
+            const confirmed = window.confirm(
+                `⚠️ WARNING: You are about to delete "${eventName}"\n\n` +
+                `This action will permanently remove:\n` +
+                `• The event and all associated data\n` +
+                `• All shot requests for this event\n` +
+                `• All personnel assignments to this event\n` +
+                `• All images and files associated with this event\n\n` +
+                `This action cannot be undone.\n\n` +
+                `Are you sure you want to continue?`
+            )
+            
+            if (!confirmed) {
+                return
+            }
+        }
         
         try {
             // Fix personnel endpoint - it's singular 'personnel' not 'personnels'
