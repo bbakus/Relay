@@ -46,17 +46,27 @@ export const Events = () => {
         return () => clearInterval(intervalId)
     }, [])
     
-    // Get unique dates from the selected project for date dropdown
+    // Get all dates in the selected project's date range for date dropdown
     const projectDates = useMemo(() => {
         if (!selectedProjectId) return []
         
-        // Get all events for the selected project
-        const projectEvents = events.filter(event => event.project_id === selectedProjectId)
+        const project = projects.find(p => p.id === selectedProjectId)
+        if (!project || !project.start_date || !project.end_date) return []
         
-        // Extract unique dates and sort them
-        const uniqueDates = [...new Set(projectEvents.map(event => event.date))].filter(Boolean)
-        return uniqueDates.sort()
-    }, [events, selectedProjectId])
+        // Generate all dates between start_date and end_date
+        const dates = []
+        const startDate = new Date(project.start_date + 'T00:00:00')
+        const endDate = new Date(project.end_date + 'T00:00:00')
+        
+        let currentDate = new Date(startDate)
+        while (currentDate <= endDate) {
+            const dateStr = currentDate.toISOString().split('T')[0]
+            dates.push(dateStr)
+            currentDate.setDate(currentDate.getDate() + 1)
+        }
+        
+        return dates
+    }, [projects, selectedProjectId])
     
     // Auto-populate date when Add Event modal opens
     useEffect(() => {
