@@ -1999,6 +1999,16 @@ export const Schedule = () => {
                                 </div>
                                 
                                 <div className="form-group">
+                                    <label>Details (raw text):</label>
+                                    <textarea
+                                        name="details"
+                                        defaultValue={editingEvent.details}
+                                        rows="4"
+                                        placeholder="Additional event details..."
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
                                     <label>Quick Turn:</label>
                                     <input
                                         type="checkbox"
