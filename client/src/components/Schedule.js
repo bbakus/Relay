@@ -221,6 +221,11 @@ export const Schedule = () => {
                     })
                 
                 console.log(`📅 Schedule fetchEvents: Filtered to ${dayEvents.length} events`)
+                console.log(`📅 Schedule fetchEvents: Event details:`, dayEvents.map(e => ({
+                    id: e.id, 
+                    name: e.name, 
+                    schedule_column_id: e.schedule_column_id
+                })))
                 setEvents(dayEvents)
             }
         } catch (error) {
@@ -1148,14 +1153,20 @@ export const Schedule = () => {
         // Add an array for unassigned events (null column_id)
         eventsByColumn['unassigned'] = []
         
+        console.log('📅 getEventsByColumn: scheduleColumns=', scheduleColumns.map(c => c.id))
+        console.log('📅 getEventsByColumn: eventsWithPositions=', eventsWithPositions.length)
+        
         eventsWithPositions.forEach(event => {
             const columnId = event.schedule_column_id
+            console.log(`📅 Event ${event.id} "${event.name}": schedule_column_id=${columnId}, exists in columns=${columnId && eventsByColumn[columnId] !== undefined}`)
             if (columnId && eventsByColumn[columnId]) {
                 eventsByColumn[columnId].push(event)
             } else {
                 eventsByColumn['unassigned'].push(event)
             }
         })
+        
+        console.log('📅 getEventsByColumn result:', Object.keys(eventsByColumn).map(key => `${key}: ${eventsByColumn[key].length} events`))
         
         return eventsByColumn
     }
