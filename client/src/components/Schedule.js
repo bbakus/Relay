@@ -163,28 +163,41 @@ export const Schedule = () => {
         }
         
         try {
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}`)
+            // Add cache busting parameter
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}&t=${Date.now()}`)
             if (response.ok) {
                 const columns = await response.json()
-                // Ensure minimum of 5 columns
-                if (columns.length >= 5) {
+                
+                // If no columns exist for this project, auto-create 5 default columns
+                if (columns.length === 0 && isAdmin) {
+                    console.log('No schedule columns found for project, creating defaults...')
+                    const createPromises = []
+                    for (let i = 0; i < 5; i++) {
+                        createPromises.push(
+                            fetch(`${API_CONFIG.baseUrl}/api/schedule-columns`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    name: `Column ${i + 1}`,
+                                    project_id: selectedProjectId,
+                                    order_index: i
+                                })
+                            })
+                        )
+                    }
+                    
+                    await Promise.all(createPromises)
+                    // Fetch again to get the created columns with real IDs
+                    const refetchResponse = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}&t=${Date.now()}`)
+                    if (refetchResponse.ok) {
+                        const newColumns = await refetchResponse.json()
+                        setScheduleColumns(newColumns)
+                    }
+                } else if (columns.length >= 5) {
                     setScheduleColumns(columns)
                 } else {
-                    // If fewer than 5, create default columns (this shouldn't happen with migration)
-                    const defaultColumns = []
-                    for (let i = 0; i < 5; i++) {
-                        if (columns[i]) {
-                            defaultColumns.push(columns[i])
-                        } else {
-                            defaultColumns.push({
-                                id: `temp-${i}`,
-                                name: `Column ${i + 1}`,
-                                order_index: i,
-                                project_id: selectedProjectId
-                            })
-                        }
-                    }
-                    setScheduleColumns(defaultColumns)
+                    // If fewer than 5, pad with existing columns (shouldn't normally happen)
+                    setScheduleColumns(columns)
                 }
             } else {
                 // Fallback to default columns if API fails
@@ -204,50 +217,17 @@ export const Schedule = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true)
-            
-            console.log('🔍 ========== SCHEDULE FETCH EVENTS ==========')
-            console.log('🔍 activeDate:', activeDate)
-            console.log('🔍 selectedProjectId:', selectedProjectId, '(type:', typeof selectedProjectId, ')')
-            console.log('🔍 localStorage project:', localStorage.getItem('relay_selected_project'))
-            
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events?t=${Date.now()}`)
             if (response.ok) {
                 const allEvents = await response.json()
-                console.log(`📅 Total events fetched: ${allEvents.length}`)
                 
-                // Show unique project IDs in all events
-                const uniqueProjectIds = [...new Set(allEvents.map(e => e.project_id))]
-                console.log('📅 Unique project IDs in events:', uniqueProjectIds)
-                
-                // Show events for project 7 specifically
-                const project7Events = allEvents.filter(e => e.project_id === 7)
-                console.log(`📅 Events for project 7:`, project7Events.map(e => ({
-                    id: e.id,
-                    name: e.name,
-                    date: e.date,
-                    schedule_column_id: e.schedule_column_id
-                })))
-                
-                // Filter events for selected date
+                // Filter events for selected date and project
                 const dayEvents = allEvents
                     .filter(event => event.date === activeDate)
                     .filter(event => {
                         if (!selectedProjectId) return true
-                        const matches = event.project_id === Number(selectedProjectId)
-                        if (!matches) {
-                            console.log(`❌ Event ${event.id} "${event.name}": project_id=${event.project_id} doesn't match selectedProjectId=${selectedProjectId}`)
-                        }
-                        return matches
+                        return event.project_id === Number(selectedProjectId)
                     })
-                
-                console.log(`📅 After filtering: ${dayEvents.length} events`)
-                console.log('📅 Filtered events:', dayEvents.map(e => ({
-                    id: e.id,
-                    name: e.name,
-                    project_id: e.project_id,
-                    schedule_column_id: e.schedule_column_id
-                })))
-                console.log('🔍 ========================================')
                 
                 setEvents(dayEvents)
             }
