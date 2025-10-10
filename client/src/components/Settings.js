@@ -397,6 +397,12 @@ export const Settings = () => {
     const [selectedPersonnelForAttach, setSelectedPersonnelForAttach] = useState(null)
     const [selectedUserForAttach, setSelectedUserForAttach] = useState('')
     
+    // Import personnel modal states
+    const [showImportPersonnelModal, setShowImportPersonnelModal] = useState(false)
+    const [allCompanyPersonnel, setAllCompanyPersonnel] = useState([])
+    const [selectedPersonnelToImport, setSelectedPersonnelToImport] = useState(null)
+    const [importSearchQuery, setImportSearchQuery] = useState('')
+    
     // Popup state for organization requirement
     const [showOrgRequiredPopup, setShowOrgRequiredPopup] = useState(false)
     
@@ -1762,6 +1768,102 @@ export const Settings = () => {
             alert('Failed to detach personnel from user. Please try again.')
         }
     }
+    
+    // Import personnel handlers
+    const openImportPersonnelModal = async () => {
+        setShowImportPersonnelModal(true)
+        setImportSearchQuery('')
+        setSelectedPersonnelToImport(null)
+        
+        // Fetch all personnel from all companies (for super admin) or just current company
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
+            if (response.ok) {
+                const allPersonnel = await response.json()
+                setAllCompanyPersonnel(allPersonnel)
+            }
+        } catch (error) {
+            console.error('Error fetching all personnel:', error)
+        }
+    }
+    
+    const closeImportPersonnelModal = () => {
+        setShowImportPersonnelModal(false)
+        setSelectedPersonnelToImport(null)
+        setImportSearchQuery('')
+        setAllCompanyPersonnel([])
+    }
+    
+    const handleImportPersonnel = async () => {
+        if (!selectedPersonnelToImport) {
+            alert('Please select a personnel to import')
+            return
+        }
+        
+        // Get the target company ID (where we're importing TO)
+        const targetCompanyId = selectedCompanyId || user?.company_id
+        
+        if (!targetCompanyId) {
+            alert('No company selected')
+            return
+        }
+        
+        // Confirm import
+        const confirmMsg = `Import "${selectedPersonnelToImport.name}" into ${companies.find(c => c.id === parseInt(targetCompanyId))?.name}?`
+        if (!window.confirm(confirmMsg)) {
+            return
+        }
+        
+        try {
+            // Create a new personnel record in the target company
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: selectedPersonnelToImport.name,
+                    email: selectedPersonnelToImport.email,
+                    phone: selectedPersonnelToImport.phone,
+                    role: selectedPersonnelToImport.role,
+                    avatar: selectedPersonnelToImport.avatar,
+                    company_id: targetCompanyId,
+                    user_id: selectedPersonnelToImport.user_id // Link to same user
+                })
+            })
+            
+            if (response.ok) {
+                await fetchPersonnel()
+                closeImportPersonnelModal()
+                alert(`Successfully imported "${selectedPersonnelToImport.name}"!\n\nThey can now access projects from both companies with their existing login.`)
+            } else {
+                const errorData = await response.json()
+                alert(`Failed to import personnel: ${errorData.error}`)
+            }
+        } catch (error) {
+            console.error('Error importing personnel:', error)
+            alert('Failed to import personnel. Please try again.')
+        }
+    }
+    
+    // Filter personnel for import based on search query
+    const filteredImportPersonnel = allCompanyPersonnel.filter(person => {
+        // Exclude personnel already in the target company
+        const targetCompanyId = selectedCompanyId || user?.company_id
+        if (person.company_id === parseInt(targetCompanyId)) {
+            return false
+        }
+        
+        // Filter by search query
+        if (importSearchQuery) {
+            const query = importSearchQuery.toLowerCase()
+            return (
+                person.name?.toLowerCase().includes(query) ||
+                person.email?.toLowerCase().includes(query) ||
+                person.role?.toLowerCase().includes(query)
+            )
+        }
+        
+        return true
+    })
 
     return (
         <div className='view-container'>
@@ -1924,12 +2026,21 @@ export const Settings = () => {
                             <div className='settings-section'>
                                 <div className='settings-section-header'>
                                     <h2>Personnel Management</h2>
-                                    <button 
-                                        className='add-btn'
-                                        onClick={() => setShowPersonnelForm(true)}
-                                    >
-                                        Add Personnel
-                                    </button>
+                                    <div className='header-buttons'>
+                                        <button 
+                                            className='import-btn'
+                                            onClick={openImportPersonnelModal}
+                                            title='Import personnel from another company'
+                                        >
+                                            Import Personnel
+                                        </button>
+                                        <button 
+                                            className='add-btn'
+                                            onClick={() => setShowPersonnelForm(true)}
+                                        >
+                                            Add Personnel
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Personnel Role Filter */}
@@ -3409,6 +3520,83 @@ export const Settings = () => {
                             <button 
                                 className='modal-button'
                                 onClick={closeAttachPersonnelModal}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Import Personnel Modal */}
+            {showImportPersonnelModal && (
+                <div className='modal-overlay' onClick={closeImportPersonnelModal}>
+                    <div className='modal-content import-modal' onClick={(e) => e.stopPropagation()}>
+                        <div className='modal-header'>
+                            <h2>Import Personnel from Another Company</h2>
+                            <button className='modal-close' onClick={closeImportPersonnelModal}>×</button>
+                        </div>
+                        <div className='modal-body'>
+                            <p className='helper-text'>
+                                Select a personnel record to import. This will create a copy in your current company 
+                                and link it to the same user account, allowing them to access projects from both companies.
+                            </p>
+                            
+                            <div className='form-group'>
+                                <label>Search Personnel:</label>
+                                <input
+                                    type='text'
+                                    className='form-input'
+                                    placeholder='Search by name, email, or role...'
+                                    value={importSearchQuery}
+                                    onChange={(e) => setImportSearchQuery(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div className='import-personnel-list'>
+                                {filteredImportPersonnel.length > 0 ? (
+                                    filteredImportPersonnel.map(person => (
+                                        <div 
+                                            key={person.id}
+                                            className={`import-personnel-item ${selectedPersonnelToImport?.id === person.id ? 'selected' : ''}`}
+                                            onClick={() => setSelectedPersonnelToImport(person)}
+                                        >
+                                            <div className='personnel-item-info'>
+                                                <h4>{person.name}</h4>
+                                                <p><strong>Role:</strong> {person.role}</p>
+                                                <p><strong>Email:</strong> {person.email}</p>
+                                                <p><strong>Company:</strong> {companies.find(c => c.id === person.company_id)?.name || 'Unknown'}</p>
+                                                {person.user_id && (
+                                                    <p className='has-user'>✓ Has linked user account</p>
+                                                )}
+                                                {!person.user_id && (
+                                                    <p className='no-user'>⚠ No linked user account</p>
+                                                )}
+                                            </div>
+                                            {selectedPersonnelToImport?.id === person.id && (
+                                                <div className='selected-indicator'>✓</div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='no-results'>
+                                        <p>No personnel found from other companies.</p>
+                                        {importSearchQuery && <p>Try adjusting your search.</p>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className='modal-footer'>
+                            <button 
+                                className='modal-button import-button'
+                                onClick={handleImportPersonnel}
+                                disabled={!selectedPersonnelToImport}
+                            >
+                                Import Selected Personnel
+                            </button>
+                            <button 
+                                className='modal-button cancel-button'
+                                onClick={closeImportPersonnelModal}
                             >
                                 Cancel
                             </button>
