@@ -872,6 +872,8 @@ export const Settings = () => {
     }
 
     const deleteItem = async (type, id) => {
+        console.log('🗑️ deleteItem called:', type, id)
+        
         // Special confirmation for project deletion
         if (type === 'project') {
             const project = projects.find(p => p.id === id)
@@ -940,6 +942,8 @@ export const Settings = () => {
             const personnelItem = personnel.find(p => p.id === id)
             const personnelName = personnelItem ? personnelItem.name : 'this personnel'
             
+            console.log('🗑️ Confirming deletion of personnel:', personnelName)
+            
             const confirmed = window.confirm(
                 `⚠️ WARNING: You are about to delete "${personnelName}"\n\n` +
                 `This action will permanently remove:\n` +
@@ -949,6 +953,8 @@ export const Settings = () => {
                 `This action cannot be undone.\n\n` +
                 `Are you sure you want to continue?`
             )
+            
+            console.log('🗑️ User confirmed:', confirmed)
             
             if (!confirmed) {
                 return
@@ -976,6 +982,8 @@ export const Settings = () => {
             }
         }
         
+        console.log('🗑️ Proceeding with deletion...')
+        
         try {
             // Fix personnel endpoint - it's singular 'personnel' not 'personnels'
             let endpoint = `${API_CONFIG.baseUrl}/api/${type}s/${id}`
@@ -983,11 +991,16 @@ export const Settings = () => {
                 endpoint = `${API_CONFIG.baseUrl}/api/personnel/${id}`
             }
             
+            console.log('🗑️ DELETE endpoint:', endpoint)
+            
             const response = await fetch(endpoint, {
                 method: 'DELETE'
             })
             
+            console.log('🗑️ Response status:', response.status, response.ok)
+            
             if (response.ok) {
+                console.log('🗑️ Delete successful, refreshing data...')
                 if (type === 'event') fetchEvents()
                 else if (type === 'project') fetchProjects()
                 else if (type === 'organization') fetchOrganizations()
@@ -998,10 +1011,11 @@ export const Settings = () => {
                 }
             } else {
                 const data = await response.json()
+                console.error('🗑️ Delete failed:', data)
                 alert(data.error || `Failed to delete ${type}`)
             }
         } catch (error) {
-            console.error(`Error deleting ${type}:`, error)
+            console.error(`🗑️ Error deleting ${type}:`, error)
             alert(`Failed to delete ${type}`)
         }
     }
