@@ -207,10 +207,20 @@ export const Schedule = () => {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (response.ok) {
                 const allEvents = await response.json()
+                console.log(`📅 Schedule fetchEvents: Total events fetched: ${allEvents.length}`)
+                console.log(`📅 Schedule fetchEvents: Filtering for date=${activeDate}, projectId=${selectedProjectId}`)
+                
                 // Filter events for selected date
                 const dayEvents = allEvents
                     .filter(event => event.date === activeDate)
-                    .filter(event => !selectedProjectId || event.project_id === Number(selectedProjectId))
+                    .filter(event => {
+                        if (!selectedProjectId) return true
+                        const matches = event.project_id === Number(selectedProjectId)
+                        console.log(`📅 Event ${event.id} "${event.name}": project_id=${event.project_id}, matches=${matches}`)
+                        return matches
+                    })
+                
+                console.log(`📅 Schedule fetchEvents: Filtered to ${dayEvents.length} events`)
                 setEvents(dayEvents)
             }
         } catch (error) {
@@ -241,9 +251,22 @@ export const Schedule = () => {
                     const hasOwnDateMatch = srDate === activeDate
                     
                     const dateMatch = hasEventOnSelectedDate || hasOwnDateMatch
-                    const projectMatch = !selectedProjectId || 
-                        (sr.events && sr.events.some(event => event.project_id === Number(selectedProjectId))) ||
-                        (sr.projects && sr.projects.some(project => project.id === Number(selectedProjectId)))
+                    
+                    // Check if shot request belongs to selected project
+                    let projectMatch = false
+                    if (!selectedProjectId) {
+                        projectMatch = true  // No project filter, show all
+                    } else {
+                        // Check if any of the shot request's events belong to the selected project
+                        const hasMatchingEvent = sr.events && sr.events.length > 0 && 
+                            sr.events.some(event => event.project_id === Number(selectedProjectId))
+                        
+                        // Check if shot request is directly linked to the project
+                        const hasMatchingProject = sr.projects && sr.projects.length > 0 && 
+                            sr.projects.some(project => project.id === Number(selectedProjectId))
+                        
+                        projectMatch = hasMatchingEvent || hasMatchingProject
+                    }
                     
                     console.log(`📅 SR ${sr.id} (${sr.request}): date="${sr.date}", events=${sr.events?.length}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, projectMatch=${projectMatch}, PASS=${dateMatch && projectMatch}`)
                     
