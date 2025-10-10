@@ -681,7 +681,7 @@ export const Settings = () => {
             
             if (response.ok) {
                 const result = await response.json()
-                alert(editingItem ? 'Project updated successfully!' : 'Project created successfully!')
+                // Success - no alert needed
                 
                 // Refresh data for the current company context
                 if (user?.is_super_admin && selectedCompanyId) {
@@ -706,11 +706,11 @@ export const Settings = () => {
                 setEditingItem(null)
             } else {
                 const errorData = await response.json()
-                alert(errorData.error || 'Failed to save project')
+                console.error(errorData.error || 'Failed to save project')
             }
         } catch (error) {
             console.error('Error saving project:', error)
-            alert('Failed to save project')
+            console.log('Failed to save project')
         }
     }
 
@@ -744,7 +744,7 @@ export const Settings = () => {
             
             if (response.ok) {
                 const result = await response.json()
-                alert(editingItem ? 'Organization updated successfully!' : 'Organization created successfully!')
+                console.log(editingItem ? 'Organization updated successfully!' : 'Organization created successfully!')
                 
                 // Refresh data for the current company context
                 if (user?.is_super_admin && selectedCompanyId) {
@@ -769,11 +769,11 @@ export const Settings = () => {
                 setEditingItem(null)
             } else {
                 const errorData = await response.json()
-                alert(errorData.error || 'Failed to save organization')
+                console.log(errorData.error || 'Failed to save organization')
             }
         } catch (error) {
             console.error('Error saving organization:', error)
-            alert('Failed to save organization')
+            console.log('Failed to save organization')
         }
     }
 
@@ -831,11 +831,11 @@ export const Settings = () => {
                         
                         if (!attachResponse.ok) {
                             const attachData = await attachResponse.json()
-                            alert(`Personnel created but failed to attach to user: ${attachData.error}`)
+                            console.log(`Personnel created but failed to attach to user: ${attachData.error}`)
                         }
                     } catch (attachError) {
                         console.error('Error attaching personnel to user:', attachError)
-                        alert('Personnel created but failed to attach to user')
+                        console.log('Personnel created but failed to attach to user')
                     }
                 }
                 
@@ -864,7 +864,7 @@ export const Settings = () => {
                 
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to save personnel')
+                console.log(data.error || 'Failed to save personnel')
             }
         } catch (error) {
             console.error('Error saving personnel:', error)
@@ -874,113 +874,7 @@ export const Settings = () => {
     const deleteItem = async (type, id) => {
         console.log('🗑️ deleteItem called:', type, id)
         
-        // Special confirmation for project deletion
-        if (type === 'project') {
-            const project = projects.find(p => p.id === id)
-            const projectName = project ? project.name : 'this project'
-            
-            const confirmed = window.confirm(
-                `⚠️ WARNING: You are about to delete "${projectName}"\n\n` +
-                `This action will permanently remove:\n` +
-                `• All events in this project\n` +
-                `• All shot requests in this project\n` +
-                `• All personnel assignments to this project\n` +
-                `• All images and files associated with this project\n\n` +
-                `This action cannot be undone.\n\n` +
-                `Are you sure you want to continue?`
-            )
-            
-            if (!confirmed) {
-                return
-            }
-        }
-        
-        // Special confirmation for organization deletion
-        if (type === 'organization') {
-            const organization = organizations.find(o => o.id === id)
-            const orgName = organization ? organization.name : 'this organization'
-            
-            const confirmed = window.confirm(
-                `⚠️ WARNING: You are about to delete "${orgName}"\n\n` +
-                `This action will permanently remove:\n` +
-                `• All projects in this organization\n` +
-                `• All events in those projects\n` +
-                `• All shot requests in those projects\n` +
-                `• All personnel assignments to those projects\n` +
-                `• All images and files associated with those projects\n\n` +
-                `This action cannot be undone.\n\n` +
-                `Are you sure you want to continue?`
-            )
-            
-            if (!confirmed) {
-                return
-            }
-        }
-        
-        // Special confirmation for user deletion
-        if (type === 'user') {
-            const user = users.find(u => u.id === id)
-            const userName = user ? user.name : 'this user'
-            
-            const confirmed = window.confirm(
-                `⚠️ WARNING: You are about to delete "${userName}"\n\n` +
-                `This action will permanently remove:\n` +
-                `• The user account and all associated data\n` +
-                `• Any personnel records associated with this user\n` +
-                `• All user preferences and settings\n\n` +
-                `This action cannot be undone.\n\n` +
-                `Are you sure you want to continue?`
-            )
-            
-            if (!confirmed) {
-                return
-            }
-        }
-        
-        // Special confirmation for personnel deletion
-        if (type === 'personnel') {
-            const personnelItem = personnel.find(p => p.id === id)
-            const personnelName = personnelItem ? personnelItem.name : 'this personnel'
-            
-            console.log('🗑️ Confirming deletion of personnel:', personnelName)
-            
-            const confirmed = window.confirm(
-                `⚠️ WARNING: You are about to delete "${personnelName}"\n\n` +
-                `This action will permanently remove:\n` +
-                `• The personnel record and all associated data\n` +
-                `• All project assignments for this personnel\n` +
-                `• All event assignments for this personnel\n\n` +
-                `This action cannot be undone.\n\n` +
-                `Are you sure you want to continue?`
-            )
-            
-            console.log('🗑️ User confirmed:', confirmed)
-            
-            if (!confirmed) {
-                return
-            }
-        }
-        
-        // Special confirmation for event deletion
-        if (type === 'event') {
-            const event = events.find(e => e.id === id)
-            const eventName = event ? event.name : 'this event'
-            
-            const confirmed = window.confirm(
-                `⚠️ WARNING: You are about to delete "${eventName}"\n\n` +
-                `This action will permanently remove:\n` +
-                `• The event and all associated data\n` +
-                `• All shot requests for this event\n` +
-                `• All personnel assignments to this event\n` +
-                `• All images and files associated with this event\n\n` +
-                `This action cannot be undone.\n\n` +
-                `Are you sure you want to continue?`
-            )
-            
-            if (!confirmed) {
-                return
-            }
-        }
+        // No confirmations - delete immediately
         
         console.log('🗑️ Proceeding with deletion...')
         
@@ -1012,11 +906,11 @@ export const Settings = () => {
             } else {
                 const data = await response.json()
                 console.error('🗑️ Delete failed:', data)
-                alert(data.error || `Failed to delete ${type}`)
+                console.error(data.error || `Failed to delete ${type}`)
             }
         } catch (error) {
             console.error(`🗑️ Error deleting ${type}:`, error)
-            alert(`Failed to delete ${type}`)
+            console.error(`Failed to delete ${type}`)
         }
     }
 
@@ -1095,22 +989,19 @@ export const Settings = () => {
                 setCompanies(prev => [...prev, newCompany])
                 setCompanyForm({ name: '' })
                 setShowCompanyForm(false)
-                alert('Company created successfully!')
+                console.log('Company created successfully!')
             } else {
                 const error = await response.json()
-                alert(`Error creating company: ${error.error || 'Unknown error'}`)
+                console.log(`Error creating company: ${error.error || 'Unknown error'}`)
             }
         } catch (error) {
             console.error('Error creating company:', error)
-            alert('Error creating company')
+            console.log('Error creating company')
         }
     }
     
     // Company deletion
     const deleteCompany = async (companyId) => {
-        if (!window.confirm('Are you sure you want to delete this company? This will permanently delete all associated data.')) {
-            return
-        }
         
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/companies/${companyId}`, {
@@ -1126,14 +1017,14 @@ export const Settings = () => {
                         setGlobalCompany(relayCompany.id.toString())
                     }
                 }
-                alert('Company deleted successfully!')
+                console.log('Company deleted successfully!')
             } else {
                 const error = await response.json()
-                alert(`Error deleting company: ${error.error || 'Unknown error'}`)
+                console.log(`Error deleting company: ${error.error || 'Unknown error'}`)
             }
         } catch (error) {
             console.error('Error deleting company:', error)
-            alert('Error deleting company')
+            console.log('Error deleting company')
         }
     }
 
@@ -1189,11 +1080,11 @@ export const Settings = () => {
                 setEditingCompany(null)
                 setEditCompanyForm({ name: '' })
             } else {
-                alert('Failed to update company')
+                console.log('Failed to update company')
             }
         } catch (error) {
             console.error('Error updating company:', error)
-            alert('Error updating company')
+            console.log('Error updating company')
         }
     }
 
@@ -1263,14 +1154,14 @@ export const Settings = () => {
                 })
                 
                 setIsEditingCompany(false)
-                alert('Company updated successfully!')
+                console.log('Company updated successfully!')
             } else {
                 const data = await response.json()
-                alert(`Failed to update company: ${data.error || 'Unknown error'}`)
+                console.log(`Failed to update company: ${data.error || 'Unknown error'}`)
             }
         } catch (error) {
             console.error('Error updating company:', error)
-            alert('Error updating company')
+            console.log('Error updating company')
         }
     }
 
@@ -1303,11 +1194,11 @@ export const Settings = () => {
                 
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to update project assignment')
+                console.log(data.error || 'Failed to update project assignment')
             }
         } catch (error) {
             console.error('Error assigning personnel to project:', error)
-            alert('Error updating project assignment')
+            console.log('Error updating project assignment')
         }
     }
 
@@ -1412,11 +1303,11 @@ export const Settings = () => {
                 setUserEditForm({ access: '', organization_id: null })
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to update user')
+                console.log(data.error || 'Failed to update user')
             }
         } catch (error) {
             console.error('Error updating user:', error)
-            alert('Failed to update user')
+            console.log('Failed to update user')
         }
     }
 
@@ -1426,15 +1317,11 @@ export const Settings = () => {
     }
 
     const grantSuperAdminAccess = async (userId) => {
-        if (!window.confirm('Are you sure you want to grant super admin access to this user? This will give them full system access.')) {
-            return
-        }
-
         try {
             // Find the Relay company
             const relayCompany = companies.find(c => c.is_super_admin)
             if (!relayCompany) {
-                alert('Relay company not found. Cannot grant super admin access.')
+                console.log('Relay company not found. Cannot grant super admin access.')
                 return
             }
 
@@ -1450,14 +1337,14 @@ export const Settings = () => {
 
             if (response.ok) {
                 fetchUsers()
-                alert('Super admin access granted successfully')
+                console.log('Super admin access granted successfully')
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to grant super admin access')
+                console.log(data.error || 'Failed to grant super admin access')
             }
         } catch (error) {
             console.error('Error granting super admin access:', error)
-            alert('Failed to grant super admin access')
+            console.log('Failed to grant super admin access')
         }
     }
 
@@ -1584,7 +1471,7 @@ export const Settings = () => {
         // Ensure company_id is set for regular admins
         const companyId = user?.is_super_admin ? approvalForm.company_id : user?.company_id
         if (!companyId) {
-            alert('Company ID is required')
+            console.log('Company ID is required')
             return
         }
 
@@ -1652,11 +1539,11 @@ export const Settings = () => {
                 
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to approve request')
+                console.log(data.error || 'Failed to approve request')
             }
         } catch (error) {
             console.error('Error approving request:', error)
-            alert('Failed to approve request')
+            console.log('Failed to approve request')
         } finally {
             setApprovalLoading(false)
         }
@@ -1682,11 +1569,11 @@ export const Settings = () => {
                     
                 } else {
                     const data = await response.json()
-                    alert(data.error || 'Failed to deny request')
+                    console.log(data.error || 'Failed to deny request')
                 }
             } catch (error) {
                 console.error('Error denying request:', error)
-                alert('Failed to deny request')
+                console.log('Failed to deny request')
             }
         }
     }
@@ -1730,7 +1617,7 @@ export const Settings = () => {
 
     const handleAttachPersonnelToUser = async () => {
         if (!selectedPersonnelForAttach || !selectedUserForAttach) {
-            alert('Please select a user to attach to this personnel')
+            console.log('Please select a user to attach to this personnel')
             return
         }
 
@@ -1745,22 +1632,18 @@ export const Settings = () => {
                 await fetchPersonnel()
                 await fetchUsers()
                 closeAttachPersonnelModal()
-                alert('Personnel successfully attached to user')
+                console.log('Personnel successfully attached to user')
             } else {
                 const errorData = await response.json()
-                alert(`Failed to attach personnel to user: ${errorData.error}`)
+                console.log(`Failed to attach personnel to user: ${errorData.error}`)
             }
         } catch (error) {
             console.error('Error attaching personnel to user:', error)
-            alert('Failed to attach personnel to user. Please try again.')
+            console.log('Failed to attach personnel to user. Please try again.')
         }
     }
 
     const handleDetachPersonnelFromUser = async (personnelId) => {
-        if (!window.confirm('Are you sure you want to detach this personnel from their user account?')) {
-            return
-        }
-
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/personnel/${personnelId}`, {
                 method: 'PUT',
@@ -1771,14 +1654,14 @@ export const Settings = () => {
             if (response.ok) {
                 await fetchPersonnel()
                 await fetchUsers()
-                alert('Personnel successfully detached from user')
+                console.log('Personnel successfully detached from user')
             } else {
                 const errorData = await response.json()
-                alert(`Failed to detach personnel from user: ${errorData.error}`)
+                console.log(`Failed to detach personnel from user: ${errorData.error}`)
             }
         } catch (error) {
             console.error('Error detaching personnel from user:', error)
-            alert('Failed to detach personnel from user. Please try again.')
+            console.log('Failed to detach personnel from user. Please try again.')
         }
     }
     
@@ -1809,7 +1692,7 @@ export const Settings = () => {
     
     const handleImportPersonnel = async () => {
         if (!selectedPersonnelToImport) {
-            alert('Please select a personnel to import')
+            console.log('Please select a personnel to import')
             return
         }
         
@@ -1817,13 +1700,7 @@ export const Settings = () => {
         const targetCompanyId = selectedCompanyId || user?.company_id
         
         if (!targetCompanyId) {
-            alert('No company selected')
-            return
-        }
-        
-        // Confirm import
-        const confirmMsg = `Import "${selectedPersonnelToImport.name}" into ${companies.find(c => c.id === parseInt(targetCompanyId))?.name}?`
-        if (!window.confirm(confirmMsg)) {
+            console.log('No company selected')
             return
         }
         
@@ -1846,14 +1723,14 @@ export const Settings = () => {
             if (response.ok) {
                 await fetchPersonnel()
                 closeImportPersonnelModal()
-                alert(`Successfully imported "${selectedPersonnelToImport.name}"!\n\nThey can now access projects from both companies with their existing login.`)
+                console.log(`Successfully imported "${selectedPersonnelToImport.name}"!\n\nThey can now access projects from both companies with their existing login.`)
             } else {
                 const errorData = await response.json()
-                alert(`Failed to import personnel: ${errorData.error}`)
+                console.log(`Failed to import personnel: ${errorData.error}`)
             }
         } catch (error) {
             console.error('Error importing personnel:', error)
-            alert('Failed to import personnel. Please try again.')
+            console.log('Failed to import personnel. Please try again.')
         }
     }
     
@@ -2004,11 +1881,7 @@ export const Settings = () => {
                                     </button>
                                                                     <button 
                                                                         className='delete-btn'
-                                                                        onClick={() => {
-                                                                            if (window.confirm(`Are you sure you want to delete ${company.name}? This action cannot be undone.`)) {
-                                                                                deleteCompany(company.id)
-                                                                            }
-                                                                        }}
+                                                                        onClick={() => deleteCompany(company.id)}
                                                                     >
                                                                         Delete Company
                                                                     </button>
