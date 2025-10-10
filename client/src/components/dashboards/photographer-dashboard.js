@@ -358,13 +358,13 @@ export const PhotographerDashboardView = () => {
                 ))
                 setSelectedEvent(prev => ({ ...prev, photographer_notes: photographerNotes.trim() }))
                 setPhotographerNotes('')
-                alert('Notes saved successfully!')
+                console.log('Notes saved successfully!')
             } else {
-                alert('Failed to save notes. Please try again.')
+                console.log('Failed to save notes. Please try again.')
             }
         } catch (error) {
             console.error('Error saving photographer notes:', error)
-            alert('Error saving notes. Please try again.')
+            console.log('Error saving notes. Please try again.')
         }
     }
 
@@ -397,13 +397,13 @@ export const PhotographerDashboardView = () => {
                 setSelectedEvent(prev => ({ ...prev, notes: editingNotes.trim() }))
                 setIsEditMode(false)
                 setEditingNotes('')
-                alert('Notes updated successfully!')
+                console.log('Notes updated successfully!')
             } else {
-                alert('Failed to update notes. Please try again.')
+                console.log('Failed to update notes. Please try again.')
             }
         } catch (error) {
             console.error('Error updating notes:', error)
-            alert('Error updating notes. Please try again.')
+            console.log('Error updating notes. Please try again.')
         }
     }
 
@@ -448,7 +448,7 @@ export const PhotographerDashboardView = () => {
             }
         } catch (error) {
             console.error('Error marking shot request as complete:', error)
-            alert('Error marking shot request as complete. Please try again.')
+            console.log('Error marking shot request as complete. Please try again.')
         }
     }
 
@@ -544,7 +544,7 @@ export const PhotographerDashboardView = () => {
             // Fetch ALL events for the photographer (not just current day)
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (!response.ok) {
-                alert('Failed to fetch events. Please try again.')
+                console.log('Failed to fetch events. Please try again.')
                 return
             }
             const allEvents = await response.json()
@@ -568,7 +568,7 @@ export const PhotographerDashboardView = () => {
             })
 
             if (eventsToExport.length === 0) {
-                alert('No upcoming events to export.')
+                console.log('No upcoming events to export.')
                 return
             }
 
@@ -659,7 +659,7 @@ export const PhotographerDashboardView = () => {
             window.URL.revokeObjectURL(url)
         } catch (error) {
             console.error('Error generating iCalendar:', error)
-            alert('Failed to generate calendar file. Please try again.')
+            console.log('Failed to generate calendar file. Please try again.')
         }
     }
 

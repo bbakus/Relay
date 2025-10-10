@@ -394,7 +394,7 @@ export const Personnel = () => {
     console.log('selectedPersonnelForEvent:', selectedPersonnelForEvent)
     
     // Simple test to see if function is called
-    alert('Assignment function called! Check console for details.')
+    console.log('Assignment function called! Check console for details.')
     
     if (!selectedEventForAssign) {
       console.error('No event selected for assignment')
@@ -496,7 +496,7 @@ export const Personnel = () => {
       console.log('Event assignment completed successfully')
     } catch (error) {
       console.error('Error assigning personnel to event:', error)
-      alert('Failed to assign personnel to event. Please try again.')
+      console.log('Failed to assign personnel to event. Please try again.')
     }
   }
 

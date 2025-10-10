@@ -321,7 +321,7 @@ export const EditorDashboardView = () => {
       }
     } catch (error) {
       console.error('Error updating shot request process point:', error)
-      alert(`Failed to update process point: ${error.message}`)
+      console.log(`Failed to update process point: ${error.message}`)
     }
   }
 
@@ -349,7 +349,7 @@ export const EditorDashboardView = () => {
       }
     } catch (error) {
       console.error('Error updating event process point:', error)
-      alert(`Failed to update process point: ${error.message}`)
+      console.log(`Failed to update process point: ${error.message}`)
     }
   }
 
@@ -422,9 +422,7 @@ export const EditorDashboardView = () => {
 
   // Delete note function
   const handleDeleteNote = (noteId) => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      setSavedNotes(prev => prev.filter(note => note.id !== noteId))
-    }
+    setSavedNotes(prev => prev.filter(note => note.id !== noteId))
   }
 
   // Get current project

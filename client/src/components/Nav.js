@@ -82,15 +82,15 @@ export const Nav = () => {
     // Validate password fields if user wants to change password
     if (profileForm.newPassword || profileForm.confirmPassword) {
       if (!profileForm.currentPassword) {
-        alert('Current password is required to change password')
+        console.log('Current password is required to change password')
         return
       }
       if (profileForm.newPassword !== profileForm.confirmPassword) {
-        alert('New passwords do not match')
+        console.log('New passwords do not match')
         return
       }
       if (profileForm.newPassword.length < 6) {
-        alert('New password must be at least 6 characters')
+        console.log('New password must be at least 6 characters')
         return
       }
     }
@@ -118,11 +118,11 @@ export const Nav = () => {
         
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to update profile')
+        console.log(data.error || 'Failed to update profile')
       }
     } catch (error) {
       console.error('Error updating profile:', error)
-      alert('Failed to update profile')
+      console.log('Failed to update profile')
     }
   }
 

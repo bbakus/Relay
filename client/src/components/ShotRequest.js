@@ -709,9 +709,7 @@ export const ShotRequest = () => {
 
         const handleDeleteClick = async (e) => {
             e.stopPropagation()
-            if (window.confirm('Are you sure you want to delete this shot request?')) {
-                await handleDeleteShotRequest(shotRequest.id)
-            }
+            await handleDeleteShotRequest(shotRequest.id)
         }
 
         const handleProcessPointChange = async (e) => {

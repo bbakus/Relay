@@ -252,11 +252,11 @@ export const Deliver = () => {
         
       } else {
         const error = await response.text()
-        alert(`Upload failed: ${error}`)
+        console.log(`Upload failed: ${error}`)
       }
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Upload failed. Please try again.')
+      console.log('Upload failed. Please try again.')
     } finally {
       setLoading(false)
     }

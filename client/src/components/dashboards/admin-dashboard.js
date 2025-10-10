@@ -628,10 +628,6 @@ export const AdminDashboardView = () => {
 
   // Handler for deleting an unassigned event
   const handleDeleteUnassignedEvent = async (eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      return
-    }
-    
     try {
       const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
         method: 'DELETE'
@@ -643,11 +639,11 @@ export const AdminDashboardView = () => {
         setShowUnassignedEventModal(false)
         setSelectedUnassignedEvent(null)
       } else {
-        alert('Failed to delete event')
+        console.log('Failed to delete event')
       }
     } catch (error) {
       console.error('Error deleting event:', error)
-      alert('Error deleting event')
+      console.log('Error deleting event')
     }
   }
 

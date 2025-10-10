@@ -285,7 +285,7 @@ export const Schedule = () => {
     // Column management functions
     const handleAddColumn = async () => {
         if (!selectedProjectId) {
-            alert('Please select a project to add a column.')
+            console.log('Please select a project to add a column.')
             return
         }
         
@@ -316,7 +316,7 @@ export const Schedule = () => {
 
     const handleSaveColumnName = async (columnId) => {
         if (!editingColumnName.trim()) {
-            alert('Column name cannot be empty')
+            console.log('Column name cannot be empty')
             return
         }
         
@@ -349,11 +349,7 @@ export const Schedule = () => {
     const handleDeleteColumn = async (columnId) => {
         // Prevent deletion if only 5 columns remain
         if (scheduleColumns.length <= 5) {
-            alert('Cannot delete column. A minimum of 5 columns is required.')
-            return
-        }
-        
-        if (!window.confirm('Are you sure you want to delete this column? Events in this column will be unassigned.')) {
+            console.log('Cannot delete column. A minimum of 5 columns is required.')
             return
         }
         
@@ -604,9 +600,6 @@ export const Schedule = () => {
     }
 
     const handleDeleteEvent = async (eventId) => {
-        if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-            return
-        }
         
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
@@ -702,11 +695,11 @@ export const Schedule = () => {
                 closeEditModal()
             } else {
                 console.error('Failed to update event')
-                alert('Failed to update event. Please try again.')
+                console.log('Failed to update event. Please try again.')
             }
         } catch (error) {
             console.error('Error updating event:', error)
-            alert('Error updating event. Please try again.')
+            console.log('Error updating event. Please try again.')
         }
     }
 
@@ -747,16 +740,16 @@ export const Schedule = () => {
             })
             
             if (response.ok) {
-                alert('Shot request submitted successfully!')
+                console.log('Shot request submitted successfully!')
                 closeShotRequestModal()
                 fetchShotRequests() // Refresh shot requests to show the new one
             } else {
                 console.error('Failed to submit shot request')
-                alert('Failed to submit shot request. Please try again.')
+                console.log('Failed to submit shot request. Please try again.')
             }
         } catch (error) {
             console.error('Error submitting shot request:', error)
-            alert('Error submitting shot request. Please try again.')
+            console.log('Error submitting shot request. Please try again.')
         }
     }
 
@@ -995,10 +988,6 @@ export const Schedule = () => {
     }
 
     const handleShotRequestDelete = async (shotRequestId) => {
-        if (!window.confirm('Are you sure you want to delete this shot request?')) {
-            return
-        }
-
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests/${shotRequestId}`, {
                 method: 'DELETE'

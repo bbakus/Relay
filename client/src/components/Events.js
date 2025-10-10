@@ -586,7 +586,7 @@ export const Events = () => {
         e.preventDefault()
         
         if (!currentProject) {
-            alert('No current project available to add events to')
+            console.log('No current project available to add events to')
             return
         }
         
@@ -631,11 +631,11 @@ export const Events = () => {
                 }
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to create event')
+                console.log(data.error || 'Failed to create event')
             }
         } catch (error) {
             console.error('Error creating event:', error)
-            alert('Failed to create event')
+            console.log('Failed to create event')
         }
     }
 
@@ -670,11 +670,11 @@ export const Events = () => {
                 })
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to update event')
+                console.log(data.error || 'Failed to update event')
             }
         } catch (error) {
             console.error('Error updating event:', error)
-            alert('Failed to update event')
+            console.log('Failed to update event')
         }
     }
 
@@ -697,10 +697,6 @@ export const Events = () => {
     }
 
     const handleDeleteEvent = async (eventId, eventName) => {
-        // Confirm deletion
-        const confirmed = window.confirm(`Are you sure you want to delete the event "${eventName}"? This action cannot be undone.`)
-        if (!confirmed) return
-
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'DELETE',
@@ -723,11 +719,11 @@ export const Events = () => {
                 })
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to delete event')
+                console.log(data.error || 'Failed to delete event')
             }
         } catch (error) {
             console.error('Error deleting event:', error)
-            alert('Failed to delete event')
+            console.log('Failed to delete event')
         }
     }
     
@@ -735,7 +731,7 @@ export const Events = () => {
         e.preventDefault()
         
         if (!currentProject) {
-            alert('No current project available to add shot request to')
+            console.log('No current project available to add shot request to')
             return
         }
         
@@ -766,14 +762,14 @@ export const Events = () => {
                 })
                 setShowShotRequestModal(false)
                 setLastCreatedEventId(null) // Clear the event ID
-                alert('Shot request created successfully!')
+                console.log('Shot request created successfully!')
             } else {
                 const data = await response.json()
-                alert(data.error || 'Failed to create shot request')
+                console.log(data.error || 'Failed to create shot request')
             }
         } catch (error) {
             console.error('Error creating shot request:', error)
-            alert('Failed to create shot request')
+            console.log('Failed to create shot request')
         }
     }
     
