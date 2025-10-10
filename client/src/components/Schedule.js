@@ -204,11 +204,29 @@ export const Schedule = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true)
+            
+            console.log('🔍 ========== SCHEDULE FETCH EVENTS ==========')
+            console.log('🔍 activeDate:', activeDate)
+            console.log('🔍 selectedProjectId:', selectedProjectId, '(type:', typeof selectedProjectId, ')')
+            console.log('🔍 localStorage project:', localStorage.getItem('relay_selected_project'))
+            
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events`)
             if (response.ok) {
                 const allEvents = await response.json()
-                console.log(`📅 Schedule fetchEvents: Total events fetched: ${allEvents.length}`)
-                console.log(`📅 Schedule fetchEvents: Filtering for date=${activeDate}, projectId=${selectedProjectId}`)
+                console.log(`📅 Total events fetched: ${allEvents.length}`)
+                
+                // Show unique project IDs in all events
+                const uniqueProjectIds = [...new Set(allEvents.map(e => e.project_id))]
+                console.log('📅 Unique project IDs in events:', uniqueProjectIds)
+                
+                // Show events for project 7 specifically
+                const project7Events = allEvents.filter(e => e.project_id === 7)
+                console.log(`📅 Events for project 7:`, project7Events.map(e => ({
+                    id: e.id,
+                    name: e.name,
+                    date: e.date,
+                    schedule_column_id: e.schedule_column_id
+                })))
                 
                 // Filter events for selected date
                 const dayEvents = allEvents
@@ -216,11 +234,21 @@ export const Schedule = () => {
                     .filter(event => {
                         if (!selectedProjectId) return true
                         const matches = event.project_id === Number(selectedProjectId)
-                        console.log(`📅 Event ${event.id} "${event.name}": project_id=${event.project_id}, matches=${matches}`)
+                        if (!matches) {
+                            console.log(`❌ Event ${event.id} "${event.name}": project_id=${event.project_id} doesn't match selectedProjectId=${selectedProjectId}`)
+                        }
                         return matches
                     })
                 
-                console.log(`📅 Schedule fetchEvents: Filtered to ${dayEvents.length} events`)
+                console.log(`📅 After filtering: ${dayEvents.length} events`)
+                console.log('📅 Filtered events:', dayEvents.map(e => ({
+                    id: e.id,
+                    name: e.name,
+                    project_id: e.project_id,
+                    schedule_column_id: e.schedule_column_id
+                })))
+                console.log('🔍 ========================================')
+                
                 setEvents(dayEvents)
             }
         } catch (error) {
