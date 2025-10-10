@@ -36,6 +36,7 @@ export const Events = () => {
     // Filter states for Today's Events section
     const [todayFilterQuickTurn, setTodayFilterQuickTurn] = useState('all')
     const [todayFilterProcessPoint, setTodayFilterProcessPoint] = useState('all')
+    const [todaySortBy, setTodaySortBy] = useState('alphabetical') // 'alphabetical' or 'time'
     
     // Note: Admin filters now handled globally via AuthContext
     
@@ -503,16 +504,22 @@ export const Events = () => {
             filtered = filtered.filter(event => (event.process_point || 'idle') === todayFilterProcessPoint)
         }
         
-        // Sort by start time from earliest to latest
+        // Sort based on selected option
         filtered.sort((a, b) => {
-            if (!a.start_time && !b.start_time) return 0
-            if (!a.start_time) return 1
-            if (!b.start_time) return -1
-            return a.start_time.localeCompare(b.start_time)
+            if (todaySortBy === 'time') {
+                // Sort by start time from earliest to latest
+                if (!a.start_time && !b.start_time) return 0
+                if (!a.start_time) return 1
+                if (!b.start_time) return -1
+                return a.start_time.localeCompare(b.start_time)
+            } else {
+                // Sort alphabetically by name (default)
+                return (a.name || '').localeCompare(b.name || '')
+            }
         })
         
         return filtered
-    }, [todaysEvents, todayFilterQuickTurn, todayFilterProcessPoint, searchQuery])
+    }, [todaysEvents, todayFilterQuickTurn, todayFilterProcessPoint, todaySortBy, searchQuery])
     
     const upcomingEvents = useMemo(() => {
         const targetDate = selectedDate || new Date().toISOString().split('T')[0]
@@ -984,6 +991,18 @@ export const Events = () => {
                                     <option value="cull">Cull</option>
                                     <option value="color">Color</option>
                                     <option value="delivered">Delivered</option>
+                                </select>
+                            </div>
+                            
+                            <div className="events-filter-group">
+                                <label>Sort By:</label>
+                                <select 
+                                    value={todaySortBy} 
+                                    onChange={(e) => setTodaySortBy(e.target.value)}
+                                    className="events-filter-select"
+                                >
+                                    <option value="alphabetical">Alphabetically</option>
+                                    <option value="time">By Time</option>
                                 </select>
                             </div>
                         </div>
