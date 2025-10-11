@@ -683,17 +683,25 @@ export const Schedule = () => {
             })
             
             if (response.ok) {
-                // Update the event in local state
+                const updatedEventData = await response.json()
+                
+                // Update the event in local state with the full response from server
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event.id === eventId 
-                            ? { ...event, ...eventData }
+                            ? { ...event, ...updatedEventData }
                             : event
                     )
                 )
                 
-                // Close the edit modal
-                closeEditModal()
+                // Close edit modal and reopen view modal with updated data
+                setShowEditModal(false)
+                setEditingEvent(null)
+                setSelectedEvent(updatedEventData)
+                setShowModal(true)
+                
+                // Update completed notes if they exist
+                setCompletedNotes(updatedEventData.completed_notes || [])
             } else {
                 console.error('Failed to update event')
                 console.log('Failed to update event. Please try again.')
@@ -1752,6 +1760,13 @@ export const Schedule = () => {
                                             );
                                         })}
                                     </div>
+                                </div>
+                            )}
+                            
+                            {selectedEvent.details && (
+                                <div className="event-detail-row">
+                                    <label>Details:</label>
+                                    <div style={{ whiteSpace: 'pre-wrap' }}>{selectedEvent.details}</div>
                                 </div>
                             )}
                             
