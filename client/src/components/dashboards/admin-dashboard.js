@@ -390,9 +390,17 @@ export const AdminDashboardView = () => {
   
   // Photographer hours calculation
   const photographerHours = useMemo(() => {
-    const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
-    )
+    // Filter photographers by role AND project assignment
+    const photoVideoStaff = personnel.filter(p => {
+      const hasRole = ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
+      
+      // If no project selected, show all photographers
+      if (!selectedProjectId) return hasRole
+      
+      // Only include photographers assigned to the selected project
+      const isAssignedToProject = p.project_ids && p.project_ids.includes(parseInt(selectedProjectId))
+      return hasRole && isAssignedToProject
+    })
     
     // ALWAYS use global date filter for staff assignments
     const dateFilteredEvents = selectedDate 
@@ -480,13 +488,21 @@ export const AdminDashboardView = () => {
     })
     
     return staffHours
-  }, [personnel, projectEvents, selectedDate])
+  }, [personnel, projectEvents, selectedDate, selectedProjectId])
 
   // Available photographers calculation - real-time
   const availablePhotographers = useMemo(() => {
-    const photoVideoStaff = personnel.filter(p => 
-      ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
-    )
+    // Filter photographers by role AND project assignment
+    const photoVideoStaff = personnel.filter(p => {
+      const hasRole = ['Photographer', 'Lead Photographer', 'Videographer'].includes(p.role)
+      
+      // If no project selected, show all photographers
+      if (!selectedProjectId) return hasRole
+      
+      // Only include photographers assigned to the selected project
+      const isAssignedToProject = p.project_ids && p.project_ids.includes(parseInt(selectedProjectId))
+      return hasRole && isAssignedToProject
+    })
     
     const currentTime = new Date()
     const currentDate = currentTime.toISOString().split('T')[0] // YYYY-MM-DD format
@@ -520,7 +536,7 @@ export const AdminDashboardView = () => {
     })
     
     return availableStaff
-  }, [personnel, events])
+  }, [personnel, events, selectedProjectId])
   
   // Unassigned Events - events with no personnel assigned
   const unassignedEvents = useMemo(() => {

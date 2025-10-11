@@ -669,6 +669,7 @@ export const Schedule = () => {
             end_time: formData.get('end_time'),
             location: formData.get('location'),
             notes: editingNotes.trim(),
+            details: formData.get('details'),
             quick_turn: quickTurn
         }
         
