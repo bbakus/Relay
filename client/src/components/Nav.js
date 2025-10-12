@@ -294,27 +294,15 @@ export const Nav = () => {
     return filtered
   }, [projects, selectedOrganizationId])
 
-  // Auto-select first organization for photographers/videographers (they don't have org selector in nav)
-  useEffect(() => {
-    const access = (user?.access || '').toLowerCase()
-    
-    // Check if user is photographer, lead photographer, or videographer
-    const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
-    
-    if (isPhotoVideoRole && organizations.length > 0 && !selectedOrganizationId) {
-      setGlobalOrganization(organizations[0].id.toString())
-    }
-  }, [organizations, selectedOrganizationId, user?.access, setGlobalOrganization])
-
-  // Auto-select first project for photographers/videographers (they don't have project selector in nav)
+  // Auto-select first project for photographers if none selected (only on initial load)
   useEffect(() => {
     const access = (user?.access || '').toLowerCase()
     const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
     
-    if (isPhotoVideoRole && filteredProjects.length > 0 && !selectedProjectId) {
-      setGlobalProject(filteredProjects[0].id.toString())
+    if (isPhotoVideoRole && projects.length > 0 && !selectedProjectId) {
+      setGlobalProject(projects[0].id.toString())
     }
-  }, [filteredProjects, selectedProjectId, user?.access, setGlobalProject])
+  }, [projects, selectedProjectId, user?.access, setGlobalProject])
 
   // Auto-select today's date if no date is selected
   useEffect(() => {
@@ -341,17 +329,9 @@ export const Nav = () => {
     const today = `${year}-${month}-${day}`
     dates.push(today)
     
-    // For photographers/videographers, use the first available project (auto-selected)
-    // instead of relying on selectedProjectId which might be stale
-    const access = (user?.access || '').toLowerCase()
-    const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
-    
+    // Use selected project for all users
     let selectedProject
-    if (isPhotoVideoRole && projects.length > 0) {
-      // Use first project for photo/video roles (they don't manually select)
-      selectedProject = projects[0]
-    } else if (selectedProjectId) {
-      // For other roles, use the selected project
+    if (selectedProjectId) {
       selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
     } else {
       return dates
@@ -412,7 +392,7 @@ export const Nav = () => {
     })
     
     return sortedDates
-  }, [projects, selectedProjectId, user?.access])
+  }, [projects, selectedProjectId])
 
   // Map labels to icon image paths in public/images
   const iconMap = {
@@ -622,8 +602,8 @@ export const Nav = () => {
             </>
           )}
           
-          {/* Project Selection - For Client and Editor */}
-          {(user?.access === 'Client' || user?.access === 'Editor') && (
+          {/* Project Selection - For Client, Editor, Photographer, and Videographer */}
+          {(user?.access === 'Client' || user?.access === 'Editor' || user?.access === 'Photographer' || user?.access === 'Videographer') && (
             <div className='mobile-filter-group'>
               <label>Project:</label>
               <select 
@@ -715,8 +695,8 @@ export const Nav = () => {
               </>
             )}
             
-            {/* Project Selection - For Client and Editor */}
-            {(user?.access === 'Client' || user?.access === 'Editor') && (
+            {/* Project Selection - For Client, Editor, Photographer, and Videographer */}
+            {(user?.access === 'Client' || user?.access === 'Editor' || user?.access === 'Photographer' || user?.access === 'Videographer') && (
               <div className='filter-group'>
                 <label>Project:</label>
                 <select 
