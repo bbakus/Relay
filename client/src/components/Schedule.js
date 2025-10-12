@@ -1888,22 +1888,21 @@ export const Schedule = () => {
                         </div>
                         
                         <div className="modal-footer">
-                            {isAdmin ? (
-                                <>
-                                    <button 
-                                        className="modal-button edit-button" 
-                                        onClick={() => handleEditEvent(selectedEvent)}
-                                    >
-                                        Edit Event
-                                    </button>
-                                    <button 
-                                        className="modal-button delete-button" 
-                                        onClick={() => handleDeleteEvent(selectedEvent.id)}
-                                    >
-                                        Delete Event
-                                    </button>
-                                </>
-                            ) : (
+                            <button 
+                                className="modal-button edit-button" 
+                                onClick={() => handleEditEvent(selectedEvent)}
+                            >
+                                Edit Event
+                            </button>
+                            {isAdmin && (
+                                <button 
+                                    className="modal-button delete-button" 
+                                    onClick={() => handleDeleteEvent(selectedEvent.id)}
+                                >
+                                    Delete Event
+                                </button>
+                            )}
+                            {!isAdmin && (
                                 <button 
                                     className="modal-button shot-request-button" 
                                     onClick={() => handleShotRequest(selectedEvent)}
