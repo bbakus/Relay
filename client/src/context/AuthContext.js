@@ -96,7 +96,12 @@ export function AuthProvider({ children }) {
     const autoSelectProjectForNonAdmin = async () => {
       if (user && user.access !== 'Admin' && !selectedProjectId) {
         try {
-          const response = await fetch(`${API_CONFIG.baseUrl}/api/projects`)
+          // Fetch projects accessible to this user through their personnel records
+          const url = user.id 
+            ? `${API_CONFIG.baseUrl}/api/projects?user_id=${user.id}`
+            : `${API_CONFIG.baseUrl}/api/projects`
+            
+          const response = await fetch(url)
           if (response.ok) {
             const projects = await response.json()
             // Find current project or the first available project

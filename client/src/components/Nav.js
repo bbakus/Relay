@@ -129,23 +129,40 @@ export const Nav = () => {
   // Fetch functions
   const fetchOrganizations = async () => {
     try {
-      // For super admin, filter by selected company. For regular users, get all their company's orgs.
+      // For super admin, filter by selected company
+      // For regular users, get organizations from ALL companies they have personnel in
       let url = `${API_CONFIG.baseUrl}/api/organizations`
+      
       if (user?.is_super_admin && selectedCompanyId) {
         url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`
-      } else if (user?.company_id && !user?.is_super_admin) {
-        url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`
+      } else if (user?.id && !user?.is_super_admin) {
+        // Get organizations from all companies this user has personnel records in
+        // First fetch the user's personnel records to get company IDs
+        const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
+        if (personnelResponse.ok) {
+          const allPersonnel = await personnelResponse.json()
+          const userPersonnel = allPersonnel.filter(p => p.user_id === user.id)
+          const companyIds = [...new Set(userPersonnel.map(p => p.company_id).filter(Boolean))]
+          
+          if (companyIds.length > 0) {
+            // Fetch organizations for all these companies
+            const orgPromises = companyIds.map(companyId => 
+              fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${companyId}`)
+            )
+            const orgResponses = await Promise.all(orgPromises)
+            const orgDataPromises = orgResponses.filter(r => r.ok).map(r => r.json())
+            const orgArrays = await Promise.all(orgDataPromises)
+            const allOrgs = orgArrays.flat()
+            setOrganizations(allOrgs)
+            return
+          }
+        }
       }
-      
-      console.log('Nav.js fetchOrganizations - URL:', url, 'User:', user?.name, 'Company ID:', user?.company_id, 'Is Super Admin:', user?.is_super_admin)
       
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        console.log('Nav.js fetchOrganizations - Fetched organizations:', data)
         setOrganizations(data)
-      } else {
-        console.log('Nav.js fetchOrganizations - Failed with status:', response.status)
       }
     } catch (error) {
       console.error('Error fetching organizations:', error)
@@ -154,8 +171,10 @@ export const Nav = () => {
 
   const fetchProjects = async () => {
     try {
-      // For super admin, filter by selected company's organizations. For regular users, get their company's projects.
+      // For super admin, filter by selected company's organizations
+      // For regular users, get ALL projects they have access to through personnel records
       let url = `${API_CONFIG.baseUrl}/api/projects`
+      
       if (user?.is_super_admin && selectedCompanyId) {
         // First get organizations for the selected company, then filter projects
         const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`)
@@ -166,16 +185,10 @@ export const Nav = () => {
             url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
           }
         }
-      } else if (user?.company_id && !user?.is_super_admin) {
-        // For regular users, get projects for their company's organizations
-        const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
-        if (orgResponse.ok) {
-          const companyOrgs = await orgResponse.json()
-          if (companyOrgs.length > 0) {
-            const orgIds = companyOrgs.map(org => org.id).join(',')
-            url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
-          }
-        }
+      } else if (user?.id && !user?.is_super_admin) {
+        // For regular users, get ALL projects they have access to through their personnel records
+        // This allows photographers to see projects from multiple companies
+        url = `${API_CONFIG.baseUrl}/api/projects?user_id=${user.id}`
       }
       
       const response = await fetch(url)

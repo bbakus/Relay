@@ -641,14 +641,36 @@ class UserSchedule(Resource):
 # Project endpoints
 class ProjectsResource(Resource):
     def get(self):
-        """Get projects filtered by organization IDs or company ID"""
+        """Get projects filtered by organization IDs, company ID, or user's personnel assignments"""
         session = Session()
         try:
-            # Get organization_ids from query parameter (for company filtering)
+            # Get query parameters
             organization_ids = request.args.get('organization_ids')
             company_id = request.args.get('company_id')
+            user_id = request.args.get('user_id')  # NEW: Get projects user has access to through personnel
             
-            if company_id:
+            if user_id:
+                # Get all projects accessible to this user through their personnel records
+                user_personnel = session.query(PersonnelModel).filter_by(user_id=user_id).all()
+                
+                # Get all companies this user's personnel belong to
+                company_ids = list(set([p.company_id for p in user_personnel if p.company_id]))
+                
+                if company_ids:
+                    # Get all organizations from these companies
+                    companies = session.query(Company).filter(Company.id.in_(company_ids)).all()
+                    org_ids = []
+                    for company in companies:
+                        org_ids.extend([org.id for org in company.organizations])
+                    
+                    # Get projects from these organizations
+                    if org_ids:
+                        projects = session.query(ProjectModel).filter(ProjectModel.organization_id.in_(org_ids)).all()
+                    else:
+                        projects = []
+                else:
+                    projects = []
+            elif company_id:
                 # Filter by company ID - get organizations for this company, then projects
                 company = session.query(Company).filter_by(id=company_id).first()
                 if company:
