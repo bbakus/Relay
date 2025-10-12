@@ -162,6 +162,7 @@ export const Nav = () => {
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
+        console.log('Nav fetchOrganizations result:', data.length, 'organizations')
         setOrganizations(data)
       }
     } catch (error) {
@@ -191,9 +192,12 @@ export const Nav = () => {
         url = `${API_CONFIG.baseUrl}/api/projects?user_id=${user.id}`
       }
       
+      console.log('Nav fetchProjects URL:', url)
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
+        console.log('Nav fetchProjects result:', data.length, 'projects')
+        console.log('Projects:', data.map(p => ({ id: p.id, name: p.name, org_id: p.organization_id })))
         setProjects(data)
       }
     } catch (error) {
@@ -280,7 +284,14 @@ export const Nav = () => {
   // Filter projects based on selected organization
   const filteredProjects = useMemo(() => {
     if (!selectedOrganizationId) return projects
-    return projects.filter(project => project.organization_id === parseInt(selectedOrganizationId))
+    const filtered = projects.filter(project => project.organization_id === parseInt(selectedOrganizationId))
+    console.log('Nav filteredProjects:', {
+      selectedOrganizationId,
+      totalProjects: projects.length,
+      filteredCount: filtered.length,
+      filtered: filtered.map(p => ({ id: p.id, name: p.name, org_id: p.organization_id }))
+    })
+    return filtered
   }, [projects, selectedOrganizationId])
 
   // Auto-select first organization for photographers/videographers (they don't have org selector in nav)
