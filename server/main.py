@@ -947,7 +947,8 @@ class EventsResource(Resource):
                 'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                 'schedule_column_id': getattr(event, 'schedule_column_id', None),
                 'project_id': event.project_id,
-                'assigned_personnel': [{'personnel_id': p.id, 'name': p.name, 'role': p.role} for p in event.personnels]
+                # Use JSON column if available, otherwise build from relationship
+                'assigned_personnel': event.assigned_personnel if event.assigned_personnel is not None else [{'personnel_id': p.id, 'name': p.name, 'role': p.role} for p in event.personnels]
             } for event in events], 200
         except Exception as e:
             return {'error': str(e)}, 500
@@ -1075,6 +1076,9 @@ class EventsResource(Resource):
             
             session.commit()
             
+            # Ensure assigned_personnel is never None - convert None to empty list
+            assigned_personnel_value = new_event.assigned_personnel if new_event.assigned_personnel is not None else []
+            
             # Prepare response data
             response_data = {
                 'id': new_event.id,
@@ -1090,7 +1094,7 @@ class EventsResource(Resource):
                 'process_point': getattr(new_event, 'process_point', 'idle'),
                 'schedule_column_id': getattr(new_event, 'schedule_column_id', None),
                 'project_id': new_event.project_id,
-                'assigned_personnel': getattr(new_event, 'assigned_personnel', [])
+                'assigned_personnel': assigned_personnel_value
             }
             
             # Broadcast event creation to all connected clients
@@ -1111,6 +1115,9 @@ class EventDetail(Resource):
         try:
             event = session.query(EventModel).filter_by(id=event_id).first()
             if event:
+                # Use JSON column if available, otherwise build from relationship
+                assigned_personnel_value = event.assigned_personnel if event.assigned_personnel is not None else [{'personnel_id': p.id, 'name': p.name, 'role': p.role} for p in event.personnels]
+                
                 return {
                     'id': event.id,
                     'name': event.name,
@@ -1127,7 +1134,8 @@ class EventDetail(Resource):
                     'process_point': getattr(event, 'process_point', 'idle'),
                     'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                     'schedule_column_id': getattr(event, 'schedule_column_id', None),
-                    'project_id': event.project_id
+                    'project_id': event.project_id,
+                    'assigned_personnel': assigned_personnel_value
                 }, 200
             return {'error': 'Event not found'}, 404
         except Exception as e:
@@ -1207,6 +1215,9 @@ class EventDetail(Resource):
             print(f"🔧 assigned_personnel from DB: {event.assigned_personnel}")
             print(f"🔧 'assigned_photographers' in request: {'assigned_photographers' in data}")
             
+            # Ensure assigned_personnel is never None - convert None to empty list
+            assigned_personnel_value = event.assigned_personnel if event.assigned_personnel is not None else []
+            
             # Prepare response data
             response_data = {
                 'id': event.id,
@@ -1225,7 +1236,7 @@ class EventDetail(Resource):
                 'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                 'schedule_column_id': getattr(event, 'schedule_column_id', None),
                 'project_id': event.project_id,
-                'assigned_personnel': getattr(event, 'assigned_personnel', [])
+                'assigned_personnel': assigned_personnel_value
             }
             
             print(f"🔧 Returning assigned_personnel: {response_data['assigned_personnel']}")
@@ -2825,6 +2836,9 @@ def fix_event_columns():
             # Get full event data for broadcast
             event = session.query(EventModel).filter_by(id=event_data['id']).first()
             if event:
+                # Ensure assigned_personnel is never None - convert None to empty list
+                assigned_personnel_value = event.assigned_personnel if event.assigned_personnel is not None else []
+                
                 broadcast_data = {
                     'id': event.id,
                     'name': event.name,
@@ -2842,7 +2856,7 @@ def fix_event_columns():
                     'process_point_updated_by_name': getattr(event, 'process_point_updated_by_name', None),
                     'schedule_column_id': event.schedule_column_id,
                     'project_id': event.project_id,
-                    'assigned_personnel': getattr(event, 'assigned_personnel', [])
+                    'assigned_personnel': assigned_personnel_value
                 }
                 broadcast_event_update(broadcast_data, action='update')
         

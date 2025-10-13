@@ -544,10 +544,13 @@ export const ShotRequest = () => {
             })
             
             if (response.ok) {
-                // Update the shot request in state
+                // Parse the full response data from backend to preserve all fields
+                const updatedShotRequest = await response.json()
+                
+                // Update the shot request in state with full data
                 setShotRequests(prev => prev.map(sr => 
                     sr.id === shotRequestId 
-                        ? { ...sr, process_point: newProcessPoint }
+                        ? { ...sr, ...updatedShotRequest }
                         : sr
                 ))
                 

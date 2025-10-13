@@ -309,10 +309,13 @@ export const EditorDashboardView = () => {
       })
 
       if (response.ok) {
+        // Parse the full response data from backend to preserve all fields
+        const updatedShotRequest = await response.json()
+        
         setShotRequests(prev => 
           prev.map(sr => 
             sr.id === shotRequestId 
-              ? { ...sr, process_point: newProcessPoint }
+              ? { ...sr, ...updatedShotRequest }
               : sr
           )
         )
@@ -337,10 +340,13 @@ export const EditorDashboardView = () => {
       })
 
       if (response.ok) {
+        // Parse the full response data from backend (includes assigned_personnel)
+        const updatedEvent = await response.json()
+        
         setEvents(prev => 
           prev.map(event => 
             event.id === eventId 
-              ? { ...event, process_point: newProcessPoint }
+              ? { ...event, ...updatedEvent }
               : event
           )
         )

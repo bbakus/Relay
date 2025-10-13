@@ -559,14 +559,17 @@ export const Schedule = () => {
             })
 
             if (response.ok) {
-                // Update the selectedEvent immediately for modal display
-                setSelectedEvent(prev => prev ? { ...prev, process_point: newProcessPoint } : null)
+                // Parse the full response data from backend (includes assigned_personnel)
+                const updatedEvent = await response.json()
                 
-                // Update events state directly instead of fetching all events to prevent scroll jump
+                // Update the selectedEvent with full data from backend
+                setSelectedEvent(prev => prev ? { ...prev, ...updatedEvent } : null)
+                
+                // Update events state with full data to preserve all fields including photographer assignments
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event.id === eventId 
-                            ? { ...event, process_point: newProcessPoint }
+                            ? { ...event, ...updatedEvent }
                             : event
                     )
                 )
@@ -591,14 +594,17 @@ export const Schedule = () => {
             })
 
             if (response.ok) {
-                // Update the selectedEvent immediately for modal display
-                setSelectedEvent(prev => prev ? { ...prev, quick_turn: newQuickTurn } : null)
+                // Parse the full response data from backend (includes assigned_personnel)
+                const updatedEvent = await response.json()
                 
-                // Update events state directly instead of fetching all events to prevent scroll jump
+                // Update the selectedEvent with full data from backend
+                setSelectedEvent(prev => prev ? { ...prev, ...updatedEvent } : null)
+                
+                // Update events state with full data to preserve all fields including photographer assignments
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event.id === eventId 
-                            ? { ...event, quick_turn: newQuickTurn }
+                            ? { ...event, ...updatedEvent }
                             : event
                     )
                 )

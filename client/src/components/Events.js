@@ -566,11 +566,14 @@ export const Events = () => {
                 body: JSON.stringify({ process_point: newProcessPoint })
             })
             if (response.ok) {
-                // Update the event in the local state
+                // Parse the full response data from backend (includes assigned_personnel)
+                const updatedEvent = await response.json()
+                
+                // Update the event in the local state with full data to preserve all fields
                 setEvents(prevEvents =>
                     prevEvents.map(event =>
                         event.id === eventId
-                            ? { ...event, process_point: newProcessPoint }
+                            ? { ...event, ...updatedEvent }
                             : event
                     )
                 )
