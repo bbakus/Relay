@@ -130,14 +130,17 @@ export const Nav = () => {
   const fetchOrganizations = async () => {
     try {
       // For super admin, filter by selected company
+      // For company admin, get their company's organizations
       // For regular users, get organizations from ALL companies they have personnel in
       let url = `${API_CONFIG.baseUrl}/api/organizations`
       
       if (user?.is_super_admin && selectedCompanyId) {
         url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`
-      } else if (user?.id && !user?.is_super_admin) {
-        // Get organizations from all companies this user has personnel records in
-        // First fetch the user's personnel records to get company IDs
+      } else if ((user?.access === 'Admin' || user?.access === 'Coordinator') && user?.company_id) {
+        // Company admin/coordinator: get ONLY their company's organizations
+        url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`
+      } else if (user?.id && !user?.is_super_admin && user?.access !== 'Admin' && user?.access !== 'Coordinator') {
+        // Regular users (photographers, etc.): get organizations from all companies they have personnel in
         const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
         if (personnelResponse.ok) {
           const allPersonnel = await personnelResponse.json()
@@ -173,11 +176,12 @@ export const Nav = () => {
   const fetchProjects = async () => {
     try {
       // For super admin, filter by selected company's organizations
-      // For regular users, get ALL projects they have access to through personnel records
+      // For company admin, get ALL projects in their company's organizations
+      // For regular users, get projects they have access to through personnel records
       let url = `${API_CONFIG.baseUrl}/api/projects`
       
       if (user?.is_super_admin && selectedCompanyId) {
-        // First get organizations for the selected company, then filter projects
+        // Super admin: get projects for selected company
         const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`)
         if (orgResponse.ok) {
           const companyOrgs = await orgResponse.json()
@@ -186,9 +190,18 @@ export const Nav = () => {
             url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
           }
         }
-      } else if (user?.id && !user?.is_super_admin) {
-        // For regular users, get ALL projects they have access to through their personnel records
-        // This allows photographers to see projects from multiple companies
+      } else if ((user?.access === 'Admin' || user?.access === 'Coordinator') && user?.company_id) {
+        // Company admin/coordinator: get ALL projects in their company
+        const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
+        if (orgResponse.ok) {
+          const companyOrgs = await orgResponse.json()
+          if (companyOrgs.length > 0) {
+            const orgIds = companyOrgs.map(org => org.id).join(',')
+            url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
+          }
+        }
+      } else if (user?.id && !user?.is_super_admin && user?.access !== 'Admin' && user?.access !== 'Coordinator') {
+        // Regular users (photographers, etc.): get projects through personnel assignments
         url = `${API_CONFIG.baseUrl}/api/projects?user_id=${user.id}`
       }
       

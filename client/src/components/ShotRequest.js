@@ -93,7 +93,7 @@ export const ShotRequest = () => {
         fetchEvents()
         fetchProjects()
         fetchPersonnel()
-    }, [])
+    }, [selectedProjectId]) // Refetch when project changes
 
     // WebSocket: Listen for real-time shot request updates
     useEffect(() => {
@@ -112,7 +112,13 @@ export const ShotRequest = () => {
     const fetchShotRequests = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/shot-requests`)
+            // Filter by selected project to avoid cross-contamination
+            let url = `${API_CONFIG.baseUrl}/api/shot-requests`
+            if (selectedProjectId) {
+                url = `${API_CONFIG.baseUrl}/api/shot-requests?project_id=${selectedProjectId}`
+            }
+            
+            const response = await fetch(url)
             if (response.ok) {
                 const data = await response.json()
                 setShotRequests(data)
@@ -203,40 +209,28 @@ export const ShotRequest = () => {
     const projectShotRequests = useMemo(() => {
         if (!currentProject) return []
         
-        console.log('🔍 Filtering shot requests by project:', currentProject.name, 'ID:', currentProject.id)
-        console.log('🔍 Total shot requests:', shotRequests.length)
-        
+        // Shot requests are already filtered by backend when selectedProjectId is set
+        // This is just a safety filter for any edge cases
         const filtered = shotRequests.filter(sr => {
             // Check if shot request is associated with events from current project
             if (sr.events && sr.events.length > 0) {
                 const hasProjectEvent = sr.events.some(event => event.project_id === currentProject.id)
-                if (hasProjectEvent) {
-                    console.log(`✅ SR ${sr.id} (${sr.request}): HAS event from project ${currentProject.id}`)
-                    return true
-                }
+                if (hasProjectEvent) return true
             }
             
             // Check if shot request has its own project association
             if (sr.projects && sr.projects.length > 0) {
                 const hasProjectAssoc = sr.projects.some(project => project.id === currentProject.id)
-                if (hasProjectAssoc) {
-                    console.log(`✅ SR ${sr.id} (${sr.request}): HAS project association`)
-                    return true
-                }
+                if (hasProjectAssoc) return true
             }
             
             // Check if shot request has project_id field directly
-            if (sr.project_id === currentProject.id) {
-                console.log(`✅ SR ${sr.id} (${sr.request}): HAS direct project_id match`)
-                return true
-            }
+            if (sr.project_id === currentProject.id) return true
             
-            // If no project association, include it (independent shot requests)
-            console.log(`⚠️ SR ${sr.id} (${sr.request}): INDEPENDENT (no project), project_id=${sr.project_id}`)
-            return true
+            // If no project association, exclude it
+            return false
         })
         
-        console.log('🔍 Filtered to', filtered.length, 'shot requests for project')
         return filtered
     }, [shotRequests, currentProject])
 
@@ -255,25 +249,10 @@ export const ShotRequest = () => {
 
     // Filtered shot requests with all filters applied
     const filteredShotRequests = useMemo(() => {
-        console.log('=== FILTERING SHOT REQUESTS ===')
-        console.log('Total projectShotRequests:', projectShotRequests.length)
-        console.log('selectedDate:', selectedDate)
-        console.log('filterQuickTurn:', filterQuickTurn)
-        console.log('filterProcessPoint:', filterProcessPoint)
-        
         let filtered = projectShotRequests
         
         // Filter by global date - show shot requests for the selected date
         if (selectedDate) {
-            console.log('\n--- BEFORE DATE FILTER ---')
-            filtered.forEach(sr => {
-                const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
-                    sr.events.some(event => event.date === selectedDate)
-                const srDate = sr.date && sr.date !== 'null' && sr.date !== '' ? sr.date : null
-                const hasOwnDateMatch = srDate === selectedDate
-                console.log(`SR ${sr.id} (${sr.request}): rawDate="${sr.date}", normalizedDate="${srDate}", events=${sr.events?.length || 0}, hasEventMatch=${hasEventOnSelectedDate}, hasOwnDate=${hasOwnDateMatch}, PASS=${hasEventOnSelectedDate || hasOwnDateMatch}`)
-            })
-            
             filtered = filtered.filter(sr => {
                 // Check if shot request has events on the selected date
                 const hasEventOnSelectedDate = sr.events && sr.events.length > 0 && 
@@ -287,24 +266,18 @@ export const ShotRequest = () => {
                 // Only show shot requests that match the selected date
                 return hasEventOnSelectedDate || hasOwnDateMatch
             })
-            console.log('AFTER DATE FILTER:', filtered.length)
         }
         
         // Filter by quick turn
         if (filterQuickTurn !== 'all') {
             const isQuickTurn = filterQuickTurn === 'yes'
             filtered = filtered.filter(sr => !!sr.quick_turn === isQuickTurn)
-            console.log('AFTER QUICK TURN FILTER:', filtered.length)
         }
         
         // Filter by process point
         if (filterProcessPoint !== 'all') {
             filtered = filtered.filter(sr => (sr.process_point || 'idle') === filterProcessPoint)
-            console.log('AFTER PROCESS POINT FILTER:', filtered.length)
         }
-        
-        console.log('FINAL FILTERED:', filtered.length)
-        console.log('=== END FILTERING ===\n')
         
         return filtered
     }, [projectShotRequests, selectedDate, filterQuickTurn, filterProcessPoint])

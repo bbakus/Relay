@@ -1592,10 +1592,37 @@ class PersonnelDetail(Resource):
 # Shot Request endpoints
 class ShotRequests(Resource):
     def get(self):
-        """Get all shot requests"""
+        """Get shot requests, optionally filtered by project_id"""
         session = Session()
         try:
-            shot_requests = session.query(ShotRequestModel).all()
+            project_id = request.args.get('project_id')
+            
+            if project_id:
+                # Filter shot requests by project
+                # Get shot requests that are either:
+                # 1. Associated with the project directly, OR
+                # 2. Associated with events from this project
+                project = session.query(ProjectModel).filter_by(id=project_id).first()
+                if not project:
+                    return {'error': 'Project not found'}, 404
+                
+                # Get all shot requests associated with this project
+                shot_requests_set = set()
+                
+                # Method 1: Shot requests linked to this project through projects relationship
+                for sr in project.shot_requests:
+                    shot_requests_set.add(sr)
+                
+                # Method 2: Shot requests linked through events in this project
+                project_events = session.query(EventModel).filter_by(project_id=project_id).all()
+                for event in project_events:
+                    for sr in event.shot_requests:
+                        shot_requests_set.add(sr)
+                
+                shot_requests = list(shot_requests_set)
+            else:
+                # Return all shot requests
+                shot_requests = session.query(ShotRequestModel).all()
             return [{
                 'id': request.id,
                 'request': request.request,
