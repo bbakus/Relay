@@ -1555,7 +1555,6 @@ export const Schedule = () => {
                                                                 ))}
                                                             </div>
                                                         )}
-                                                        {event.notes && <div className='event-notes'>{event.notes}</div>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -1627,7 +1626,6 @@ export const Schedule = () => {
                                                                 ))}
                                                             </div>
                                                         )}
-                                                        {event.notes && <div className='event-notes'>{event.notes}</div>}
                                                     </div>
                                                 ))}
                                             </div>
