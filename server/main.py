@@ -1200,6 +1200,13 @@ class EventDetail(Resource):
             
             session.commit()
             
+            # Refresh the event from the database to get the committed state
+            session.refresh(event)
+            
+            print(f"🔧 Backend EventDetail.put() for event {event.id}")
+            print(f"🔧 assigned_personnel from DB: {event.assigned_personnel}")
+            print(f"🔧 'assigned_photographers' in request: {'assigned_photographers' in data}")
+            
             # Prepare response data
             response_data = {
                 'id': event.id,
@@ -1220,6 +1227,8 @@ class EventDetail(Resource):
                 'project_id': event.project_id,
                 'assigned_personnel': getattr(event, 'assigned_personnel', [])
             }
+            
+            print(f"🔧 Returning assigned_personnel: {response_data['assigned_personnel']}")
             
             # Broadcast event update to all connected clients
             broadcast_event_update(response_data, action='update')
