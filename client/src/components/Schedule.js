@@ -1546,6 +1546,15 @@ export const Schedule = () => {
                                                             {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                         </div>
                                                         <div className='event-location'>{event.location}</div>
+                                                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                            <div className='event-photographers'>
+                                                                {event.assigned_personnel.map((person, idx) => (
+                                                                    <span key={person.personnel_id} className='photographer-badge'>
+                                                                        {person.name}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                         {event.notes && <div className='event-notes'>{event.notes}</div>}
                                                     </div>
                                                 ))}
@@ -1609,6 +1618,15 @@ export const Schedule = () => {
                                                             {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                         </div>
                                                         <div className='event-location'>{event.location}</div>
+                                                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                            <div className='event-photographers'>
+                                                                {event.assigned_personnel.map((person, idx) => (
+                                                                    <span key={person.personnel_id} className='photographer-badge'>
+                                                                        {person.name}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                         {event.notes && <div className='event-notes'>{event.notes}</div>}
                                                     </div>
                                                 ))}
