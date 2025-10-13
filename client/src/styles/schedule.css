@@ -353,14 +353,12 @@
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     overflow-x: auto;
-    overflow-y: auto;
-    max-height: calc(100vh - 250px);
-    min-height: 600px;
+    overflow-y: hidden;
+    min-height: 1000px;
 }
 
-/* Scrollbar styling for both horizontal and vertical scroll */
+/* Scrollbar styling for horizontal scroll */
 .schedule-grid::-webkit-scrollbar {
-    width: 12px;
     height: 12px;
 }
 
@@ -376,10 +374,6 @@
 
 .schedule-grid::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 122, 24, 0.5);
-}
-
-.schedule-grid::-webkit-scrollbar-corner {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .time-column {
@@ -429,8 +423,8 @@
     display: flex;
     flex-direction: column;
     min-height: 100%;
-    overflow-x: visible;
-    overflow-y: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 /* Scrollbar styling for events area */
@@ -496,7 +490,7 @@
     right: 0;
     bottom: 0;
     pointer-events: none;
-    z-index: -1; /* Put behind everything to not interfere with sticky */
+    z-index: 0;
 }
 .global-grid-slot {
     height: 60px;
