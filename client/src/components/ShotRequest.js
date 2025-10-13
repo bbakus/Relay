@@ -118,9 +118,18 @@ export const ShotRequest = () => {
                 url = `${API_CONFIG.baseUrl}/api/shot-requests?project_id=${selectedProjectId}`
             }
             
+            console.log('🔍 ShotRequest page fetchShotRequests URL:', url)
+            
             const response = await fetch(url)
             if (response.ok) {
                 const data = await response.json()
+                console.log('🔍 Fetched shot requests:', data.length)
+                console.log('🔍 Shot requests:', data.map(sr => ({
+                    id: sr.id,
+                    request: sr.request,
+                    events: sr.events?.map(e => ({ id: e.id, name: e.name, project_id: e.project_id })),
+                    projects: sr.projects?.map(p => ({ id: p.id, name: p.name }))
+                })))
                 setShotRequests(data)
             }
         } catch (error) {

@@ -1652,7 +1652,11 @@ class ShotRequests(Resource):
                     'name': person.name,
                     'email': person.email,
                     'role': person.role
-                } for person in request.personnels]
+                } for person in request.personnels],
+                'projects': [{
+                    'id': project.id,
+                    'name': project.name
+                } for project in request.projects]
             } for request in shot_requests], 200
         except Exception as e:
             return {'error': str(e)}, 500
