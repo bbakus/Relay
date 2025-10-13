@@ -1104,12 +1104,10 @@ export const PhotographerDashboardView = () => {
                                 </div>
                             )}
                             
-                            {selectedEvent.details && (
-                                <div className="photographer-event-detail-row">
-                                    <label>Details:</label>
-                                    <span>{selectedEvent.details}</span>
-                                </div>
-                            )}
+                            <div className="photographer-event-detail-row">
+                                <label>Details:</label>
+                                <span>{selectedEvent.details || 'No details provided'}</span>
+                            </div>
                             
                             <div className="photographer-event-detail-row">
                                 <label>Status:</label>
