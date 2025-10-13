@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
 from werkzeug.utils import secure_filename
@@ -1160,15 +1161,17 @@ class EventDetail(Resource):
                 
                 # Clear existing assignments
                 event.personnels.clear()
-                event.assigned_personnel = []
+                
+                # Build new assigned_personnel list
+                new_assigned_personnel = []
                 
                 # Add new assignments
                 for personnel_id in assigned_photographers:
                     # Verify the personnel exists and is a photographer/videographer
                     personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
                     if personnel and personnel.role in ['Photographer', 'Lead Photographer', 'Videographer']:
-                        # Add to event's assigned_personnel
-                        event.assigned_personnel.append({
+                        # Add to assigned_personnel list
+                        new_assigned_personnel.append({
                             'personnel_id': personnel_id,
                             'name': personnel.name,
                             'role': personnel.role
@@ -1176,6 +1179,11 @@ class EventDetail(Resource):
                         
                         # Add to the many-to-many relationship
                         event.personnels.append(personnel)
+                
+                # Reassign the entire list to trigger SQLAlchemy change detection for JSON column
+                event.assigned_personnel = new_assigned_personnel
+                # Explicitly mark as modified for JSON column
+                flag_modified(event, 'assigned_personnel')
 
             # Track who updated the process point
             if 'process_point' in data and data['process_point'] != event.process_point:
