@@ -496,7 +496,7 @@
     right: 0;
     bottom: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1; /* Put behind everything to not interfere with sticky */
 }
 .global-grid-slot {
     height: 60px;
