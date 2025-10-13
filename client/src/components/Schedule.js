@@ -244,6 +244,9 @@ export const Schedule = () => {
             if (response.ok) {
                 const allShotRequests = await response.json()
                 
+                console.log('📅 Schedule fetchShotRequests: Total fetched:', allShotRequests.length)
+                console.log('📅 activeDate:', activeDate, 'selectedProjectId:', selectedProjectId)
+                
                 // Filter shot requests for selected date and project
                 const filteredShotRequests = allShotRequests.filter(sr => {
                     // Check if shot request has events on the selected date
@@ -274,6 +277,14 @@ export const Schedule = () => {
                     
                     return dateMatch && projectMatch
                 })
+                
+                console.log('📅 Schedule fetchShotRequests: Filtered to', filteredShotRequests.length, 'SRs')
+                console.log('📅 Filtered SRs:', filteredShotRequests.map(sr => ({
+                    id: sr.id,
+                    request: sr.request,
+                    schedule_column_id: sr.schedule_column_id,
+                    hasTime: !!(sr.start_time && sr.end_time)
+                })))
                 
                 setShotRequests(filteredShotRequests)
             }
@@ -1220,7 +1231,11 @@ export const Schedule = () => {
         return srByColumn
     }
 
-    const shotRequestsByColumn = useMemo(() => getShotRequestsByColumn(), [filteredShotRequests, scheduleColumns])
+    const shotRequestsByColumn = useMemo(() => {
+        const result = getShotRequestsByColumn()
+        console.log('📊 shotRequestsByColumn:', Object.keys(result).map(key => `${key}: ${result[key].length} SRs`))
+        return result
+    }, [filteredShotRequests, scheduleColumns])
 
     // Project status calculation based on active date
     const getProjectStatus = (project) => {
