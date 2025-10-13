@@ -688,6 +688,10 @@ export const Schedule = () => {
                 : []
         }
         
+        console.log('🔧 Updating event:', eventId)
+        console.log('🔧 editingEvent.assigned_personnel:', editingEvent.assigned_personnel)
+        console.log('🔧 Sending eventData:', eventData)
+        
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${eventId}`, {
                 method: 'PUT',
@@ -699,6 +703,9 @@ export const Schedule = () => {
             
             if (response.ok) {
                 const updatedEventData = await response.json()
+                
+                console.log('🔧 Response from server:', updatedEventData)
+                console.log('🔧 assigned_personnel in response:', updatedEventData.assigned_personnel)
                 
                 // Update the event in local state with the full response from server
                 setEvents(prevEvents => 
