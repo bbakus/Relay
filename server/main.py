@@ -1806,7 +1806,7 @@ class ShotRequestDetail(Resource):
             
             session.commit()
             
-            # Prepare response data
+            # Prepare response data with all relationships
             response_data = {
                 'id': shot_request.id,
                 'request': shot_request.request,
@@ -1819,7 +1819,28 @@ class ShotRequestDetail(Resource):
                 'end_time': shot_request.end_time,
                 'deadline': shot_request.deadline,
                 'process_point': getattr(shot_request, 'process_point', 'idle'),
-                'status': getattr(shot_request, 'status', 'open')
+                'process_point_updated_by_name': getattr(shot_request, 'process_point_updated_by_name', None),
+                'status': getattr(shot_request, 'status', 'open'),
+                'schedule_column_id': getattr(shot_request, 'schedule_column_id', None),
+                'events': [{
+                    'id': event.id,
+                    'name': event.name,
+                    'date': event.date,
+                    'start_time': event.start_time,
+                    'end_time': event.end_time,
+                    'location': event.location,
+                    'project_id': event.project_id
+                } for event in shot_request.events],
+                'personnels': [{
+                    'id': person.id,
+                    'name': person.name,
+                    'email': person.email,
+                    'role': person.role
+                } for person in shot_request.personnels],
+                'projects': [{
+                    'id': project.id,
+                    'name': project.name
+                } for project in shot_request.projects]
             }
             
             # Broadcast shot request update to all connected clients

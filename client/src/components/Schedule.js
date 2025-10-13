@@ -832,14 +832,22 @@ export const Schedule = () => {
             })
 
             if (response.ok) {
-                // Update events state directly instead of fetching all events
+                // Get the full updated event from the server response
+                const updatedEvent = await response.json()
+                
+                // Update events state with full event data from server (preserves all fields)
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event.id === eventId 
-                            ? { ...event, schedule_column_id: newScheduleColumnId }
+                            ? { ...event, ...updatedEvent }
                             : event
                     )
                 )
+                
+                // Update selectedEvent if this is the currently viewed event
+                if (selectedEvent?.id === eventId) {
+                    setSelectedEvent({ ...selectedEvent, ...updatedEvent })
+                }
                 
                 // Restore scroll position after state update
                 setTimeout(() => {
@@ -920,14 +928,22 @@ export const Schedule = () => {
             })
 
             if (response.ok) {
-                // Update shot requests state
+                // Get the full updated shot request from the server response
+                const updatedShotRequest = await response.json()
+                
+                // Update shot requests state with full data from server (preserves all fields)
                 setShotRequests(prevRequests => 
                     prevRequests.map(sr => 
                         sr.id === shotRequestId 
-                            ? { ...sr, schedule_column_id: newScheduleColumnId }
+                            ? { ...sr, ...updatedShotRequest }
                             : sr
                     )
                 )
+                
+                // Update selectedShotRequest if this is the currently viewed one
+                if (selectedShotRequest?.id === shotRequestId) {
+                    setSelectedShotRequest({ ...selectedShotRequest, ...updatedShotRequest })
+                }
                 
                 setTimeout(() => {
                     window.scrollTo(0, scrollPosition)
