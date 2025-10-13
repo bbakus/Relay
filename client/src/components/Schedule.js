@@ -670,7 +670,11 @@ export const Schedule = () => {
             location: formData.get('location'),
             notes: editingNotes.trim(),
             details: formData.get('details'),
-            quick_turn: quickTurn
+            quick_turn: quickTurn,
+            // Preserve existing photographer assignments
+            assigned_photographers: editingEvent.assigned_personnel 
+                ? editingEvent.assigned_personnel.map(p => p.personnel_id)
+                : []
         }
         
         try {
