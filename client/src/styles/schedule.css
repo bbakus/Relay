@@ -453,9 +453,6 @@
     backdrop-filter: blur(10px);
     border-bottom: 2px solid rgba(255, 122, 24, 0.4);
     min-width: fit-content;
-    position: sticky;
-    top: 0;
-    z-index: 100;
 }
 
 .column-header {
