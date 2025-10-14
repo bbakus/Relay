@@ -1078,254 +1078,260 @@ export const Events = () => {
                         </div>
                     </div>
                 <div className="events-main-grid">
-                    {/* Today's Events - or Selected Date Events */}
-                    <div className="events-panel-section">
-                        <div className="events-section-header">
-                            <h2>
-                                {selectedDate ? `Events for ${formatDateForHeader(selectedDate)}` : "Today's Events"}
-                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
-                            </h2>
-                            <span className="events-count-badge">{filteredTodaysEvents.length}</span>
-                        </div>
-                        
-                        {/* Today's Events Filters */}
-                        <div className="events-filter-controls">
-                            <div className="events-filter-group">
-                                <label>Quick Turn:</label>
-                                <select 
-                                    value={todayFilterQuickTurn} 
-                                    onChange={(e) => setTodayFilterQuickTurn(e.target.value)}
-                                    className="events-filter-select"
-                                >
-                                    <option value="all">All</option>
-                                    <option value="yes">Quick Turn</option>
-                                    <option value="no">Standard</option>
-                                </select>
-                            </div>
-                            
-                            <div className="events-filter-group">
-                                <label>Process:</label>
-                                <select 
-                                    value={todayFilterProcessPoint} 
-                                    onChange={(e) => setTodayFilterProcessPoint(e.target.value)}
-                                    className="events-filter-select"
-                                >
-                                    <option value="all">All</option>
-                                    <option value="idle">Idle</option>
-                                    <option value="ingest">Ingest</option>
-                                    <option value="cull">Cull</option>
-                                    <option value="color">Color</option>
-                                    <option value="delivered">Delivered</option>
-                                </select>
-                            </div>
-                            
-                            <div className="events-filter-group">
-                                <label>Sort By:</label>
-                                <select 
-                                    value={todaySortBy} 
-                                    onChange={(e) => setTodaySortBy(e.target.value)}
-                                    className="events-filter-select"
-                                >
-                                    <option value="alphabetical">Alphabetically</option>
-                                    <option value="time">By Time</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div className="events-panel-list">
-                            {filteredTodaysEvents.length === 0 ? (
-                                <p className="events-no-results">No events match the current filters</p>
-                            ) : (
-                                filteredTodaysEvents.map(event => (
-                                    <EventCard key={event.id} event={event} showProcessColor={true} panelId="today" />
-                                ))
-                            )}
-                        </div>
-                    </div>
-                    
-                    {/* Live Events and Upcoming Events - Side by Side */}
-                    <div className="events-panel-dual">
-                        {/* Live Events */}
-                        <div className="events-panel-section events-panel-half">
+                    {/* Top Row */}
+                    <div className="events-top-row">
+                        {/* Today's Events - or Selected Date Events - LEFT */}
+                        <div className="events-panel-section events-today-panel">
                             <div className="events-section-header">
                                 <h2>
-                                    Live Events
+                                    {selectedDate ? `Events for ${formatDateForHeader(selectedDate)}` : "Today's Events"}
                                     {searchQuery && <span className="events-search-indicator">Searching...</span>}
                                 </h2>
-                                <span className="events-count-badge">{liveEvents.length}</span>
+                                <span className="events-count-badge">{filteredTodaysEvents.length}</span>
                             </div>
-                            <div className="events-panel-list">
-                                {liveEvents.length === 0 ? (
-                                    <p className="events-no-results">No events currently ongoing</p>
-                                ) : (
-                                    liveEvents.map(event => (
-                                        <EventCard key={event.id} event={event} panelId="live" />
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                        
-                        {/* Upcoming Events */}
-                        <div className="events-panel-section events-panel-half">
-                            <div className="events-section-header">
-                                <h2>
-                                    Upcoming Events
-                                    {searchQuery && <span className="events-search-indicator">Searching...</span>}
-                                </h2>
-                                <span className="events-count-badge">{upcomingEvents.length}</span>
-                            </div>
-                            <div className="events-panel-list">
-                                {upcomingEvents.length === 0 ? (
-                                    <p className="events-no-results">No upcoming events</p>
-                                ) : (
-                                    upcomingEvents.map(event => (
-                                        <EventCard key={event.id} event={event} panelId="upcoming" />
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {/* Mini Schedule View - Column Navigation */}
-                    <div className="events-panel-section events-mini-schedule">
-                        <div className="events-section-header">
-                            <h2>Schedule View</h2>
-                            {scheduleColumns.length > 0 && (
-                                <div className="mini-schedule-navigation">
-                                    <button 
-                                        onClick={goToPrevColumn} 
-                                        disabled={currentColumnIndex === 0}
-                                        className="mini-schedule-nav-btn"
+                            
+                            {/* Today's Events Filters */}
+                            <div className="events-filter-controls">
+                                <div className="events-filter-group">
+                                    <label>Quick Turn:</label>
+                                    <select 
+                                        value={todayFilterQuickTurn} 
+                                        onChange={(e) => setTodayFilterQuickTurn(e.target.value)}
+                                        className="events-filter-select"
                                     >
-                                        ←
-                                    </button>
-                                    <span className="mini-schedule-column-name">
-                                        {scheduleColumns[currentColumnIndex]?.name || 'Column'}
-                                    </span>
-                                    <button 
-                                        onClick={goToNextColumn} 
-                                        disabled={currentColumnIndex === scheduleColumns.length - 1}
-                                        className="mini-schedule-nav-btn"
-                                    >
-                                        →
-                                    </button>
+                                        <option value="all">All</option>
+                                        <option value="yes">Quick Turn</option>
+                                        <option value="no">Standard</option>
+                                    </select>
                                 </div>
-                            )}
+                                
+                                <div className="events-filter-group">
+                                    <label>Process:</label>
+                                    <select 
+                                        value={todayFilterProcessPoint} 
+                                        onChange={(e) => setTodayFilterProcessPoint(e.target.value)}
+                                        className="events-filter-select"
+                                    >
+                                        <option value="all">All</option>
+                                        <option value="idle">Idle</option>
+                                        <option value="ingest">Ingest</option>
+                                        <option value="cull">Cull</option>
+                                        <option value="color">Color</option>
+                                        <option value="delivered">Delivered</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="events-filter-group">
+                                    <label>Sort By:</label>
+                                    <select 
+                                        value={todaySortBy} 
+                                        onChange={(e) => setTodaySortBy(e.target.value)}
+                                        className="events-filter-select"
+                                    >
+                                        <option value="alphabetical">Alphabetically</option>
+                                        <option value="time">By Time</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="events-panel-list">
+                                {filteredTodaysEvents.length === 0 ? (
+                                    <p className="events-no-results">No events match the current filters</p>
+                                ) : (
+                                    filteredTodaysEvents.map(event => (
+                                        <EventCard key={event.id} event={event} showProcessColor={true} panelId="today" />
+                                    ))
+                                )}
+                            </div>
                         </div>
                         
-                        <div className="mini-schedule-container">
-                            {scheduleColumns.length === 0 ? (
-                                <p className="events-no-results">No schedule columns configured for this project</p>
-                            ) : (
-                                <div className="mini-schedule-column">
-                                    {scheduleColumns[currentColumnIndex] && eventsByColumn[scheduleColumns[currentColumnIndex].id]?.length === 0 ? (
-                                        <p className="events-no-results">No events in this column</p>
+                        {/* Live Events and Upcoming Events - Side by Side - RIGHT */}
+                        <div className="events-panel-dual">
+                            {/* Live Events */}
+                            <div className="events-panel-section events-panel-half">
+                                <div className="events-section-header">
+                                    <h2>
+                                        Live Events
+                                        {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                                    </h2>
+                                    <span className="events-count-badge">{liveEvents.length}</span>
+                                </div>
+                                <div className="events-panel-list">
+                                    {liveEvents.length === 0 ? (
+                                        <p className="events-no-results">No events currently ongoing</p>
                                     ) : (
-                                        scheduleColumns[currentColumnIndex] && eventsByColumn[scheduleColumns[currentColumnIndex].id]?.map(event => {
-                                            const colors = getProcessPointColor(event.process_point)
-                                            const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
-                                            return (
-                                                <div 
-                                                    key={event.id} 
-                                                    className={`mini-schedule-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
-                                                    style={{
-                                                        backgroundColor: colors.backgroundColor,
-                                                        border: isUnassigned ? '3px solid #dc3545' : `2px solid ${colors.borderColor}`
-                                                    }}
-                                                    onClick={() => toggleEventExpansion('mini-schedule', event.id)}
-                                                >
-                                                    <div className="mini-schedule-event-header">
-                                                        <h4>{event.name}</h4>
-                                                        {event.quick_turn && <span className="quick-turn-dot"></span>}
-                                                    </div>
-                                                    <div className="mini-schedule-event-time">
-                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                    </div>
-                                                    <div className="mini-schedule-event-location">{event.location}</div>
-                                                    {event.assigned_personnel && event.assigned_personnel.length > 0 && (
-                                                        <div className='mini-schedule-photographers'>
-                                                            {event.assigned_personnel.map((person) => (
-                                                                <span key={person.personnel_id} className='photographer-badge'>
-                                                                    {person.name}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )
-                                        })
+                                        liveEvents.map(event => (
+                                            <EventCard key={event.id} event={event} panelId="live" />
+                                        ))
                                     )}
                                 </div>
-                            )}
+                            </div>
+                            
+                            {/* Upcoming Events */}
+                            <div className="events-panel-section events-panel-half">
+                                <div className="events-section-header">
+                                    <h2>
+                                        Upcoming Events
+                                        {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                                    </h2>
+                                    <span className="events-count-badge">{upcomingEvents.length}</span>
+                                </div>
+                                <div className="events-panel-list">
+                                    {upcomingEvents.length === 0 ? (
+                                        <p className="events-no-results">No upcoming events</p>
+                                    ) : (
+                                        upcomingEvents.map(event => (
+                                            <EventCard key={event.id} event={event} panelId="upcoming" />
+                                        ))
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    {/* All Events */}
-                    <div className="events-panel-section">
-                        <div className="events-section-header">
-                            <h2>
-                                All Events in Project
-                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
-                            </h2>
-                            <span className="events-count-badge">{filteredProjectEvents.length}</span>
-                        </div>
-                        
-                        {/* Filters */}
-                        <div className="events-filter-controls">
-                            <div className="events-filter-group">
-                                <label>Date:</label>
-                                <select 
-                                    value={filterDate} 
-                                    onChange={(e) => setFilterDate(e.target.value)}
-                                    className="events-filter-select"
-                                >
-                                    <option value="all">All Dates</option>
-                                    {availableDates.map(date => (
-                                        <option key={date} value={date}>
-                                            {formatDateForHeader(date)}
-                                        </option>
-                                    ))}
-                                </select>
+                    {/* Bottom Row */}
+                    <div className="events-bottom-row">
+                        {/* Mini Schedule View - Column Navigation - LEFT */}
+                        <div className="events-panel-section events-mini-schedule">
+                            <div className="events-section-header">
+                                <h2>Schedule View</h2>
+                                {scheduleColumns.length > 0 && (
+                                    <div className="mini-schedule-navigation">
+                                        <button 
+                                            onClick={goToPrevColumn} 
+                                            disabled={currentColumnIndex === 0}
+                                            className="mini-schedule-nav-btn"
+                                        >
+                                            ←
+                                        </button>
+                                        <span className="mini-schedule-column-name">
+                                            {scheduleColumns[currentColumnIndex]?.name || 'Column'}
+                                        </span>
+                                        <button 
+                                            onClick={goToNextColumn} 
+                                            disabled={currentColumnIndex === scheduleColumns.length - 1}
+                                            className="mini-schedule-nav-btn"
+                                        >
+                                            →
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                             
-                            <div className="events-filter-group">
-                                <label>Quick Turn:</label>
-                                <select 
-                                    value={filterQuickTurn} 
-                                    onChange={(e) => setFilterQuickTurn(e.target.value)}
-                                    className="events-filter-select"
-                                >
-                                    <option value="all">All</option>
-                                    <option value="yes">Quick Turn</option>
-                                    <option value="no">Standard</option>
-                                </select>
-                            </div>
-                            
-                            <div className="events-filter-group">
-                                <label>Process:</label>
-                                <select 
-                                    value={filterProcessPoint} 
-                                    onChange={(e) => setFilterProcessPoint(e.target.value)}
-                                    className="events-filter-select"
-                                >
-                                    <option value="all">All</option>
-                                    <option value="idle">Idle</option>
-                                    <option value="ingest">Ingest</option>
-                                    <option value="cull">Cull</option>
-                                    <option value="color">Color</option>
-                                    <option value="delivered">Delivered</option>
-                                </select>
+                            <div className="mini-schedule-container">
+                                {scheduleColumns.length === 0 ? (
+                                    <p className="events-no-results">No schedule columns configured for this project</p>
+                                ) : (
+                                    <div className="mini-schedule-column">
+                                        {scheduleColumns[currentColumnIndex] && eventsByColumn[scheduleColumns[currentColumnIndex].id]?.length === 0 ? (
+                                            <p className="events-no-results">No events in this column</p>
+                                        ) : (
+                                            scheduleColumns[currentColumnIndex] && eventsByColumn[scheduleColumns[currentColumnIndex].id]?.map(event => {
+                                                const colors = getProcessPointColor(event.process_point)
+                                                const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
+                                                return (
+                                                    <div 
+                                                        key={event.id} 
+                                                        className={`mini-schedule-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
+                                                        style={{
+                                                            backgroundColor: colors.backgroundColor,
+                                                            border: isUnassigned ? '3px solid #dc3545' : `2px solid ${colors.borderColor}`
+                                                        }}
+                                                        onClick={() => toggleEventExpansion('mini-schedule', event.id)}
+                                                    >
+                                                        <div className="mini-schedule-event-header">
+                                                            <h4>{event.name}</h4>
+                                                            {event.quick_turn && <span className="quick-turn-dot"></span>}
+                                                        </div>
+                                                        <div className="mini-schedule-event-time">
+                                                            {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                        </div>
+                                                        <div className="mini-schedule-event-location">{event.location}</div>
+                                                        {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                            <div className='mini-schedule-photographers'>
+                                                                {event.assigned_personnel.map((person) => (
+                                                                    <span key={person.personnel_id} className='photographer-badge'>
+                                                                        {person.name}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                         
-                        <div className="events-panel-list">
-                            {filteredProjectEvents.length === 0 ? (
-                                <p className="events-no-results">No events match the current filters</p>
-                            ) : (
-                                filteredProjectEvents.map(event => (
-                                    <EventCard key={event.id} event={event} showProcessColor={true} panelId="all" />
-                                ))
-                            )}
+                        {/* All Events - RIGHT */}
+                        <div className="events-panel-section">
+                            <div className="events-section-header">
+                                <h2>
+                                    All Events in Project
+                                    {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                                </h2>
+                                <span className="events-count-badge">{filteredProjectEvents.length}</span>
+                            </div>
+                            
+                            {/* Filters */}
+                            <div className="events-filter-controls">
+                                <div className="events-filter-group">
+                                    <label>Date:</label>
+                                    <select 
+                                        value={filterDate} 
+                                        onChange={(e) => setFilterDate(e.target.value)}
+                                        className="events-filter-select"
+                                    >
+                                        <option value="all">All Dates</option>
+                                        {availableDates.map(date => (
+                                            <option key={date} value={date}>
+                                                {formatDateForHeader(date)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div className="events-filter-group">
+                                    <label>Quick Turn:</label>
+                                    <select 
+                                        value={filterQuickTurn} 
+                                        onChange={(e) => setFilterQuickTurn(e.target.value)}
+                                        className="events-filter-select"
+                                    >
+                                        <option value="all">All</option>
+                                        <option value="yes">Quick Turn</option>
+                                        <option value="no">Standard</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="events-filter-group">
+                                    <label>Process:</label>
+                                    <select 
+                                        value={filterProcessPoint} 
+                                        onChange={(e) => setFilterProcessPoint(e.target.value)}
+                                        className="events-filter-select"
+                                    >
+                                        <option value="all">All</option>
+                                        <option value="idle">Idle</option>
+                                        <option value="ingest">Ingest</option>
+                                        <option value="cull">Cull</option>
+                                        <option value="color">Color</option>
+                                        <option value="delivered">Delivered</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="events-panel-list">
+                                {filteredProjectEvents.length === 0 ? (
+                                    <p className="events-no-results">No events match the current filters</p>
+                                ) : (
+                                    filteredProjectEvents.map(event => (
+                                        <EventCard key={event.id} event={event} showProcessColor={true} panelId="all" />
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

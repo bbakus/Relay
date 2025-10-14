@@ -187,6 +187,20 @@
     min-height: 80vh;
 }
 
+/* Top Row: Events for Day (left) + Live/Upcoming (right) */
+.events-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+/* Bottom Row: Mini Schedule (left) + All Events (right) */
+.events-bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
 .events-panel-section {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -207,15 +221,20 @@
     border-color: rgba(255, 122, 24, 0.3);
 }
 
-/* Dual panel container for Live + Upcoming */
+/* Dual panel container for Live + Upcoming - stacked vertically */
 .events-panel-dual {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .events-panel-half {
-    min-height: 300px;
+    min-height: 250px;
+}
+
+/* Today's Events Panel */
+.events-today-panel {
+    min-height: 520px;
 }
 
 /* Mini Schedule Panel */
@@ -702,13 +721,22 @@
         padding: 0 10px;
     }
     
-    .events-panel-dual {
+    .events-top-row,
+    .events-bottom-row {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .events-panel-dual {
         gap: 20px;
     }
     
     .events-panel-half {
         min-height: 250px;
+    }
+    
+    .events-today-panel {
+        min-height: 400px;
     }
     
     .mini-schedule-container {
