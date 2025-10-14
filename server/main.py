@@ -1057,10 +1057,14 @@ class EventsResource(Resource):
             
             # Handle photographer assignments
             assigned_photographers = data.get('assigned_photographers', [])
+            print(f"🔍 POST /api/events - Creating event '{new_event.name}'")
+            print(f"🔍 assigned_photographers from request: {assigned_photographers}")
+            
             if assigned_photographers:
                 for personnel_id in assigned_photographers:
                     # Verify the personnel exists and is a photographer/videographer
                     personnel = session.query(PersonnelModel).filter_by(id=personnel_id).first()
+                    print(f"🔍 Processing personnel_id {personnel_id}: {personnel.name if personnel else 'NOT FOUND'}")
                     if personnel and personnel.role in ['Photographer', 'Lead Photographer', 'Videographer']:
                         # Add to event's assigned_personnel
                         if not hasattr(new_event, 'assigned_personnel') or new_event.assigned_personnel is None:
@@ -1070,11 +1074,20 @@ class EventsResource(Resource):
                             'name': personnel.name,
                             'role': personnel.role
                         })
+                        print(f"🔍 Added {personnel.name} to assigned_personnel")
                         
                         # Add to the many-to-many relationship
                         new_event.personnels.append(personnel)
             
+            print(f"🔍 Final assigned_personnel before commit: {new_event.assigned_personnel}")
+            
+            # Explicitly mark the JSON column as modified
+            if assigned_photographers:
+                flag_modified(new_event, 'assigned_personnel')
+                print(f"🔍 Marked assigned_personnel as modified")
+            
             session.commit()
+            print(f"🔍 After commit, assigned_personnel: {new_event.assigned_personnel}")
             
             # Ensure assigned_personnel is never None - convert None to empty list
             assigned_personnel_value = new_event.assigned_personnel if new_event.assigned_personnel is not None else []
@@ -1096,6 +1109,8 @@ class EventsResource(Resource):
                 'project_id': new_event.project_id,
                 'assigned_personnel': assigned_personnel_value
             }
+            
+            print(f"🔍 Returning response with assigned_personnel: {response_data['assigned_personnel']}")
             
             # Broadcast event creation to all connected clients
             broadcast_event_update(response_data, action='create')

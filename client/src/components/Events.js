@@ -16,6 +16,8 @@ export const Events = () => {
     const [projects, setProjects] = useState([])
     const [organizations, setOrganizations] = useState([])
     const [personnel, setPersonnel] = useState([])
+    const [scheduleColumns, setScheduleColumns] = useState([])
+    const [currentColumnIndex, setCurrentColumnIndex] = useState(0)
     const [loading, setLoading] = useState(true)
     const [showAddEventModal, setShowAddEventModal] = useState(false)
     const [showEditEventModal, setShowEditEventModal] = useState(false)
@@ -136,6 +138,14 @@ export const Events = () => {
         })
     }, [])
     
+    // Fetch schedule columns when project changes
+    useEffect(() => {
+        if (selectedProjectId) {
+            fetchScheduleColumns()
+            setCurrentColumnIndex(0) // Reset to first column when project changes
+        }
+    }, [selectedProjectId])
+    
     // WebSocket: Listen for real-time event updates
     useEffect(() => {
         if (!isConnected) return
@@ -216,6 +226,22 @@ export const Events = () => {
             }
         } catch (error) {
             console.error('Error fetching personnel:', error)
+        }
+    }
+
+    const fetchScheduleColumns = async () => {
+        try {
+            if (!selectedProjectId) {
+                setScheduleColumns([])
+                return
+            }
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}`)
+            if (response.ok) {
+                const data = await response.json()
+                setScheduleColumns(data)
+            }
+        } catch (error) {
+            console.error('Error fetching schedule columns:', error)
         }
     }
     
@@ -553,6 +579,59 @@ export const Events = () => {
         return filtered
     }, [projectEvents, selectedDate, currentTimeTick, searchQuery])
     
+    // Helper function to format time to 12-hour format
+    const formatTimeTo12Hour = (time24) => {
+        if (!time24) return ''
+        const [hours, minutes] = time24.split(':').map(Number)
+        const period = hours >= 12 ? 'PM' : 'AM'
+        const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
+    }
+    
+    // Group today's events by schedule column for mini schedule view
+    const eventsByColumn = useMemo(() => {
+        const targetDate = selectedDate || new Date().toISOString().split('T')[0]
+        const dateEvents = projectEvents.filter(event => event.date === targetDate)
+        
+        const grouped = {}
+        scheduleColumns.forEach(column => {
+            grouped[column.id] = dateEvents
+                .filter(event => event.schedule_column_id === column.id)
+                .sort((a, b) => {
+                    if (!a.start_time || !b.start_time) return 0
+                    return a.start_time.localeCompare(b.start_time)
+                })
+        })
+        
+        return grouped
+    }, [projectEvents, selectedDate, scheduleColumns])
+    
+    // Navigation functions for mini schedule
+    const goToNextColumn = () => {
+        if (currentColumnIndex < scheduleColumns.length - 1) {
+            setCurrentColumnIndex(currentColumnIndex + 1)
+        }
+    }
+    
+    const goToPrevColumn = () => {
+        if (currentColumnIndex > 0) {
+            setCurrentColumnIndex(currentColumnIndex - 1)
+        }
+    }
+    
+    // Get process point color for mini schedule cards
+    const getProcessPointColor = (processPoint) => {
+        switch (processPoint?.toLowerCase()) {
+            case 'idle': return { backgroundColor: 'rgba(0, 255, 255, 0.15)', borderColor: 'rgba(0, 255, 255, 0.9)' }
+            case 'ingest': return { backgroundColor: 'rgba(0, 128, 255, 0.15)', borderColor: 'rgba(0, 128, 255, 0.9)' }
+            case 'cull': return { backgroundColor: 'rgba(255, 122, 24, 0.15)', borderColor: 'rgba(255, 122, 24, 0.9)' }
+            case 'color': return { backgroundColor: 'rgba(255, 64, 64, 0.15)', borderColor: 'rgba(255, 64, 64, 0.9)' }
+            case 'delivered': return { backgroundColor: 'rgba(34, 197, 94, 0.15)', borderColor: 'rgba(34, 197, 94, 0.9)' }
+            case 'null': return { backgroundColor: 'rgba(75, 85, 99, 0.1)', borderColor: 'rgba(75, 85, 99, 0.3)', opacity: 0.5 }
+            default: return { backgroundColor: 'rgba(107, 114, 128, 0.15)', borderColor: 'rgba(107, 114, 128, 0.9)' }
+        }
+    }
+    
     // Event management functions (removed modal functions, now using collapsible cards)
     
     const handleProcessPointChange = async (eventId, newProcessPoint) => {
@@ -598,7 +677,8 @@ export const Events = () => {
             project_id: currentProject.id
         }
         
-
+        console.log('🔍 Creating event with data:', eventData)
+        console.log('🔍 assigned_photographers:', eventData.assigned_photographers)
         
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events`, {
@@ -609,6 +689,8 @@ export const Events = () => {
             
             if (response.ok) {
                 const createdEvent = await response.json()
+                console.log('🔍 Created event response:', createdEvent)
+                console.log('🔍 assigned_personnel in response:', createdEvent.assigned_personnel)
                 setLastCreatedEventId(createdEvent.id)
                 
                 fetchEvents()
@@ -1061,42 +1143,119 @@ export const Events = () => {
                         </div>
                     </div>
                     
-                    {/* Live Events */}
-                    <div className="events-panel-section">
-                        <div className="events-section-header">
-                            <h2>
-                                Live Events
-                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
-                            </h2>
-                            <span className="events-count-badge">{liveEvents.length}</span>
+                    {/* Live Events and Upcoming Events - Side by Side */}
+                    <div className="events-panel-dual">
+                        {/* Live Events */}
+                        <div className="events-panel-section events-panel-half">
+                            <div className="events-section-header">
+                                <h2>
+                                    Live Events
+                                    {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                                </h2>
+                                <span className="events-count-badge">{liveEvents.length}</span>
+                            </div>
+                            <div className="events-panel-list">
+                                {liveEvents.length === 0 ? (
+                                    <p className="events-no-results">No events currently ongoing</p>
+                                ) : (
+                                    liveEvents.map(event => (
+                                        <EventCard key={event.id} event={event} panelId="live" />
+                                    ))
+                                )}
+                            </div>
                         </div>
-                        <div className="events-panel-list">
-                            {liveEvents.length === 0 ? (
-                                <p className="events-no-results">No events currently ongoing</p>
-                            ) : (
-                                liveEvents.map(event => (
-                                    <EventCard key={event.id} event={event} panelId="live" />
-                                ))
-                            )}
+                        
+                        {/* Upcoming Events */}
+                        <div className="events-panel-section events-panel-half">
+                            <div className="events-section-header">
+                                <h2>
+                                    Upcoming Events
+                                    {searchQuery && <span className="events-search-indicator">Searching...</span>}
+                                </h2>
+                                <span className="events-count-badge">{upcomingEvents.length}</span>
+                            </div>
+                            <div className="events-panel-list">
+                                {upcomingEvents.length === 0 ? (
+                                    <p className="events-no-results">No upcoming events</p>
+                                ) : (
+                                    upcomingEvents.map(event => (
+                                        <EventCard key={event.id} event={event} panelId="upcoming" />
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
                     
-                    {/* Upcoming Events */}
-                    <div className="events-panel-section">
+                    {/* Mini Schedule View - Column Navigation */}
+                    <div className="events-panel-section events-mini-schedule">
                         <div className="events-section-header">
-                            <h2>
-                                Upcoming Events
-                                {searchQuery && <span className="events-search-indicator">Searching...</span>}
-                            </h2>
-                            <span className="events-count-badge">{upcomingEvents.length}</span>
+                            <h2>Schedule View</h2>
+                            {scheduleColumns.length > 0 && (
+                                <div className="mini-schedule-navigation">
+                                    <button 
+                                        onClick={goToPrevColumn} 
+                                        disabled={currentColumnIndex === 0}
+                                        className="mini-schedule-nav-btn"
+                                    >
+                                        ←
+                                    </button>
+                                    <span className="mini-schedule-column-name">
+                                        {scheduleColumns[currentColumnIndex]?.name || 'Column'}
+                                    </span>
+                                    <button 
+                                        onClick={goToNextColumn} 
+                                        disabled={currentColumnIndex === scheduleColumns.length - 1}
+                                        className="mini-schedule-nav-btn"
+                                    >
+                                        →
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        <div className="events-panel-list">
-                            {upcomingEvents.length === 0 ? (
-                                <p className="events-no-results">No upcoming events</p>
+                        
+                        <div className="mini-schedule-container">
+                            {scheduleColumns.length === 0 ? (
+                                <p className="events-no-results">No schedule columns configured for this project</p>
                             ) : (
-                                upcomingEvents.map(event => (
-                                    <EventCard key={event.id} event={event} panelId="upcoming" />
-                                ))
+                                <div className="mini-schedule-column">
+                                    {scheduleColumns[currentColumnIndex] && eventsByColumn[scheduleColumns[currentColumnIndex].id]?.length === 0 ? (
+                                        <p className="events-no-results">No events in this column</p>
+                                    ) : (
+                                        scheduleColumns[currentColumnIndex] && eventsByColumn[scheduleColumns[currentColumnIndex].id]?.map(event => {
+                                            const colors = getProcessPointColor(event.process_point)
+                                            const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
+                                            return (
+                                                <div 
+                                                    key={event.id} 
+                                                    className={`mini-schedule-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
+                                                    style={{
+                                                        backgroundColor: colors.backgroundColor,
+                                                        border: isUnassigned ? '3px solid #dc3545' : `2px solid ${colors.borderColor}`
+                                                    }}
+                                                    onClick={() => toggleEventExpansion('mini-schedule', event.id)}
+                                                >
+                                                    <div className="mini-schedule-event-header">
+                                                        <h4>{event.name}</h4>
+                                                        {event.quick_turn && <span className="quick-turn-dot"></span>}
+                                                    </div>
+                                                    <div className="mini-schedule-event-time">
+                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                    </div>
+                                                    <div className="mini-schedule-event-location">{event.location}</div>
+                                                    {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                        <div className='mini-schedule-photographers'>
+                                                            {event.assigned_personnel.map((person) => (
+                                                                <span key={person.personnel_id} className='photographer-badge'>
+                                                                    {person.name}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        })
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>

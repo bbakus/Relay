@@ -175,11 +175,10 @@
     box-shadow: none;
 }
 
-/* Events Grid Layout - 2x2 Grid */
+/* Events Grid Layout */
 .events-main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 30px;
     max-width: 100%;
     overflow: visible;
@@ -208,29 +207,20 @@
     border-color: rgba(255, 122, 24, 0.3);
 }
 
-/* 2x2 Grid positioning */
-.events-panel-section:nth-child(1) {
-    /* Today's Events - Top Right */
-    grid-column: 2;
-    grid-row: 1;
+/* Dual panel container for Live + Upcoming */
+.events-panel-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
 }
 
-.events-panel-section:nth-child(2) {
-    /* Live Events - Top Left */
-    grid-column: 1;
-    grid-row: 1;
+.events-panel-half {
+    min-height: 300px;
 }
 
-.events-panel-section:nth-child(3) {
-    /* Upcoming Events - Bottom Left */
-    grid-column: 1;
-    grid-row: 2;
-}
-
-.events-panel-section:nth-child(4) {
-    /* All Events - Bottom Right */
-    grid-column: 2;
-    grid-row: 2;
+/* Mini Schedule Panel */
+.events-mini-schedule {
+    min-height: 400px;
 }
 
 .events-section-header {
@@ -708,34 +698,21 @@
     }
     
     .events-main-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(4, auto);
+        gap: 20px;
         padding: 0 10px;
-        height: auto;
     }
     
-    .events-panel-section:nth-child(1),
-    .events-panel-section:nth-child(2),
-    .events-panel-section:nth-child(3),
-    .events-panel-section:nth-child(4) {
-        grid-column: 1;
-        height: 300px;
+    .events-panel-dual {
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
     
-    .events-panel-section:nth-child(1) {
-        grid-row: 1;
+    .events-panel-half {
+        min-height: 250px;
     }
     
-    .events-panel-section:nth-child(2) {
-        grid-row: 2;
-    }
-    
-    .events-panel-section:nth-child(3) {
-        grid-row: 3;
-    }
-    
-    .events-panel-section:nth-child(4) {
-        grid-row: 4;
+    .mini-schedule-container {
+        max-height: 400px;
     }
     
     .events-card-basic-info {
@@ -771,6 +748,38 @@
     
     .events-form {
         padding: 20px;
+    }
+    
+    .mini-schedule-navigation {
+        gap: 10px;
+    }
+    
+    .mini-schedule-nav-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+    
+    .mini-schedule-column-name {
+        font-size: 14px;
+        min-width: 120px;
+    }
+    
+    .mini-schedule-container {
+        max-height: 350px;
+    }
+    
+    .mini-schedule-event-card {
+        padding: 12px;
+    }
+    
+    .mini-schedule-event-header h4 {
+        font-size: 14px;
+    }
+    
+    .mini-schedule-event-time,
+    .mini-schedule-event-location {
+        font-size: 12px;
     }
     
     .events-search-indicator {
@@ -1184,4 +1193,131 @@
 .events-card.process-delivered {
     background: rgba(0, 190, 90, 0.15);
     border: 2px solid rgba(0, 190, 90, 0.9);
+}
+
+/* Mini Schedule View Styles */
+.mini-schedule-navigation {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.mini-schedule-nav-btn {
+    background: rgba(255, 122, 24, 0.2);
+    border: 1px solid rgba(255, 122, 24, 0.4);
+    color: #ff7a18;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-schedule-nav-btn:hover:not(:disabled) {
+    background: rgba(255, 122, 24, 0.3);
+    border-color: rgba(255, 122, 24, 0.6);
+    transform: scale(1.05);
+}
+
+.mini-schedule-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.mini-schedule-column-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    min-width: 150px;
+    text-align: center;
+}
+
+.mini-schedule-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.mini-schedule-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mini-schedule-event-card {
+    padding: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mini-schedule-event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mini-schedule-event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.mini-schedule-event-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.mini-schedule-event-time {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 4px;
+}
+
+.mini-schedule-event-location {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.mini-schedule-photographers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.mini-schedule-photographers .photographer-badge {
+    display: inline-block;
+    background: rgba(218, 165, 32, 0.25);
+    border: 1px solid rgba(218, 165, 32, 0.6);
+    color: #daa520;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Unassigned event pulse animation for mini schedule */
+@keyframes unassigned-pulse {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(220, 53, 69, 0.5);
+        border-color: #dc3545;
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.8);
+        border-color: #ff4757;
+    }
+}
+
+.mini-schedule-event-card.unassigned-event {
+    animation: unassigned-pulse 2s ease-in-out infinite;
 }
