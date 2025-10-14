@@ -538,19 +538,27 @@ export const AdminDashboardView = () => {
     return availableStaff
   }, [personnel, events, selectedProjectId])
   
-  // Unassigned Events - events with no personnel assigned
+  // Unassigned Events - events with no personnel assigned, filtered by global date
   const unassignedEvents = useMemo(() => {
-    const futureEvents = events.filter(event => {
-      // Filter out invalid/corrupted events
-      if (!event.id || !event.name || !event.date) return false
-      
-      const eventDate = new Date(event.date)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      return eventDate >= today // Only show future events (including today)
-    })
+    // Filter by selected project first
+    const projectFilteredEvents = selectedProjectId 
+      ? events.filter(e => e.project_id === parseInt(selectedProjectId))
+      : events
     
-    const unassigned = futureEvents.filter(event => {
+    // Filter by selected date if available, otherwise show future events
+    const dateFilteredEvents = selectedDate
+      ? projectFilteredEvents.filter(event => event.date === selectedDate)
+      : projectFilteredEvents.filter(event => {
+          // Filter out invalid/corrupted events
+          if (!event.id || !event.name || !event.date) return false
+          
+          const eventDate = new Date(event.date)
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          return eventDate >= today // Only show future events (including today)
+        })
+    
+    const unassigned = dateFilteredEvents.filter(event => {
       // Check if event has any assigned personnel
       const hasAssignedPersonnel = event.assigned_personnel && 
                                   Array.isArray(event.assigned_personnel) && 
@@ -562,7 +570,7 @@ export const AdminDashboardView = () => {
     })
     
     return unassigned
-  }, [events])
+  }, [events, selectedProjectId, selectedDate])
   
   // Live/Ongoing Events - events that are currently happening
   const liveEvents = useMemo(() => {
