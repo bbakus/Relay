@@ -30,8 +30,18 @@ export const PhotographerDashboardView = () => {
     const [showShotRequestModal, setShowShotRequestModal] = useState(false)
     const [completedShotRequestNotes, setCompletedShotRequestNotes] = useState([])
 
-    // Use global selectedDate, fallback to today
-    const activeDate = selectedDate || new Date().toISOString().split('T')[0]
+    // Use global selectedDate, fallback to today - ensure it's always a valid date string
+    const activeDate = useMemo(() => {
+        if (selectedDate && typeof selectedDate === 'string' && selectedDate.trim()) {
+            return selectedDate
+        }
+        // Fallback to today
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const day = String(now.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }, [selectedDate])
 
     // Real-time updates for event status
     useEffect(() => {
@@ -182,22 +192,12 @@ export const PhotographerDashboardView = () => {
             const top = exactStartSlot * PIXELS_PER_15MIN_SLOT // NO OFFSET - events container starts at grid
             const height = Math.max(exactDurationSlots * PIXELS_PER_15MIN_SLOT, 21.75)
 
-            // Debug logging
-            console.log(`EVENT: ${event.name} (${event.start_time}-${event.end_time})`)
-            console.log(`  Start total minutes: ${startTotalMinutes}, End total minutes: ${endTotalMinutes}`)
-            console.log(`  Exact start slot: ${exactStartSlot}, Duration slots: ${exactDurationSlots}`)
-            console.log(`  Calculated top: ${top}px, Height: ${height}px`)
-            console.log(`  Expected for 10:30: slot ${(10*60+30-6*60)/15} = ${(10*60+30-6*60)/15}`)
-            console.log(`  Expected for 14:00: slot ${(14*60+0-6*60)/15} = ${(14*60+0-6*60)/15}`)
-
-
-
-
             return {
                 ...event,
                 position: { top, height }
             }
-        }).filter(event => event.position.top >= 0) // Only show events within time range
+        })
+        .filter(event => event !== null && event.position && event.position.top >= 0) // Filter out null events and those outside time range
         .sort((a, b) => a.position.height - b.position.height) // Sort by height - shorter events first for z-index priority
     }, [photographerEvents])
 
@@ -683,7 +683,22 @@ export const PhotographerDashboardView = () => {
         )
     }
 
-    const displayDate = formatDateForHeader(activeDate)
+    // Safe date formatting with error handling
+    let displayDate
+    try {
+        displayDate = formatDateForHeader(activeDate)
+    } catch (error) {
+        console.error('Error formatting date:', error, 'activeDate:', activeDate)
+        displayDate = activeDate || 'Unknown Date'
+    }
+
+    console.log('🎯 Photographer Dashboard Render:', {
+        activeDate,
+        displayDate,
+        photographerEvents: photographerEvents.length,
+        eventsWithPositions: eventsWithPositions.length,
+        shotRequests: photographerShotRequests.length
+    })
 
     return (
         <div className="photographer-dashboard-container">
@@ -857,14 +872,14 @@ export const PhotographerDashboardView = () => {
                             
                             {/* Event column container */}
                             <div className='photographer-events-container'>
-                                {eventsWithPositions.length === 0 ? (
+                                {!eventsWithPositions || eventsWithPositions.length === 0 ? (
                                     <div className='photographer-no-events'>
                                         <p>No events scheduled for {displayDate}</p>
                                     </div>
                                 ) : (
                                     <div className='photographer-event-column'>
                                         {/* Render photographer's events */}
-                                        {eventsWithPositions.map((event, index) => {
+                                        {eventsWithPositions.filter(e => e && e.id).map((event, index) => {
                                             const eventStatus = getEventStatus(event)
                                             const processColors = getProcessPointColor(event.process_point)
                                             return (
