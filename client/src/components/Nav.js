@@ -347,11 +347,31 @@ export const Nav = () => {
     if (selectedProjectId) {
       selectedProject = projects.find(p => p.id === parseInt(selectedProjectId))
     } else {
-      return dates
+      // If no project selected, provide a 30-day range centered on today
+      const todayDate = new Date()
+      for (let i = -15; i <= 15; i++) {
+        const date = new Date(todayDate)
+        date.setDate(date.getDate() + i)
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        if (!dates.includes(dateStr)) {
+          dates.push(dateStr)
+        }
+      }
+      return dates.sort()
     }
     
     if (!selectedProject || !selectedProject.start_date || !selectedProject.end_date) {
-      return dates
+      // If project exists but doesn't have dates, provide a 30-day range centered on today
+      const todayDate = new Date()
+      for (let i = -15; i <= 15; i++) {
+        const date = new Date(todayDate)
+        date.setDate(date.getDate() + i)
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        if (!dates.includes(dateStr)) {
+          dates.push(dateStr)
+        }
+      }
+      return dates.sort()
     }
     
     // Generate all dates from start_date to end_date
