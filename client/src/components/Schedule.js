@@ -1519,48 +1519,47 @@ export const Schedule = () => {
                                                     onDrop={(e) => handleDrop(e, column.id)}
                                                 >
                                                     {/* Render events for this column */}
-                                                    {eventsByColumn[column.id]?.map(event => (
-                                                    <div
-                                                        key={event.id}
-                                                        className={`sched-event-card process-${(event.process_point || 'idle').toLowerCase()}`}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: `${event.position.top}px`,
-                                                            height: `${event.position.height}px`,
-                                                            left: '8px',
-                                                            right: '8px',
-                                                            minHeight: '60px',
-                                                            backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                            border: `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
-                                                            cursor: 'grab'
-                                                        }}
-                                                        draggable={true}
-                                                        onDragStart={(e) => handleDragStart(e, event)}
-                                                        onClick={() => handleEventClick(event)}
-                                                    >
-                                                        <div className='event-header'>
-                                                            <h3>{event.name}</h3>
-                                                            {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
-                                                        </div>
-                                                        <div className='event-time'>
-                                                            {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                        </div>
-                                                        <div className='event-location'>{event.location}</div>
-                                                        {event.assigned_personnel && event.assigned_personnel.length > 0 ? (
-                                                            <div className='event-photographers'>
-                                                                {event.assigned_personnel.map((person, idx) => (
-                                                                    <span key={person.personnel_id} className='photographer-badge'>
-                                                                        {person.name}
-                                                                    </span>
-                                                                ))}
+                                                    {eventsByColumn[column.id]?.map(event => {
+                                                        const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
+                                                        return (
+                                                        <div
+                                                            key={event.id}
+                                                            className={`sched-event-card process-${(event.process_point || 'idle').toLowerCase()}`}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: `${event.position.top}px`,
+                                                                height: `${event.position.height}px`,
+                                                                left: '8px',
+                                                                right: '8px',
+                                                                minHeight: '60px',
+                                                                backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
+                                                                cursor: 'grab',
+                                                                boxShadow: isUnassigned ? '0 0 8px rgba(220, 53, 69, 0.5)' : 'none'
+                                                            }}
+                                                            draggable={true}
+                                                            onDragStart={(e) => handleDragStart(e, event)}
+                                                            onClick={() => handleEventClick(event)}
+                                                        >
+                                                            <div className='event-header'>
+                                                                <h3>{event.name}</h3>
+                                                                {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                             </div>
-                                                        ) : (
-                                                            <div className='event-photographers'>
-                                                                <span className='unassigned-badge'>Unassigned</span>
+                                                            <div className='event-time'>
+                                                                {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                            <div className='event-location'>{event.location}</div>
+                                                            {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                                <div className='event-photographers'>
+                                                                    {event.assigned_personnel.map((person, idx) => (
+                                                                        <span key={person.personnel_id} className='photographer-badge'>
+                                                                            {person.name}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )})}
                                             </div>
                                         ))}
                                         </>
@@ -1597,45 +1596,45 @@ export const Schedule = () => {
                                                 <h3>{column.name}</h3>
                                             </div>
                                             <div className='mobile-events-container'>
-                                                {eventsByColumn[column.id]?.map(event => (
-                                                    <div
-                                                        key={event.id}
-                                                        className='mobile-event-card'
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: `${event.position.top}px`,
-                                                            height: `${event.position.height}px`,
-                                                            left: '8px',
-                                                            right: '8px',
-                                                            minHeight: '60px',
-                                                            backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                            border: `2px solid ${getProcessPointColor(event.process_point).borderColor}`
-                                                        }}
-                                                        onClick={() => handleEventClick(event)}
-                                                    >
-                                                        <div className='event-header'>
-                                                            <h3>{event.name}</h3>
-                                                            {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
-                                                        </div>
-                                                        <div className='event-time'>
-                                                            {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                        </div>
-                                                        <div className='event-location'>{event.location}</div>
-                                                        {event.assigned_personnel && event.assigned_personnel.length > 0 ? (
-                                                            <div className='event-photographers'>
-                                                                {event.assigned_personnel.map((person, idx) => (
-                                                                    <span key={person.personnel_id} className='photographer-badge'>
-                                                                        {person.name}
-                                                                    </span>
-                                                                ))}
+                                                {eventsByColumn[column.id]?.map(event => {
+                                                    const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
+                                                    return (
+                                                        <div
+                                                            key={event.id}
+                                                            className='mobile-event-card'
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: `${event.position.top}px`,
+                                                                height: `${event.position.height}px`,
+                                                                left: '8px',
+                                                                right: '8px',
+                                                                minHeight: '60px',
+                                                                backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
+                                                                boxShadow: isUnassigned ? '0 0 8px rgba(220, 53, 69, 0.5)' : 'none'
+                                                            }}
+                                                            onClick={() => handleEventClick(event)}
+                                                        >
+                                                            <div className='event-header'>
+                                                                <h3>{event.name}</h3>
+                                                                {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                             </div>
-                                                        ) : (
-                                                            <div className='event-photographers'>
-                                                                <span className='unassigned-badge'>Unassigned</span>
+                                                            <div className='event-time'>
+                                                                {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                            <div className='event-location'>{event.location}</div>
+                                                            {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                                <div className='event-photographers'>
+                                                                    {event.assigned_personnel.map((person, idx) => (
+                                                                        <span key={person.personnel_id} className='photographer-badge'>
+                                                                            {person.name}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })}
                                             </div>
                                         </div>
                                     ))
