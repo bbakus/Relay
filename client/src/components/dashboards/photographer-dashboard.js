@@ -76,7 +76,8 @@ export const PhotographerDashboardView = () => {
 
     // Fetch data on component mount and when dependencies change
     useEffect(() => {
-        if (selectedOrganizationId && selectedProjectId) {
+        // Only require project to be selected, organization is optional
+        if (selectedProjectId) {
             fetchPhotographerData()
         }
     }, [selectedOrganizationId, selectedProjectId, selectedDate])
@@ -98,8 +99,11 @@ export const PhotographerDashboardView = () => {
             const shotRequestsData = await shotRequestsResponse.json()
             setShotRequests(shotRequestsData)
 
-            // Fetch personnel data
-            const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel?organization_id=${selectedOrganizationId}`)
+            // Fetch personnel data - organization filter is optional
+            const personnelUrl = selectedOrganizationId 
+                ? `${API_CONFIG.baseUrl}/api/personnel?organization_id=${selectedOrganizationId}`
+                : `${API_CONFIG.baseUrl}/api/personnel`
+            const personnelResponse = await fetch(personnelUrl)
             const personnelData = await personnelResponse.json()
             setPersonnel(personnelData)
         } catch (error) {
