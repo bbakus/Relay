@@ -1358,13 +1358,22 @@ export const Schedule = () => {
         // Get currently assigned personnel IDs
         const assignedIds = (selectedEvent.assigned_personnel || []).map(p => p.personnel_id)
         
-        // Filter out personnel already assigned to this event
-        // Don't filter by project - show all personnel for assignment
-        const availablePersonnel = personnel.filter(person => 
-            !assignedIds.includes(person.id)
-        )
+        // Filter personnel: not assigned to this event AND assigned to this project
+        const availablePersonnel = personnel.filter(person => {
+            // Exclude already assigned personnel
+            if (assignedIds.includes(person.id)) return false
+            
+            // Only show personnel assigned to this event's project
+            if (selectedEvent.project_id && person.project_ids) {
+                return person.project_ids.includes(selectedEvent.project_id)
+            }
+            
+            // If no project filtering available, show all
+            return true
+        })
         
         console.log('Available personnel:', availablePersonnel.length, 'out of', personnel.length, 'total personnel')
+        console.log('Filtered by project_id:', selectedEvent.project_id)
         console.log('Assigned IDs:', assignedIds)
         
         return availablePersonnel

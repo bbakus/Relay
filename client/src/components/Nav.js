@@ -307,13 +307,16 @@ export const Nav = () => {
     return filtered
   }, [projects, selectedOrganizationId])
 
-  // Auto-select first project for photographers if none selected (only on initial load)
+  // Auto-select first project for photographers, videographers, and clients if none selected
   useEffect(() => {
     const access = (user?.access || '').toLowerCase()
-    const isPhotoVideoRole = access.includes('photographer') || access.includes('videographer')
+    const shouldAutoSelect = access.includes('photographer') || 
+                            access.includes('videographer') || 
+                            access.includes('client')
     
-    if (isPhotoVideoRole && projects.length > 0 && !selectedProjectId) {
+    if (shouldAutoSelect && projects.length > 0 && !selectedProjectId) {
       setGlobalProject(projects[0].id.toString())
+      console.log('Auto-selected project for', access, ':', projects[0].name)
     }
   }, [projects, selectedProjectId, user?.access, setGlobalProject])
 
@@ -643,7 +646,7 @@ export const Nav = () => {
                 value={selectedProjectId} 
                 onChange={(e) => setGlobalProject(e.target.value)}
               >
-                <option value="">Select Project</option>
+                <option value="">All Projects</option>
                 {projects.map(project => (
                   <option key={project.id} value={project.id}>{project.name}</option>
                 ))}
@@ -736,7 +739,7 @@ export const Nav = () => {
                   value={selectedProjectId} 
                   onChange={(e) => setGlobalProject(e.target.value)}
                 >
-                  <option value="">Select Project</option>
+                  <option value="">All Projects</option>
                   {projects.map(project => (
                     <option key={project.id} value={project.id}>{project.name}</option>
                   ))}
