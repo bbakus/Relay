@@ -1316,3 +1316,19 @@
     white-space: nowrap;
 }
 
+/* Unassigned event pulse animation */
+@keyframes unassigned-pulse {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(220, 53, 69, 0.5);
+        border-color: #dc3545;
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.8);
+        border-color: #ff4757;
+    }
+}
+
+.unassigned-event {
+    animation: unassigned-pulse 2s ease-in-out infinite;
+}
+

@@ -1524,7 +1524,7 @@ export const Schedule = () => {
                                                         return (
                                                         <div
                                                             key={event.id}
-                                                            className={`sched-event-card process-${(event.process_point || 'idle').toLowerCase()}`}
+                                                            className={`sched-event-card process-${(event.process_point || 'idle').toLowerCase()} ${isUnassigned ? 'unassigned-event' : ''}`}
                                                             style={{
                                                                 position: 'absolute',
                                                                 top: `${event.position.top}px`,
@@ -1534,8 +1534,7 @@ export const Schedule = () => {
                                                                 minHeight: '60px',
                                                                 backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
                                                                 border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
-                                                                cursor: 'grab',
-                                                                boxShadow: isUnassigned ? '0 0 8px rgba(220, 53, 69, 0.5)' : 'none'
+                                                                cursor: 'grab'
                                                             }}
                                                             draggable={true}
                                                             onDragStart={(e) => handleDragStart(e, event)}
@@ -1601,7 +1600,7 @@ export const Schedule = () => {
                                                     return (
                                                         <div
                                                             key={event.id}
-                                                            className='mobile-event-card'
+                                                            className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
                                                             style={{
                                                                 position: 'absolute',
                                                                 top: `${event.position.top}px`,
@@ -1610,8 +1609,7 @@ export const Schedule = () => {
                                                                 right: '8px',
                                                                 minHeight: '60px',
                                                                 backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
-                                                                boxShadow: isUnassigned ? '0 0 8px rgba(220, 53, 69, 0.5)' : 'none'
+                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`
                                                             }}
                                                             onClick={() => handleEventClick(event)}
                                                         >
