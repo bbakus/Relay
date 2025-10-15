@@ -1819,12 +1819,16 @@ export const Schedule = () => {
                                 <span>{selectedEvent.location}</span>
                             </div>
                             
-                            {selectedEvent.notes && (
-                                <div className="event-detail-row">
-                                    <label>Notes:</label>
-                                    <div className="notes-checkboxes-display">
-                                        {selectedEvent.notes.split(',').map((note, index) => {
-                                            const noteValue = note.trim();
+                            <div className="event-detail-row">
+                                <label>Notes:</label>
+                                <div className="notes-checkboxes-display">
+                                    {(() => {
+                                        // If no notes, default to 'Shot'
+                                        const notesArray = selectedEvent.notes 
+                                            ? selectedEvent.notes.split(',').map(n => n.trim())
+                                            : ['Shot'];
+                                        
+                                        return notesArray.map((noteValue, index) => {
                                             const isCompleted = completedNotes.includes(noteValue);
                                             return (
                                                 <label key={index} className="checkbox-display-label">
@@ -1836,10 +1840,10 @@ export const Schedule = () => {
                                                     <span>{noteValue}</span>
                                                 </label>
                                             );
-                                        })}
-                                    </div>
+                                        });
+                                    })()}
                                 </div>
-                            )}
+                            </div>
                             
                             {selectedEvent.details && (
                                 <div className="event-detail-row">
