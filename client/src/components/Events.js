@@ -173,8 +173,12 @@ export const Events = () => {
             const response = await fetch(eventsUrl)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Events page: Fetched events:', data.length, 'events')
-                console.log('Events data:', data.map(e => ({id: e.id, name: e.name, project_id: e.project_id})))
+                console.log('📋 Events page: Fetched events:', data.length, 'events')
+                console.log('📋 Events with assigned_personnel:', data.filter(e => e.assigned_personnel && e.assigned_personnel.length > 0).map(e => ({
+                    id: e.id, 
+                    name: e.name, 
+                    assigned_personnel: e.assigned_personnel
+                })))
                 setEvents(data)
             }
         } catch (error) {
@@ -729,6 +733,10 @@ export const Events = () => {
         
         if (!editingEvent) return
         
+        console.log('🔧 Updating event:', editingEvent.id)
+        console.log('🔧 Event form data:', eventForm)
+        console.log('🔧 Assigned photographers:', eventForm.assigned_photographers)
+        
         try {
             const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${editingEvent.id}`, {
                 method: 'PUT',
@@ -737,6 +745,10 @@ export const Events = () => {
             })
             
             if (response.ok) {
+                const updatedEvent = await response.json()
+                console.log('✅ Event updated successfully:', updatedEvent)
+                console.log('✅ Updated assigned_personnel:', updatedEvent.assigned_personnel)
+                
                 fetchEvents()
                 setShowEditEventModal(false)
                 setEditingEvent(null)
@@ -755,10 +767,11 @@ export const Events = () => {
                 })
             } else {
                 const data = await response.json()
+                console.error('❌ Failed to update event:', data.error)
                 console.log(data.error || 'Failed to update event')
             }
         } catch (error) {
-            console.error('Error updating event:', error)
+            console.error('❌ Error updating event:', error)
             console.log('Failed to update event')
         }
     }

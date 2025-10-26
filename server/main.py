@@ -1227,8 +1227,13 @@ class EventDetail(Resource):
             session.refresh(event)
             
             print(f"🔧 Backend EventDetail.put() for event {event.id}")
-            print(f"🔧 assigned_personnel from DB: {event.assigned_personnel}")
+            print(f"🔧 assigned_personnel from DB after refresh: {event.assigned_personnel}")
+            print(f"🔧 personnels relationship from DB: {[(p.id, p.name) for p in event.personnels]}")
             print(f"🔧 'assigned_photographers' in request: {'assigned_photographers' in data}")
+            
+            # Double-check by querying the database again
+            verification_event = session.query(EventModel).filter_by(id=event.id).first()
+            print(f"🔧 Verification query - assigned_personnel: {verification_event.assigned_personnel}")
             
             # Ensure assigned_personnel is never None - convert None to empty list
             assigned_personnel_value = event.assigned_personnel if event.assigned_personnel is not None else []

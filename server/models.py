@@ -126,7 +126,7 @@ class Events(Base, SerializerMixin):
     notes = Column(String)
     details = Column(String)  # Raw text details field (no checklist)
     photographer_notes = Column(String)  # Notes from photographers for editors and staff
-    completed_notes = Column(JSON, default=list)  # Array of completed note items
+    completed_notes = Column(JSON, default=lambda: [])  # Array of completed note items
     quick_turn = Column(Boolean)
     deadline = Column(String)
     # Pipeline/process point for coloring the schedule card
@@ -137,7 +137,7 @@ class Events(Base, SerializerMixin):
     # Column assignment for schedule - references ScheduleColumn.id (can be null for unassigned events)
     schedule_column_id = Column(Integer, ForeignKey('schedule_columns.id', ondelete='SET NULL'))
     project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'))
-    assigned_personnel = Column(JSON, default=list)  # Array of assigned personnel with their details
+    assigned_personnel = Column(JSON, default=lambda: [])  # Array of assigned personnel with their details
 
     # Relationships
     shot_requests = relationship('ShotRequest', secondary=event_request_association_table, back_populates='events')
@@ -153,7 +153,7 @@ class ShotRequest(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     request = Column(String, nullable=False)
     notes = Column(String)
-    completed_notes = Column(JSON, default=list)  # Array of completed note items
+    completed_notes = Column(JSON, default=lambda: [])  # Array of completed note items
     details = Column(String)  # New field for specific individual references
     quick_turn = Column(Boolean)
     date = Column(String)  # Date for independent shot requests

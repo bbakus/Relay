@@ -217,9 +217,21 @@ export const Schedule = () => {
     const fetchEvents = async () => {
         try {
             setLoading(true)
-            const response = await fetch(`${API_CONFIG.baseUrl}/api/events?t=${Date.now()}`)
+            
+            // Build events URL with company filtering (matching Events page logic)
+            let eventsUrl = `${API_CONFIG.baseUrl}/api/events?t=${Date.now()}`
+            if (user?.is_super_admin && selectedCompanyId) {
+                eventsUrl = `${API_CONFIG.baseUrl}/api/events?company_id=${selectedCompanyId}&t=${Date.now()}`
+            } else if (user?.company_id && !user?.is_super_admin) {
+                eventsUrl = `${API_CONFIG.baseUrl}/api/events?company_id=${user.company_id}&t=${Date.now()}`
+            }
+            
+            const response = await fetch(eventsUrl)
             if (response.ok) {
                 const allEvents = await response.json()
+                
+                console.log('📅 Schedule page: Fetched events:', allEvents.length, 'events')
+                console.log('📅 Sample event assigned_personnel:', allEvents[0]?.assigned_personnel)
                 
                 // Filter events for selected date and project
                 const dayEvents = allEvents
@@ -229,6 +241,7 @@ export const Schedule = () => {
                         return event.project_id === Number(selectedProjectId)
                     })
                 
+                console.log('📅 Schedule page: After filtering for date/project:', dayEvents.length, 'events')
                 setEvents(dayEvents)
             }
         } catch (error) {
