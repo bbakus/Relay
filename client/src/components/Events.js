@@ -26,6 +26,9 @@ export const Events = () => {
     const [addShotRequest, setAddShotRequest] = useState(false)
     const [lastCreatedEventId, setLastCreatedEventId] = useState(null)
     const [expandedEventIds, setExpandedEventIds] = useState(new Set())
+    const [showAssignModal, setShowAssignModal] = useState(false)
+    const [assigningEvent, setAssigningEvent] = useState(null)
+    const [selectedPhotographers, setSelectedPhotographers] = useState([])
     
     // Search state
     const [searchQuery, setSearchQuery] = useState('')
@@ -824,6 +827,59 @@ export const Events = () => {
             console.log('Failed to delete event')
         }
     }
+
+    const openAssignModal = (event) => {
+        setAssigningEvent(event)
+        // Pre-populate with currently assigned photographers
+        const currentAssignments = event.assigned_personnel 
+            ? event.assigned_personnel.map(p => p.personnel_id) 
+            : []
+        setSelectedPhotographers(currentAssignments)
+        setShowAssignModal(true)
+    }
+
+    const handleAssignPhotographers = async (e) => {
+        e.preventDefault()
+        
+        if (!assigningEvent) return
+        
+        console.log('📸 Assigning photographers to event:', assigningEvent.id)
+        console.log('📸 Selected photographers:', selectedPhotographers)
+        
+        try {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/events/${assigningEvent.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assigned_photographers: selectedPhotographers })
+            })
+            
+            if (response.ok) {
+                const updatedEvent = await response.json()
+                console.log('✅ Photographers assigned successfully:', updatedEvent.assigned_personnel)
+                
+                // Update the event in local state
+                setEvents(prevEvents =>
+                    prevEvents.map(event =>
+                        event.id === assigningEvent.id
+                            ? { ...event, assigned_personnel: updatedEvent.assigned_personnel }
+                            : event
+                    )
+                )
+                
+                // Close modal and reset state
+                setShowAssignModal(false)
+                setAssigningEvent(null)
+                setSelectedPhotographers([])
+            } else {
+                const data = await response.json()
+                console.error('❌ Failed to assign photographers:', data.error)
+                alert(data.error || 'Failed to assign photographers')
+            }
+        } catch (error) {
+            console.error('❌ Error assigning photographers:', error)
+            alert('Failed to assign photographers')
+        }
+    }
     
     const handleAddShotRequest = async (e) => {
         e.preventDefault()
@@ -1016,6 +1072,15 @@ export const Events = () => {
                         )}
 
                         <div className="events-card-actions">
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    openAssignModal(event)
+                                }}
+                                className="events-assign-btn"
+                            >
+                                Assign Photographers
+                            </button>
                             <button 
                                 onClick={(e) => {
                                     e.stopPropagation()
@@ -1798,6 +1863,76 @@ export const Events = () => {
                                     </button>
                                     <button type="submit">
                                         Create Shot Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Assign Photographers Modal */}
+                {showAssignModal && assigningEvent && (
+                    <div className="events-modal-overlay" onClick={() => setShowAssignModal(false)}>
+                        <div className="events-modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="events-modal-header">
+                                <h2>Assign Photographers</h2>
+                                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginTop: '8px' }}>
+                                    {assigningEvent.name}
+                                </p>
+                                <button 
+                                    className="events-close-btn"
+                                    onClick={() => setShowAssignModal(false)}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            
+                            <form onSubmit={handleAssignPhotographers} className="events-form">
+                                <div className="events-form-group">
+                                    <label>Select Photographers:</label>
+                                    <div className="photographer-selection">
+                                        {personnel
+                                            .filter(person => 
+                                                person.role === 'Photographer' || 
+                                                person.role === 'Lead Photographer' || 
+                                                person.role === 'Videographer'
+                                            )
+                                            .map(person => (
+                                                <label key={person.id} className="photographer-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedPhotographers.includes(person.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setSelectedPhotographers([...selectedPhotographers, person.id])
+                                                            } else {
+                                                                setSelectedPhotographers(selectedPhotographers.filter(id => id !== person.id))
+                                                            }
+                                                        }}
+                                                    />
+                                                    <span className="photographer-name">
+                                                        {person.name} 
+                                                        <span className="photographer-role">({person.role})</span>
+                                                    </span>
+                                                </label>
+                                            ))
+                                        }
+                                        {personnel.filter(person => 
+                                            person.role === 'Photographer' || 
+                                            person.role === 'Lead Photographer' || 
+                                            person.role === 'Videographer'
+                                        ).length === 0 && (
+                                            <p className="no-photographers">No photographers available</p>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <div className="events-form-actions">
+                                    <button type="button" onClick={() => setShowAssignModal(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit">
+                                        Assign Photographers
                                     </button>
                                 </div>
                             </form>

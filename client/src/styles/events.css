@@ -1058,6 +1058,22 @@
     gap: 12px;
 }
 
+.events-assign-btn {
+    background: linear-gradient(45deg, #9b59b6, #bb8fce);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.events-assign-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+}
+
 .events-add-shot-btn {
     background: linear-gradient(45deg, #ff7a18, #ff9f40);
     color: white;

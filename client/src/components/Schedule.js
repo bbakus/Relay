@@ -89,7 +89,15 @@ export const Schedule = () => {
 
     // Check if user is admin
     const isAdmin = useMemo(() => {
-        return (user?.access || '').toLowerCase() === 'admin'
+        // Check if user is ANY type of admin (super admin OR company admin)
+        const adminCheck = (user?.access || '').toLowerCase() === 'admin' || user?.is_super_admin || user?.is_company_admin
+        console.log('🔍 Schedule isAdmin check:', {
+            access: user?.access,
+            is_super_admin: user?.is_super_admin,
+            is_company_admin: user?.is_company_admin,
+            isAdmin: adminCheck
+        })
+        return adminCheck
     }, [user])
 
     const fetchOrganizations = async () => {
@@ -1989,20 +1997,18 @@ export const Schedule = () => {
                             >
                                 Edit Event
                             </button>
+                            <button 
+                                className="modal-button shot-request-button" 
+                                onClick={() => handleShotRequest(selectedEvent)}
+                            >
+                                Add Shot Request
+                            </button>
                             {isAdmin && (
                                 <button 
                                     className="modal-button delete-button" 
                                     onClick={() => handleDeleteEvent(selectedEvent.id)}
                                 >
                                     Delete Event
-                                </button>
-                            )}
-                            {!isAdmin && (
-                                <button 
-                                    className="modal-button shot-request-button" 
-                                    onClick={() => handleShotRequest(selectedEvent)}
-                                >
-                                    Add Shot Request
                                 </button>
                             )}
                             <button className="modal-button" onClick={closeModal}>Close</button>
