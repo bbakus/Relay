@@ -209,7 +209,9 @@
   .sched-events-container,
   .sched-event-column,
   .sched-event-card,
-  .global-grid-lines {
+  .global-grid-lines,
+  .desktop-only,
+  .btn-add-column-top {
     display: none !important;
   }
 

@@ -1214,15 +1214,23 @@ export const Schedule = () => {
         // Add an array for unassigned events (null column_id)
         eventsByColumn['unassigned'] = []
         
+        // Track which column IDs events are trying to use
+        const eventColumnIds = new Set()
+        
         eventsWithPositions.forEach(event => {
             const columnId = event.schedule_column_id
+            eventColumnIds.add(columnId)
+            
             if (columnId && eventsByColumn[columnId]) {
                 eventsByColumn[columnId].push(event)
             } else {
+                console.warn(`⚠️ Event ${event.id} (${event.name}) has schedule_column_id=${columnId} but no matching column exists!`)
                 eventsByColumn['unassigned'].push(event)
             }
         })
         
+        console.log('🔍 Available Column IDs:', scheduleColumns.map(c => c.id))
+        console.log('🔍 Event Column IDs:', Array.from(eventColumnIds))
         console.log('📊 Schedule Columns:', scheduleColumns.map(c => ({ id: c.id, name: c.name })))
         console.log('📊 Events with Positions:', eventsWithPositions.length)
         console.log('📊 Events by Column:', Object.entries(eventsByColumn).map(([colId, evts]) => ({ 
@@ -1467,7 +1475,7 @@ export const Schedule = () => {
                                 </select>
                             </div>
                             {isAdmin && selectedProjectId && (
-                                <button onClick={handleAddColumn} className='btn-add-column-top' title='Add new column'>
+                                <button onClick={handleAddColumn} className='btn-add-column-top desktop-only' title='Add new column'>
                                     + Add Column
                                 </button>
                             )}
@@ -1608,24 +1616,24 @@ export const Schedule = () => {
 
                             {/* Mobile Layout */}
                             <div className='mobile-layout'>
-                                {scheduleColumns.length === 0 ? (
-                                    <div className='mobile-column-wrapper'>
+                                {scheduleColumns.map((column) => (
+                                    <div key={column.id} className='mobile-column-wrapper'>
                                         <div className='mobile-column-header'>
-                                            <h3>No Columns</h3>
+                                            <h3>{column.name}</h3>
                                         </div>
                                         <div className='mobile-events-container'>
-                                            <p>No columns configured. {isAdmin && selectedProjectId ? 'Add a column to get started.' : 'Please select a project.'}</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    scheduleColumns.map((column) => (
-                                        <div key={column.id} className='mobile-column-wrapper'>
-                                            <div className='mobile-column-header'>
-                                                <h3>{column.name}</h3>
-                                            </div>
-                                            <div className='mobile-events-container'>
-                                                {eventsByColumn[column.id]?.map(event => {
-                                                    if (!event.position) return null;
+                                            {console.log(`📱 Mobile rendering column ${column.id} (${column.name}):`, eventsByColumn[column.id]?.length || 0, 'events')}
+                                            {eventsByColumn[column.id]?.length === 0 ? (
+                                                <div style={{padding: '60px 10px 10px 10px', textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>
+                                                    No events in this column
+                                                </div>
+                                            ) : (
+                                                eventsByColumn[column.id]?.map(event => {
+                                                    console.log(`📱 Rendering event ${event.id}:`, event.name, 'position:', event.position);
+                                                    if (!event.position) {
+                                                        console.warn(`⚠️ Event ${event.id} has no position!`);
+                                                        return null;
+                                                    }
                                                     const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
                                                     return (
                                                         <div
@@ -1662,11 +1670,11 @@ export const Schedule = () => {
                                                             )}
                                                         </div>
                                                     );
-                                                })}
-                                            </div>
+                                                })
+                                            )}
                                         </div>
-                                    ))
-                                )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
