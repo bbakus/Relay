@@ -1764,43 +1764,44 @@ export const Schedule = () => {
                                 <h3>{column.name}</h3>
                             </div>
                             <div className='mobile-events-container'>
-                                <div style={{ position: 'relative', minHeight: '4000px', width: '100%' }}>
-                                {eventsByColumn[column.id]?.map(event => {
-                                    if (!event.position) return null;
-                                    const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
-                                    return (
-                                        <div
-                                            key={event.id}
-                                            className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
-                                            style={{
-                                                top: `${event.position.top}px`,
-                                                height: `${event.position.height}px`,
-                                                backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                borderColor: isUnassigned ? '#dc3545' : getProcessPointColor(event.process_point).borderColor
-                                            }}
-                                            onClick={() => handleEventClick(event)}
-                                        >
-                                            <div className='event-header'>
-                                                <h3>{event.name}</h3>
-                                                {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
-                                            </div>
-                                            <div className='event-time'>
-                                                {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                            </div>
-                                            <div className='event-location'>{event.location}</div>
-                                            {event.assigned_personnel && event.assigned_personnel.length > 0 && (
-                                                <div className='event-photographers'>
-                                                    {event.assigned_personnel.map((person) => (
-                                                        <span key={person.personnel_id} className='photographer-badge'>
-                                                            {person.name}
-                                                        </span>
-                                                    ))}
+                                {eventsByColumn[column.id]
+                                    ?.sort((a, b) => {
+                                        const timeA = a.start_time || '00:00';
+                                        const timeB = b.start_time || '00:00';
+                                        return timeA.localeCompare(timeB);
+                                    })
+                                    .map(event => {
+                                        const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
+                                                style={{
+                                                    backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                    borderColor: isUnassigned ? '#dc3545' : getProcessPointColor(event.process_point).borderColor
+                                                }}
+                                                onClick={() => handleEventClick(event)}
+                                            >
+                                                <div className='event-header'>
+                                                    <h3>{event.name}</h3>
+                                                    {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                </div>
+                                                <div className='event-time'>
+                                                    {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                </div>
+                                                <div className='event-location'>{event.location}</div>
+                                                {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                    <div className='event-photographers'>
+                                                        {event.assigned_personnel.map((person) => (
+                                                            <span key={person.personnel_id} className='photographer-badge'>
+                                                                {person.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                             </div>
                         </div>
                     ))}

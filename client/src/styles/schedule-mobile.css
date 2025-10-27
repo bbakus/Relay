@@ -9,11 +9,11 @@
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   width: 100%;
-  height: calc(100vh - 200px);
+  min-height: calc(100vh - 250px);
   position: relative;
   background: #0a0a0f;
   scrollbar-width: none;
-  margin: 0;
+  margin-top: 20px;
   padding: 0;
 }
 
@@ -219,26 +219,27 @@
   right: 0;
   bottom: 0;
   width: 100%;
-  height: calc(100% - 80px);
-  padding: 0 10px;
+  padding: 10px;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Mobile event cards */
 .mobile-event-card {
-  position: absolute;
-  padding: 10px;
+  position: relative;
+  padding: 12px;
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  z-index: 5;
   border: 2px solid;
-  left: 8px;
-  right: 8px;
-  min-height: 60px;
+  min-height: 80px;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .mobile-event-card .event-header h3 {
