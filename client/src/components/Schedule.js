@@ -1905,100 +1905,63 @@ export const Schedule = () => {
                                 </select>
                             </div>
 
-                            {/* Personnel Assignment Section - Admin Only */}
-                            {isAdmin ? (
-                                <div className="event-personnel-section">
-                                    <h3>Assigned Photographers</h3>
-                                    <div className="assigned-personnel-list">
-                                        {(() => {
-                                            try {
-                                                const assigned = getAssignedPersonnel();
-                                                
-                                                if (!assigned || assigned.length === 0) {
-                                                    return <div className="no-personnel">No personnel assigned to this event</div>;
-                                                }
-                                                
-                                                return assigned.map(person => (
-                                                    <div key={person.id} className={`personnel-item ${getRoleClass(person.role)}`}>
-                                                        <div className="personnel-info">
-                                                            <span className="personnel-name">{person.name}</span>
-                                                            <span className="personnel-role"> - {person.role || 'No role'}</span>
-                                                        </div>
-                                                        <button 
-                                                            className="unassign-personnel-btn"
-                                                            onClick={() => {
-                                                                handleAssignPersonnelToEvent(person.id, 'remove')
-                                                            }}
-                                                            title="Remove from event"
-                                                        >
-                                                            ×
-                                                        </button>
-                                                    </div>
-                                                ));
-                                            } catch (error) {
-                                                console.error('Error rendering assigned personnel:', error);
-                                                return <div style={{color: 'red'}}>Error loading assigned personnel</div>;
-                                            }
-                                        })()}
-                                    </div>
-                                    
-                                    <h4>Assign Photographers</h4>
-                                    <div className="personnel-assign-dropdown-section">
-                                        {(() => {
-                                            try {
-                                                const available = getAvailablePersonnel();
-                                                
-                                                if (!available || available.length === 0) {
-                                                    return <div className="no-personnel">All personnel are assigned to this event</div>;
-                                                }
-                                                
-                                                return (
-                                                    <select 
-                                                        className="personnel-assign-dropdown"
-                                                        onChange={(e) => {
-                                                            if (e.target.value) {
-                                                                const personnelId = parseInt(e.target.value);
-                                                                handleAssignPersonnelToEvent(personnelId, 'add');
-                                                                e.target.value = '';
-                                                            }
-                                                        }}
-                                                        defaultValue=""
-                                                    >
-                                                        <option value="" disabled>Select personnel to assign...</option>
-                                                        {available.map(person => (
-                                                            <option key={person.id} value={person.id}>
-                                                                {person.name} - {person.role || 'No role'}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                );
-                                            } catch (error) {
-                                                console.error('Error rendering available personnel:', error);
-                                                return <div style={{color: 'red'}}>Error loading available personnel</div>;
-                                            }
-                                        })()}
-                                    </div>
-                                </div>
-                            ) : (
-                                /* Non-Admin: Show Read-Only Personnel List */
-                                <div className="event-personnel-section">
-                                    <h3>Assigned Personnel</h3>
-                                    <div className="assigned-personnel-list">
-                                        {getAssignedPersonnel().length === 0 ? (
-                                            <div className="no-personnel">No personnel assigned to this event</div>
-                                        ) : (
-                                            getAssignedPersonnel().map(person => (
-                                                <div key={person.id} className={`personnel-item ${getRoleClass(person.role)}`}>
-                                                    <div className="personnel-info">
-                                                        <span className="personnel-name">{person.name}</span>
-                                                        <span className="personnel-role"> - {person.role || 'No role'}</span>
-                                                    </div>
+                            {/* Personnel Assignment Section */}
+                            <div className="event-personnel-section">
+                                <h3>Assigned Photographers</h3>
+                                <div className="assigned-personnel-list">
+                                    {getAssignedPersonnel().length === 0 ? (
+                                        <div className="no-personnel">No personnel assigned to this event</div>
+                                    ) : (
+                                        getAssignedPersonnel().map(person => (
+                                            <div key={person.id} className={`personnel-item ${getRoleClass(person.role)}`}>
+                                                <div className="personnel-info">
+                                                    <span className="personnel-name">{person.name}</span>
+                                                    <span className="personnel-role"> - {person.role || 'No role'}</span>
                                                 </div>
-                                            ))
-                                        )}
-                                    </div>
+                                                {isAdmin && (
+                                                    <button 
+                                                        className="unassign-personnel-btn"
+                                                        onClick={() => handleAssignPersonnelToEvent(person.id, 'remove')}
+                                                        title="Remove from event"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
-                            )}
+                                
+                                {isAdmin && (
+                                    <>
+                                        <h4>Assign Photographers</h4>
+                                        <div className="personnel-assign-dropdown-section">
+                                            {getAvailablePersonnel().length === 0 ? (
+                                                <div className="no-personnel">All personnel are assigned to this event</div>
+                                            ) : (
+                                                <select 
+                                                    className="personnel-assign-dropdown"
+                                                    onChange={(e) => {
+                                                        if (e.target.value) {
+                                                            const personnelId = parseInt(e.target.value);
+                                                            handleAssignPersonnelToEvent(personnelId, 'add');
+                                                            e.target.value = '';
+                                                        }
+                                                    }}
+                                                    defaultValue=""
+                                                >
+                                                    <option value="" disabled>Select personnel to assign...</option>
+                                                    {getAvailablePersonnel().map(person => (
+                                                        <option key={person.id} value={person.id}>
+                                                            {person.name} - {person.role || 'No role'}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                         
                         <div className="modal-footer">
