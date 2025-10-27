@@ -1759,7 +1759,8 @@ export const Schedule = () => {
             {!loading && currentView === 'events' && (
                 <div className='mobile-layout'>
                     {scheduleColumns.map((column) => {
-                        const columnEvents = events.filter(e => e.schedule_column_id === column.id)
+                        // Use filtered events (respects photographer filter)
+                        const columnEvents = eventsWithPositions.filter(e => e.schedule_column_id === column.id)
                             .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
                         
                         return (
