@@ -1755,6 +1755,57 @@ export const Schedule = () => {
             </div>
             )}
 
+            {/* MOBILE VIEW - CSS handles visibility */}
+            {!loading && currentView === 'events' && (
+                <div className='mobile-layout'>
+                    {scheduleColumns.map((column) => {
+                        const columnEvents = events.filter(e => e.schedule_column_id === column.id)
+                            .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+                        
+                        return (
+                            <div key={column.id} className='mobile-column-wrapper'>
+                                <div className='mobile-column-header'>
+                                    <h3>{column.name}</h3>
+                                </div>
+                                <div className='mobile-events-container'>
+                                    {columnEvents.map(event => {
+                                        const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
+                                                style={{
+                                                    backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                    borderColor: isUnassigned ? '#dc3545' : getProcessPointColor(event.process_point).borderColor
+                                                }}
+                                                onClick={() => handleEventClick(event)}
+                                            >
+                                                <div className='event-header'>
+                                                    <h3>{event.name}</h3>
+                                                    {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
+                                                </div>
+                                                <div className='event-time'>
+                                                    {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                </div>
+                                                <div className='event-location'>{event.location}</div>
+                                                {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                    <div className='event-photographers'>
+                                                        {event.assigned_personnel.map((person) => (
+                                                            <span key={person.personnel_id} className='photographer-badge'>
+                                                                {person.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
             
             {/* Event Details Modal */}
             {showModal && selectedEvent && (
