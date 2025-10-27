@@ -1,475 +1,432 @@
-/* Settings Mobile Styles - Mobile-first approach for Settings page */
+/* Mobile Schedule Styles */
 
-/* Mobile breakpoint - only apply these styles on mobile devices */
+/* Desktop - hide mobile by default */
+.mobile-layout {
+  display: none;
+}
+
+.mobile-layout::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile breakpoint */
 @media (max-width: 768px) {
-  /* Settings Container */
-  .settings-container {
-    padding: 15px 10px !important;
-    max-width: 100% !important;
-  }
-
-  /* Title */
-  .settings-title {
-    font-size: 2rem !important;
-    margin-bottom: 20px !important;
-    text-align: center !important;
-  }
-
-  /* Grid Layout - Single column on mobile */
-  .settings-grid {
-    grid-template-columns: 1fr !important;
-    gap: 20px !important;
-    margin-top: 15px !important;
-  }
-
-  /* Sections */
-  .settings-section {
-    padding: 20px 15px !important;
-    border-radius: 16px !important;
-  }
-
-  .settings-section-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 15px !important;
-    margin-bottom: 20px !important;
-  }
-
-  .settings-section-header h2 {
-    font-size: 1.4rem !important;
-    text-align: center !important;
-  }
-
-  /* Super Admin Controls */
-  .super-admin-controls {
-    padding: 15px !important;
-    margin-bottom: 20px !important;
-  }
-
-  .company-selector {
-    flex-direction: column !important;
-    gap: 10px !important;
-    align-items: stretch !important;
-  }
-
-  .company-selector label {
-    min-width: auto !important;
-    text-align: center !important;
-    margin-bottom: 5px !important;
-  }
-
-  .company-dropdown {
+  .mobile-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: scroll !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x mandatory !important;
     width: 100% !important;
-  }
-
-  /* Forms */
-  .settings-item-form {
-    padding: 20px 15px !important;
-    margin-bottom: 20px !important;
-  }
-
-  .settings-form-grid {
-    grid-template-columns: 1fr !important;
-    gap: 15px !important;
-  }
-
-  .settings-form-actions {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-
-  .settings-form-actions button {
-    width: 100% !important;
-  }
-
-  /* Personnel Form Grid */
-  .personnel-form-grid {
-    gap: 15px !important;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr !important;
-    gap: 15px !important;
-  }
-
-  .form-actions {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-
-  .form-actions button {
-    width: 100% !important;
-  }
-
-  /* Item Cards */
-  .settings-item-card {
-    padding: 20px 15px !important;
-    min-height: 100px !important;
-  }
-
-  .settings-item-info h3 {
-    font-size: 1.1rem !important;
-    line-height: 1.3 !important;
-  }
-
-  .settings-item-actions {
-    flex-direction: column !important;
-    gap: 8px !important;
-    margin-top: 15px !important;
-  }
-
-  .settings-item-actions button {
-    width: 100% !important;
-  }
-
-  /* Buttons */
-  .add-btn, .save-btn, .edit-btn, .delete-btn, .cancel-btn, .assign-btn, .approve-btn, .deny-btn {
-    padding: 14px 20px !important;
-    font-size: 14px !important;
-    width: 100% !important;
-    margin-bottom: 8px !important;
-  }
-
-  /* Modals */
-  .settings-modal-content {
-    width: 95% !important;
-    max-width: 95vw !important;
-    margin: 10px !important;
-    max-height: 90vh !important;
-  }
-
-  .settings-modal-header {
-    padding: 20px 15px !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-    text-align: center !important;
-  }
-
-  .settings-modal-header h2 {
-    font-size: 1.3rem !important;
+    min-height: calc(100vh - 200px) !important;
+    position: relative !important;
+    background: #0a0a0f !important;
+    scrollbar-width: none !important;
     margin: 0 !important;
+    padding: 0 !important;
   }
-
-  .settings-close-btn {
-    align-self: flex-end !important;
-    margin-top: -10px !important;
-  }
-
-  /* Approval Modal */
-  .approval-modal {
-    max-width: 95vw !important;
-    width: 95% !important;
-  }
-
-  .approval-modal-content {
-    flex-direction: column !important;
-    min-height: auto !important;
-  }
-
-  .approval-left-column {
-    border-right: none !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .request-details-section,
-  .approval-form-section {
-    padding: 20px 15px !important;
-  }
-
-  .modal-actions {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-
-  .modal-actions button {
-    width: 100% !important;
-  }
-
-  /* Avatar Modal */
-  .avatar-modal-content {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    padding: 20px 15px !important;
-    margin: 10px !important;
-  }
-
-  .avatar-grid {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
-    gap: 12px !important;
-  }
-
-  .avatar-option {
-    width: 70px !important;
-    height: 70px !important;
-  }
-
-  /* Assignment Modal */
-  .assignment-modal {
-    min-width: auto !important;
-    width: 95vw !important;
-    max-width: 95vw !important;
-    margin: 10px !important;
-  }
-
-  .assignment-form {
-    gap: 20px !important;
-  }
-
-  .personnel-info {
-    padding: 15px !important;
-  }
-
-  .settings-events-list {
-    max-height: 400px !important;
-  }
-
-  .settings-event-option {
-    padding: 12px !important;
-  }
-
-  .checkbox-label {
-    gap: 10px !important;
-  }
-
-  .checkmark {
-    width: 18px !important;
-    height: 18px !important;
-  }
-
-  /* Company Details Modal */
-  .company-details-modal {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    margin: 10px !important;
-  }
-
-  .company-details-grid {
-    grid-template-columns: 1fr !important;
-    gap: 20px !important;
-    padding: 0 15px !important;
-  }
-
-  .company-details-column {
-    padding: 15px !important;
-  }
-
-  .modal-header-actions {
-    flex-direction: column !important;
-    gap: 8px !important;
-  }
-
-  .edit-company-btn {
-    width: 100% !important;
-    text-align: center !important;
-  }
-
-  /* Company Creation Modal */
-  .modal-content {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    margin: 10px !important;
-  }
-
-  .settings-form {
-    padding: 20px 15px !important;
-  }
-
-  /* Filter Section */
-  .settings-filter-section {
-    flex-direction: column !important;
-    gap: 10px !important;
-    padding: 15px !important;
-  }
-
-  .settings-filter-select {
-    width: 100% !important;
-    min-width: auto !important;
-  }
-
-  /* User Cards */
-  .settings-user-card {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 15px !important;
-    padding: 15px !important;
-  }
-
-  .item-header {
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center !important;
-    gap: 10px !important;
-  }
-
-  .user-avatar {
-    width: 60px !important;
-    height: 60px !important;
-  }
-
-  .user-details h3 {
-    font-size: 1.1rem !important;
-    margin-bottom: 5px !important;
-  }
-
-  .user-email {
-    font-size: 0.9rem !important;
-  }
-
-  .user-role {
-    font-size: 0.85rem !important;
-  }
-
-  /* Popup Styles */
-  .org-required-popup {
-    padding: 20px 15px !important;
-    margin: 20px !important;
-    width: calc(100vw - 40px) !important;
-    max-width: calc(100vw - 40px) !important;
-  }
-
-  .popup-header h3 {
-    font-size: 1.3rem !important;
-  }
-
-  .popup-actions {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-
-  .popup-btn {
-    width: 100% !important;
-  }
-
-  /* Empty States */
-  .settings-empty-state {
-    padding: 30px 15px !important;
-    font-size: 0.9rem !important;
-  }
-
-  /* Lists */
-  .settings-items-list {
-    max-height: 500px !important;
-    gap: 12px !important;
-  }
-
-  /* Status Badges */
-  .settings-status-badge {
-    font-size: 0.75rem !important;
-    padding: 3px 8px !important;
-  }
-
-  /* Meta Information */
-  .settings-item-meta {
-    flex-direction: column !important;
-    gap: 8px !important;
-    align-items: flex-start !important;
-  }
-
-  /* Personnel Cards - Mobile Specific */
-  .settings-item-card p {
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    hyphens: auto !important;
-  }
-
-  /* Hide email and phone details by default on mobile personnel cards */
-  .settings-section:nth-child(2) .settings-item-card:not(.expanded) .settings-item-info p:not(:first-child) {
+  
+  .desktop-layout {
     display: none !important;
   }
 
-  /* Show all details when expanded */
-  .settings-section:nth-child(2) .settings-item-card.expanded .settings-item-info p {
-    display: block !important;
+  .schedule-grid {
+    display: none !important;
   }
 
-  /* Fix card expansion overflow - make cards push content down instead of overlapping */
-  .settings-section:nth-child(2) .settings-item-card {
-    margin-bottom: 15px !important;
-    position: relative !important;
+  .loading {
+    padding: 20px;
+    text-align: center;
+  }
+  /* Mobile schedule container */
+  .schedule-container {
+    padding: 10px;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  /* Mobile schedule header */
+  .schedule-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+
+  .schedule-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+  }
+
+  .schedule-controls {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .schedule-controls .control-group {
+    width: 100%;
+  }
+
+  .schedule-controls select {
+    width: 100%;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Fix toggle buttons on mobile */
+  .view-toggle-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .filter-group label {
+    font-size: 14px;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  /* COMPLETELY OVERRIDE THE DESKTOP SCHEDULE LAYOUT */
+  .schedule-grid {
     display: block !important;
+    position: relative !important;
     overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
-  .settings-section:nth-child(2) .settings-item-card.expanded {
-    margin-bottom: 20px !important;
-    position: relative !important;
+  .schedule-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide the desktop events area completely */
+  .events-area {
+    display: none !important;
+  }
+
+  /* Create mobile-specific layout */
+  .schedule-grid::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  /* Mobile time column */
+  .time-column {
     display: block !important;
-    overflow: visible !important;
-  }
-
-  /* Ensure expanded cards don't overlap by making the list container handle overflow properly */
-  .settings-section:nth-child(2) .settings-items-list {
-    overflow: visible !important;
+    width: 60px !important;
+    min-width: 60px !important;
+    flex-shrink: 0 !important;
+    background: rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
     position: relative !important;
-    display: block !important;
+    z-index: 10 !important;
+    height: 100% !important;
   }
 
-  /* Make sure expanded content is contained within the card and pushes down subsequent cards */
-  .settings-section:nth-child(2) .settings-item-card .settings-item-actions {
-    position: relative !important;
-    display: block !important;
-    overflow: visible !important;
-    margin-top: 15px !important;
+  .time-column .time-header {
+    padding: 15px 5px !important;
+    font-size: 0.8rem !important;
+    text-align: center !important;
+    background: rgba(255, 122, 24, 0.1);
+    border-bottom: 1px solid rgba(255, 122, 24, 0.3);
+    height: 60px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  /* Override any absolute positioning that might be causing overlap */
-  .settings-section:nth-child(2) .settings-item-card * {
-    position: relative !important;
+  .time-column .time-slot {
+    padding: 8px 5px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    min-height: 30px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  /* Ensure the personnel section doesn't go under project management */
-  .settings-section:nth-child(2) {
-    margin-bottom: 30px !important;
-    position: relative !important;
-    z-index: 1 !important;
+  .time-column .time-slot .time-text {
+    font-size: 0.7rem !important;
+    text-align: center !important;
+    margin: 0 !important;
+    color: rgba(255, 255, 255, 0.7);
   }
 
-  /* Role Colors - Keep them but make them more subtle on mobile */
-  .settings-item-card.role-photographer { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(30,144,255,0.1) !important; 
+/* Mobile column wrapper - each column takes full screen width */
+.mobile-column-wrapper {
+  display: block;
+  min-width: 100vw;
+  width: 100vw;
+  max-width: 100vw;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+  height: 100%;
+  background: #1a1a2e;
+  border-right: 3px solid #ff7a18;
+  overflow: hidden;
+}
+
+/* Mobile column header */
+.mobile-column-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: #ff7a18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.mobile-column-header h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Mobile events container */
+.mobile-events-container {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Mobile event cards */
+.mobile-event-card {
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid;
+  min-height: 80px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.mobile-event-card .event-header h3 {
+  font-size: 1rem;
+  margin: 0 0 6px 0;
+  font-weight: 600;
+  color: #ff7a18;
+}
+
+.mobile-event-card .event-time {
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mobile-event-card .event-location {
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mobile-event-card .event-photographers {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mobile-event-card .photographer-badge {
+  background: #ff7a18;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  display: inline-block;
+}
+
+  /* Hide desktop elements */
+  .events-area,
+  .events-header,
+  .sched-events-container,
+  .sched-event-column,
+  .sched-event-card,
+  .global-grid-lines,
+  .desktop-only,
+  .btn-add-column-top {
+    display: none !important;
   }
-  .settings-item-card.role-lead-photographer { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(32,201,151,0.1) !important; 
+
+  /* Mobile scroll indicator */
+  .mobile-scroll-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 122, 24, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: pulse 2s infinite;
   }
-  .settings-item-card.role-editor { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(255,122,24,0.1) !important; 
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
   }
-  .settings-item-card.role-coordinator { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(255,215,0,0.1) !important; 
+
+  /* Mobile modal adjustments */
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 20px auto;
   }
-  .settings-item-card.role-admin { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(220,53,69,0.1) !important; 
+
+  .modal-header h2 {
+    font-size: 1.3rem;
   }
-  .settings-item-card.role-client { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(0,229,255,0.1) !important; 
+
+  .modal-body {
+    padding: 20px;
   }
-  .settings-item-card.role-videographer { 
-    border-width: 1px !important; 
-    box-shadow: 0 1px 5px rgba(138,43,226,0.1) !important; 
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 8px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .schedule-container {
+    padding: 10px;
+  }
+
+  .mobile-column-wrapper {
+    min-width: calc(100vw - 50px) !important;
+    width: calc(100vw - 50px) !important;
+  }
+
+  .time-column {
+    width: 50px !important;
+    min-width: 50px !important;
+  }
+
+  .mobile-column-header {
+    height: 50px !important;
+  }
+
+  .mobile-events-container {
+    top: 50px !important;
+  }
+
+  .mobile-event-card {
+    padding: 6px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .mobile-event-card h3 {
+    font-size: 0.95rem !important;
+  }
+
+  .mobile-scroll-indicator {
+    bottom: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
   }
 }
 
 /* Hide mobile elements on desktop */
 @media (min-width: 769px) {
-  /* Ensure desktop layout is preserved */
-  .settings-container {
-    max-width: 2800px !important;
-    padding: 40px 20px !important;
+  /* Show desktop layout, hide mobile */
+  .desktop-layout {
+    display: contents !important;
+  }
+  
+  .mobile-layout {
+    display: none !important;
   }
 
-  .settings-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 30px !important;
-  }
-
-  .settings-title {
-    font-size: 3rem !important;
-    margin-bottom: 40px !important;
+  .mobile-scroll-indicator,
+  .mobile-column-wrapper,
+  .mobile-column-header,
+  .mobile-events-container,
+  .mobile-event-card {
+    display: none !important;
   }
 }
