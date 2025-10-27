@@ -1465,7 +1465,14 @@ export const Schedule = () => {
                                     {personnel
                                         .filter(person => {
                                             const role = (person.role || '').toLowerCase()
-                                            return role.includes('photographer') || role.includes('videographer')
+                                            const isPhotographerOrVideographer = role.includes('photographer') || role.includes('videographer')
+                                            
+                                            // Only show if role matches AND assigned to selected project
+                                            if (selectedProjectId && person.project_ids) {
+                                                return isPhotographerOrVideographer && person.project_ids.includes(parseInt(selectedProjectId))
+                                            }
+                                            
+                                            return isPhotographerOrVideographer
                                         })
                                         .map(photographer => (
                                             <option key={photographer.id} value={photographer.id}>
