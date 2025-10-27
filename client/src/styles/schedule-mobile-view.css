@@ -1,0 +1,309 @@
+/* Schedule Mobile View - Completely isolated mobile schedule interface */
+/* All classes prefixed with "smv-" to avoid conflicts */
+
+.smv-container {
+  width: 100%;
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: white;
+  padding-bottom: 80px; /* Space for navigation */
+}
+
+.smv-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.2rem;
+  color: white;
+}
+
+/* Header */
+.smv-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #ff7a18 0%, #ff5a18 100%);
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.smv-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.smv-date {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Columns Wrapper - Horizontal Scroll */
+.smv-columns-wrapper {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 0;
+  scrollbar-width: none;
+}
+
+.smv-columns-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual Column */
+.smv-column {
+  min-width: 100vw;
+  width: 100vw;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a2e;
+  border-right: 3px solid #ff7a18;
+}
+
+/* Column Header */
+.smv-column-header {
+  padding: 20px;
+  background: #2a2a3e;
+  border-bottom: 2px solid #ff7a18;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 88px; /* Below main header */
+  z-index: 50;
+}
+
+.smv-column-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #ff7a18;
+  font-weight: 700;
+}
+
+.smv-event-count {
+  background: #ff7a18;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Events List */
+.smv-events-list {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.smv-no-events {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+}
+
+/* Event Card */
+.smv-event-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #ff7a18;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.smv-event-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.smv-event-card.smv-unassigned {
+  border-color: #dc3545;
+  border-width: 3px;
+}
+
+.smv-event-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff7a18;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.smv-event-time {
+  font-size: 1rem;
+  color: white;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.smv-event-location {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 10px;
+}
+
+/* Personnel Badges */
+.smv-event-personnel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.smv-personnel-badge {
+  background: #ff7a18;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* No Data Message */
+.smv-no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.smv-no-data p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+}
+
+/* Modal Overlay */
+.smv-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Modal */
+.smv-modal {
+  background: #1a1a2e;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Modal Header */
+.smv-modal-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #ff7a18 0%, #ff5a18 100%);
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.smv-modal-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: white;
+  flex: 1;
+  padding-right: 10px;
+}
+
+.smv-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.smv-modal-close:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Modal Body */
+.smv-modal-body {
+  padding: 20px;
+}
+
+.smv-modal-field {
+  margin-bottom: 20px;
+}
+
+.smv-modal-field strong {
+  display: block;
+  color: #ff7a18;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.smv-modal-field span,
+.smv-modal-field p {
+  color: white;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.smv-modal-personnel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 400px) {
+  .smv-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .smv-column-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .smv-event-card {
+    padding: 14px;
+  }
+
+  .smv-event-name {
+    font-size: 1rem;
+  }
+
+  .smv-event-time {
+    font-size: 0.9rem;
+  }
+}
+

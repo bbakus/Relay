@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { WebSocketProvider } from './context/WebSocketContext'
 import { Settings } from './components/Settings';
-import { Schedule } from './components/Schedule';
+import { ScheduleWrapper } from './components/ScheduleWrapper';
 import { Personnel } from './components/Personnel';
 import { Events } from './components/Events';
 import { ShotRequest } from './components/ShotRequest';
@@ -49,7 +49,7 @@ function App() {
                 <Route path='/' element={<Login />}/>
                 <Route path='/:userId/dashboard' element={<Dashboard />}/>
                 <Route path='/:userId/settings' element={<Settings/>}/>
-                <Route path='/:userId/schedule' element={<Schedule/>}/>
+                <Route path='/:userId/schedule' element={<ScheduleWrapper/>}/>
                 <Route path='/:userId/personnel' element={<Personnel/>}/>
                 <Route path='/:userId/events' element={<Events/>}/>
                 <Route path='/:userId/requests' element={<ShotRequest/>}/>
