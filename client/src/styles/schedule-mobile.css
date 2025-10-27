@@ -4,16 +4,22 @@
 .mobile-layout {
   display: flex;
   flex-direction: row;
-  overflow-x: auto;
+  overflow-x: scroll;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   width: 100vw;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 250px);
   position: fixed;
   left: 0;
-  top: 200px;
+  top: 250px;
   background: #0a0a0f;
-  z-index: 100;
+  z-index: 50;
+  scrollbar-width: none;
+}
+
+.mobile-layout::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mobile breakpoint */
@@ -27,7 +33,7 @@
   }
   /* Mobile schedule container */
   .schedule-container {
-    padding: 15px;
+    padding: 10px;
     margin: 0;
     overflow-x: hidden;
   }
@@ -36,19 +42,19 @@
   .schedule-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
   }
 
   .schedule-header h1 {
-    font-size: 1.8rem;
-    margin-bottom: 10px;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
   }
 
   .schedule-controls {
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     width: 100%;
   }
 
@@ -59,6 +65,37 @@
   .schedule-controls select {
     width: 100%;
     font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Fix toggle buttons on mobile */
+  .view-toggle-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .view-toggle-btn {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .filter-group label {
+    font-size: 14px;
+  }
+
+  .filter-select {
+    width: 100%;
   }
 
   /* COMPLETELY OVERRIDE THE DESKTOP SCHEDULE LAYOUT */
@@ -139,12 +176,15 @@
   display: block;
   min-width: 100vw;
   width: 100vw;
+  max-width: 100vw;
   flex-shrink: 0;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   position: relative;
   height: 100%;
   background: #1a1a2e;
-  border-right: 2px solid #ff7a18;
+  border-right: 3px solid #ff7a18;
+  overflow: hidden;
 }
 
 /* Mobile column header */
