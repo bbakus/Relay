@@ -125,12 +125,13 @@
 
   /* Mobile column wrapper - each column takes full screen width */
   .mobile-column-wrapper {
-    display: flex !important;
+    display: block !important;
     min-width: calc(100vw - 60px) !important;
     width: calc(100vw - 60px) !important;
     flex-shrink: 0 !important;
     scroll-snap-align: start;
     position: relative !important;
+    height: 100% !important;
   }
 
   /* Mobile column header */
@@ -162,19 +163,24 @@
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
+    width: 100% !important;
     height: 100% !important;
     padding: 0 !important;
+    margin: 0 !important;
     z-index: 1 !important;
+    min-height: 1200px !important;
   }
 
   /* Mobile event cards */
   .mobile-event-card {
+    position: absolute !important;
     padding: 8px !important;
     border-radius: 8px !important;
     font-size: 0.85rem !important;
     cursor: pointer !important;
     overflow: hidden !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    z-index: 2 !important;
   }
 
   .mobile-event-card h3 {
