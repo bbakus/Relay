@@ -1756,58 +1756,73 @@ export const Schedule = () => {
             </div>
             )}
 
-            {/* MOBILE VIEW - Completely separate */}
+            {/* MOBILE VIEW - Brand new, completely independent */}
             {!loading && currentView === 'events' && (
                 <div className='mobile-layout'>
-                    {console.log('📱 MOBILE: Rendering', scheduleColumns.length, 'columns')}
-                    {scheduleColumns.length === 0 && <div style={{color: 'white', padding: '20px'}}>No columns found</div>}
-                    {scheduleColumns.map((column) => (
-                        <div key={column.id} className='mobile-column-wrapper'>
-                            <div className='mobile-column-header'>
-                                <h3>{column.name}</h3>
-                            </div>
-                            <div className='mobile-events-container'>
-                                {eventsByColumn[column.id]
-                                    ?.sort((a, b) => {
-                                        const timeA = a.start_time || '00:00';
-                                        const timeB = b.start_time || '00:00';
-                                        return timeA.localeCompare(timeB);
-                                    })
-                                    .map(event => {
-                                        const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
-                                        return (
-                                            <div
-                                                key={event.id}
-                                                className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
-                                                style={{
-                                                    backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                    borderColor: isUnassigned ? '#dc3545' : getProcessPointColor(event.process_point).borderColor
-                                                }}
-                                                onClick={() => handleEventClick(event)}
-                                            >
-                                                <div className='event-header'>
-                                                    <h3>{event.name}</h3>
-                                                    {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
-                                                </div>
-                                                <div className='event-time'>
-                                                    {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                </div>
-                                                <div className='event-location'>{event.location}</div>
-                                                {event.assigned_personnel && event.assigned_personnel.length > 0 && (
-                                                    <div className='event-photographers'>
-                                                        {event.assigned_personnel.map((person) => (
-                                                            <span key={person.personnel_id} className='photographer-badge'>
-                                                                {person.name}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                            </div>
+                    {scheduleColumns.length === 0 ? (
+                        <div style={{color: 'white', padding: '20px', fontSize: '18px'}}>
+                            No columns available. Total events: {events.length}
                         </div>
-                    ))}
+                    ) : (
+                        scheduleColumns.map((column) => {
+                            // Get events for this column
+                            const columnEvents = events.filter(e => e.schedule_column_id === column.id)
+                                .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+                            
+                            return (
+                                <div key={column.id} className='mobile-column-wrapper'>
+                                    <div className='mobile-column-header'>
+                                        <h3>{column.name}</h3>
+                                        <div style={{fontSize: '14px', opacity: 0.8}}>{columnEvents.length} events</div>
+                                    </div>
+                                    <div className='mobile-events-container'>
+                                        {columnEvents.length === 0 ? (
+                                            <div style={{color: 'rgba(255,255,255,0.5)', padding: '20px', textAlign: 'center'}}>
+                                                No events in this column
+                                            </div>
+                                        ) : (
+                                            columnEvents.map(event => (
+                                                <div
+                                                    key={event.id}
+                                                    className='mobile-event-card'
+                                                    style={{
+                                                        backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                        borderColor: getProcessPointColor(event.process_point).borderColor
+                                                    }}
+                                                    onClick={() => handleEventClick(event)}
+                                                >
+                                                    <div style={{fontWeight: 'bold', fontSize: '16px', color: '#ff7a18', marginBottom: '8px'}}>
+                                                        {event.name}
+                                                    </div>
+                                                    <div style={{fontSize: '14px', marginBottom: '4px'}}>
+                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                    </div>
+                                                    <div style={{fontSize: '13px', opacity: 0.8}}>
+                                                        {event.location}
+                                                    </div>
+                                                    {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                        <div style={{marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px'}}>
+                                                            {event.assigned_personnel.map((person) => (
+                                                                <span key={person.personnel_id} style={{
+                                                                    background: '#ff7a18',
+                                                                    color: 'white',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: '4px',
+                                                                    fontSize: '12px'
+                                                                }}>
+                                                                    {person.name}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             )}
             
