@@ -87,17 +87,27 @@ export const Schedule = () => {
         return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`
     }
 
-    // Check if user is admin
+    // Check if user is admin - SIMPLIFIED
     const isAdmin = useMemo(() => {
-        // Check if user is ANY type of admin (super admin OR company admin)
-        const adminCheck = (user?.access || '').toLowerCase() === 'admin' || user?.is_super_admin || user?.is_company_admin
+        if (!user) {
+            console.log('🔍 Schedule isAdmin check: NO USER')
+            return false
+        }
+        
+        // Check if user.access is "Admin" (case-insensitive)
+        const hasAdminAccess = (user.access || '').toLowerCase() === 'admin'
+        
         console.log('🔍 Schedule isAdmin check:', {
-            access: user?.access,
-            is_super_admin: user?.is_super_admin,
-            is_company_admin: user?.is_company_admin,
-            isAdmin: adminCheck
+            user: user,
+            access: user.access,
+            hasAdminAccess: hasAdminAccess,
+            is_super_admin: user.is_super_admin,
+            is_company_admin: user.is_company_admin,
+            finalResult: hasAdminAccess
         })
-        return adminCheck
+        
+        // If user.access is "Admin", they are an admin (super or company)
+        return hasAdminAccess
     }, [user])
 
     const fetchOrganizations = async () => {
@@ -1918,6 +1928,22 @@ export const Schedule = () => {
                                     <option value="delivered">Delivered</option>
                                     <option value="null">Not Shot</option>
                                 </select>
+                            </div>
+
+                            {/* DEBUG INFO */}
+                            <div style={{
+                                background: 'rgba(255,0,0,0.2)',
+                                padding: '10px',
+                                margin: '10px 0',
+                                border: '2px solid red',
+                                borderRadius: '4px',
+                                fontSize: '12px'
+                            }}>
+                                <strong>DEBUG:</strong><br/>
+                                isAdmin: {isAdmin ? 'TRUE' : 'FALSE'}<br/>
+                                user.access: {user?.access || 'undefined'}<br/>
+                                user.is_super_admin: {user?.is_super_admin ? 'true' : 'false'}<br/>
+                                user.is_company_admin: {user?.is_company_admin ? 'true' : 'false'}
                             </div>
 
                             {/* Personnel Assignment Section - Admin Only */}
