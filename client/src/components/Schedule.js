@@ -1816,7 +1816,16 @@ export const Schedule = () => {
                     )}
             
             {/* Event Details Modal */}
-            {showModal && selectedEvent && (
+            {showModal && selectedEvent && (() => {
+                console.log('🎯 EVENT MODAL RENDERING:', {
+                    eventName: selectedEvent.name,
+                    isAdmin: isAdmin,
+                    userAccess: user?.access,
+                    is_super_admin: user?.is_super_admin,
+                    is_company_admin: user?.is_company_admin
+                });
+                return true;
+            })() && (
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
