@@ -179,14 +179,37 @@ export const ScheduleMobile = () => {
     }
 
     const getProcessPointColor = (processPoint) => {
-        const colors = {
-            'Coverage': { backgroundColor: 'rgba(52, 152, 219, 0.3)', borderColor: '#3498db' },
-            'Processing': { backgroundColor: 'rgba(241, 196, 15, 0.3)', borderColor: '#f1c40f' },
-            'Review': { backgroundColor: 'rgba(230, 126, 34, 0.3)', borderColor: '#e67e22' },
-            'Delivered': { backgroundColor: 'rgba(46, 204, 113, 0.3)', borderColor: '#2ecc71' },
-            'Idle': { backgroundColor: 'rgba(149, 165, 166, 0.3)', borderColor: '#95a5a6' }
+        switch (processPoint?.toLowerCase()) {
+            case 'idle': return {
+                backgroundColor: 'rgba(0, 255, 255, 0.15)',
+                borderColor: 'rgba(0, 255, 255, 1)'
+            }
+            case 'ingest': return {
+                backgroundColor: 'rgba(0, 128, 255, 0.15)',
+                borderColor: 'rgba(0, 128, 255, 1)'
+            }
+            case 'cull': return {
+                backgroundColor: 'rgba(255, 122, 24, 0.15)',
+                borderColor: 'rgba(255, 122, 24, 1)'
+            }
+            case 'color': return {
+                backgroundColor: 'rgba(255, 64, 64, 0.15)',
+                borderColor: 'rgba(255, 64, 64, 1)'
+            }
+            case 'delivered': return {
+                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                borderColor: 'rgba(34, 197, 94, 1)'
+            }
+            case 'null': return {
+                backgroundColor: 'rgba(75, 85, 99, 0.1)',
+                borderColor: 'rgba(75, 85, 99, 0.3)',
+                opacity: 0.5
+            }
+            default: return {
+                backgroundColor: 'rgba(107, 114, 128, 0.15)',
+                borderColor: 'rgba(107, 114, 128, 1)'
+            }
         }
-        return colors[processPoint] || colors['Idle']
     }
 
     if (loading) {
