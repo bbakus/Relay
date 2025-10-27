@@ -3,41 +3,17 @@
 
 .smv-container {
   width: 100%;
-  min-height: 100vh;
-  background: #0a0a0f;
+  height: 100%;
   color: white;
-  padding-bottom: 80px; /* Space for navigation */
 }
 
 .smv-loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  padding: 40px 20px;
   font-size: 1.2rem;
   color: white;
-}
-
-/* Header */
-.smv-header {
-  padding: 20px;
-  background: linear-gradient(135deg, #ff7a18 0%, #ff5a18 100%);
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.smv-header h1 {
-  margin: 0 0 8px 0;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.smv-date {
-  margin: 0;
-  font-size: 1rem;
-  opacity: 0.9;
 }
 
 /* Columns Wrapper - Horizontal Scroll */
@@ -48,6 +24,7 @@
   -webkit-overflow-scrolling: touch;
   gap: 0;
   scrollbar-width: none;
+  height: calc(100vh - 140px); /* Account for Nav height */
 }
 
 .smv-columns-wrapper::-webkit-scrollbar {
@@ -75,7 +52,7 @@
   justify-content: space-between;
   align-items: center;
   position: sticky;
-  top: 88px; /* Below main header */
+  top: 0;
   z-index: 50;
 }
 

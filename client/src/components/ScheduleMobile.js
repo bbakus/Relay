@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { Nav } from './Nav'
 import '../styles/schedule-mobile-view.css'
 
 export const ScheduleMobile = () => {
@@ -93,17 +94,22 @@ export const ScheduleMobile = () => {
     }
 
     if (loading) {
-        return <div className="smv-loading">Loading Schedule...</div>
+        return (
+            <div className='view-container'>
+                <Nav />
+                <div className='page-container'>
+                    <div className="smv-loading">Loading Schedule...</div>
+                </div>
+            </div>
+        )
     }
 
     return (
-        <div className="smv-container">
-            <div className="smv-header">
-                <h1>Schedule</h1>
-                <p className="smv-date">{selectedDate}</p>
-            </div>
-
-            <div className="smv-columns-wrapper">
+        <div className='view-container'>
+            <Nav />
+            <div className='page-container'>
+                <div className="smv-container">
+                    <div className="smv-columns-wrapper">
                 {scheduleColumns.length === 0 ? (
                     <div className="smv-no-data">
                         <p>No columns configured for this project.</p>
@@ -163,7 +169,8 @@ export const ScheduleMobile = () => {
                         )
                     })
                 )}
-            </div>
+                </div>
+                </div>
 
             {/* Simple Event Modal */}
             {showModal && selectedEvent && (
@@ -208,6 +215,7 @@ export const ScheduleMobile = () => {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     )
 }
