@@ -193,12 +193,15 @@ export const Schedule = () => {
                     const refetchResponse = await fetch(`${API_CONFIG.baseUrl}/api/schedule-columns?project_id=${selectedProjectId}&t=${Date.now()}`)
                     if (refetchResponse.ok) {
                         const newColumns = await refetchResponse.json()
+                        console.log('📊 Created new schedule columns:', newColumns.map(c => ({ id: c.id, name: c.name })))
                         setScheduleColumns(newColumns)
                     }
                 } else if (columns.length >= 5) {
+                    console.log('📊 Fetched schedule columns:', columns.map(c => ({ id: c.id, name: c.name })))
                     setScheduleColumns(columns)
                 } else {
                     // If fewer than 5, pad with existing columns (shouldn't normally happen)
+                    console.log('📊 Fetched fewer than 5 columns:', columns.map(c => ({ id: c.id, name: c.name })))
                     setScheduleColumns(columns)
                 }
             } else {
@@ -244,6 +247,11 @@ export const Schedule = () => {
                     })
                 
                 console.log('📅 Schedule page: After filtering for date/project:', dayEvents.length, 'events')
+                console.log('📅 Event schedule_column_ids:', dayEvents.map(e => ({
+                    id: e.id,
+                    name: e.name,
+                    schedule_column_id: e.schedule_column_id
+                })))
                 setEvents(dayEvents)
             }
         } catch (error) {
@@ -1215,6 +1223,14 @@ export const Schedule = () => {
             }
         })
         
+        console.log('📊 Schedule Columns:', scheduleColumns.map(c => ({ id: c.id, name: c.name })))
+        console.log('📊 Events with Positions:', eventsWithPositions.length)
+        console.log('📊 Events by Column:', Object.entries(eventsByColumn).map(([colId, evts]) => ({ 
+            columnId: colId, 
+            eventCount: evts.length,
+            eventIds: evts.map(e => e.id)
+        })))
+        
         return eventsByColumn
     }
 
@@ -1441,7 +1457,7 @@ export const Schedule = () => {
                                     {personnel
                                         .filter(person => {
                                             const role = (person.role || '').toLowerCase()
-                                            return role.includes('photographer')
+                                            return role.includes('photographer') || role.includes('videographer')
                                         })
                                         .map(photographer => (
                                             <option key={photographer.id} value={photographer.id}>
