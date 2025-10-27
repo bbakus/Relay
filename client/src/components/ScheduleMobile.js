@@ -7,9 +7,12 @@ export const ScheduleMobile = () => {
     const { user, company, selectedDate, selectedProjectId } = useAuth()
     const [events, setEvents] = useState([])
     const [scheduleColumns, setScheduleColumns] = useState([])
+    const [personnel, setPersonnel] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedEvent, setSelectedEvent] = useState(null)
     const [showModal, setShowModal] = useState(false)
+    const [completedNotes, setCompletedNotes] = useState([])
+    const [selectedPhotographerId, setSelectedPhotographerId] = useState('')
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000'
 
@@ -28,6 +31,19 @@ export const ScheduleMobile = () => {
         }
     }
 
+    // Fetch personnel
+    const fetchPersonnel = async () => {
+        try {
+            const response = await fetch(`${API_URL}/api/personnel`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            })
+            const data = await response.json()
+            setPersonnel(data)
+        } catch (error) {
+            console.error('Error fetching personnel:', error)
+        }
+    }
+
     // Fetch events
     const fetchEvents = async () => {
         if (!selectedProjectId || !selectedDate) {
@@ -43,12 +59,22 @@ export const ScheduleMobile = () => {
             const data = await response.json()
             
             // Filter by project, date, and company
-            const filtered = data.filter(event => {
+            let filtered = data.filter(event => {
                 const matchesProject = event.project_id === parseInt(selectedProjectId)
                 const matchesDate = event.date === selectedDate
                 const matchesCompany = company?.id ? event.company_id === company.id : true
                 return matchesProject && matchesDate && matchesCompany
             })
+
+            // Filter by photographer if selected
+            if (selectedPhotographerId) {
+                filtered = filtered.filter(event => {
+                    if (event.assigned_personnel && event.assigned_personnel.length > 0) {
+                        return event.assigned_personnel.some(person => person.personnel_id === parseInt(selectedPhotographerId))
+                    }
+                    return false
+                })
+            }
             
             setEvents(filtered)
         } catch (error) {
@@ -60,17 +86,77 @@ export const ScheduleMobile = () => {
 
     useEffect(() => {
         fetchScheduleColumns()
+        fetchPersonnel()
+    }, [selectedProjectId])
+
+    useEffect(() => {
         fetchEvents()
-    }, [selectedProjectId, selectedDate])
+    }, [selectedProjectId, selectedDate, selectedPhotographerId])
 
     const handleEventClick = (event) => {
         setSelectedEvent(event)
+        setCompletedNotes(event.completed_notes || [])
         setShowModal(true)
     }
 
     const closeModal = () => {
         setShowModal(false)
         setSelectedEvent(null)
+        setCompletedNotes([])
+    }
+
+    const handleCompletedNoteToggle = async (noteValue) => {
+        const newCompletedNotes = completedNotes.includes(noteValue)
+            ? completedNotes.filter(n => n !== noteValue)
+            : [...completedNotes, noteValue]
+        
+        setCompletedNotes(newCompletedNotes)
+
+        try {
+            await fetch(`${API_URL}/api/events/${selectedEvent.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ completed_notes: newCompletedNotes })
+            })
+            fetchEvents() // Refresh events
+        } catch (error) {
+            console.error('Error updating completed notes:', error)
+        }
+    }
+
+    const handleQuickTurnChange = async (eventId, quickTurn) => {
+        try {
+            await fetch(`${API_URL}/api/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ quick_turn: quickTurn })
+            })
+            fetchEvents() // Refresh events
+        } catch (error) {
+            console.error('Error updating quick turn:', error)
+        }
+    }
+
+    const handleProcessPointChange = async (eventId, processPoint) => {
+        try {
+            await fetch(`${API_URL}/api/events/${eventId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ process_point: processPoint })
+            })
+            fetchEvents() // Refresh events
+        } catch (error) {
+            console.error('Error updating process point:', error)
+        }
     }
 
     const formatTimeTo12Hour = (time24) => {
@@ -80,6 +166,13 @@ export const ScheduleMobile = () => {
         const ampm = hour >= 12 ? 'PM' : 'AM'
         const hour12 = hour % 12 || 12
         return `${hour12}:${minutes} ${ampm}`
+    }
+
+    const formatDateForHeader = (dateString) => {
+        if (!dateString) return ''
+        const date = new Date(dateString + 'T00:00:00')
+        const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }
+        return date.toLocaleDateString('en-US', options)
     }
 
     const getProcessPointColor = (processPoint) => {
@@ -109,6 +202,29 @@ export const ScheduleMobile = () => {
             <Nav />
             <div className='page-container'>
                 <div className="smv-container">
+                    {/* Photographer Filter */}
+                    <div className="smv-filter-bar">
+                        <label htmlFor='smv-photographer-filter'>Filter by Photographer:</label>
+                        <select
+                            id='smv-photographer-filter'
+                            value={selectedPhotographerId}
+                            onChange={(e) => setSelectedPhotographerId(e.target.value)}
+                            className='smv-filter-select'
+                        >
+                            <option value=''>All Photographers</option>
+                            {personnel
+                                .filter(person => {
+                                    const role = (person.role || '').toLowerCase()
+                                    return role.includes('photographer') || role.includes('videographer')
+                                })
+                                .map(photographer => (
+                                    <option key={photographer.id} value={photographer.id}>
+                                        {photographer.name}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+
                     <div className="smv-columns-wrapper">
                 {scheduleColumns.length === 0 ? (
                     <div className="smv-no-data">
@@ -172,7 +288,7 @@ export const ScheduleMobile = () => {
                 </div>
                 </div>
 
-            {/* Simple Event Modal */}
+            {/* Detailed Event Modal */}
             {showModal && selectedEvent && (
                 <div className="smv-modal-overlay" onClick={closeModal}>
                     <div className="smv-modal" onClick={(e) => e.stopPropagation()}>
@@ -183,25 +299,90 @@ export const ScheduleMobile = () => {
                         
                         <div className="smv-modal-body">
                             <div className="smv-modal-field">
-                                <strong>Time:</strong>
+                                <strong>Time</strong>
                                 <span>{formatTimeTo12Hour(selectedEvent.start_time)} - {formatTimeTo12Hour(selectedEvent.end_time)}</span>
                             </div>
                             
                             <div className="smv-modal-field">
-                                <strong>Location:</strong>
-                                <span>{selectedEvent.location}</span>
+                                <strong>Date</strong>
+                                <span>{formatDateForHeader(selectedEvent.date)}</span>
                             </div>
                             
-                            {selectedEvent.description && (
+                            <div className="smv-modal-field">
+                                <strong>Location</strong>
+                                <span>{selectedEvent.location}</span>
+                            </div>
+
+                            <div className="smv-modal-field">
+                                <strong>Notes Checklist</strong>
+                                <div className="smv-notes-checklist">
+                                    {(() => {
+                                        const notesArray = selectedEvent.notes 
+                                            ? selectedEvent.notes.split(',').map(n => n.trim())
+                                            : ['Shot'];
+                                        
+                                        return notesArray.map((noteValue, index) => {
+                                            const isCompleted = completedNotes.includes(noteValue);
+                                            return (
+                                                <label key={index} className="smv-checkbox-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isCompleted}
+                                                        onChange={() => handleCompletedNoteToggle(noteValue)}
+                                                    />
+                                                    <span>{noteValue}</span>
+                                                </label>
+                                            );
+                                        });
+                                    })()}
+                                </div>
+                            </div>
+                            
+                            {selectedEvent.details && (
                                 <div className="smv-modal-field">
-                                    <strong>Description:</strong>
-                                    <p>{selectedEvent.description}</p>
+                                    <strong>Details</strong>
+                                    <div className="smv-details-text">{selectedEvent.details}</div>
                                 </div>
                             )}
+
+                            <div className="smv-modal-field">
+                                <strong>Quick Turn</strong>
+                                <label className="smv-toggle-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedEvent.quick_turn || false}
+                                        onChange={(e) => handleQuickTurnChange(selectedEvent.id, e.target.checked)}
+                                    />
+                                    <span>{selectedEvent.quick_turn ? 'Yes ⚡' : 'No'}</span>
+                                </label>
+                            </div>
+                            
+                            {selectedEvent.deadline && (
+                                <div className="smv-modal-field">
+                                    <strong>Deadline</strong>
+                                    <span>{selectedEvent.deadline}</span>
+                                </div>
+                            )}
+
+                            <div className="smv-modal-field">
+                                <strong>Process Point</strong>
+                                <select 
+                                    value={selectedEvent.process_point || 'idle'} 
+                                    onChange={(e) => handleProcessPointChange(selectedEvent.id, e.target.value)}
+                                    className="smv-select"
+                                >
+                                    <option value="idle">Idle</option>
+                                    <option value="ingest">Ingest</option>
+                                    <option value="cull">Cull</option>
+                                    <option value="color">Color</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="null">Not Shot</option>
+                                </select>
+                            </div>
                             
                             {selectedEvent.assigned_personnel && selectedEvent.assigned_personnel.length > 0 && (
                                 <div className="smv-modal-field">
-                                    <strong>Assigned Personnel:</strong>
+                                    <strong>Assigned Personnel</strong>
                                     <div className="smv-modal-personnel">
                                         {selectedEvent.assigned_personnel.map((person) => (
                                             <span key={person.personnel_id} className="smv-personnel-badge">
