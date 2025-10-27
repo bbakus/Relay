@@ -1758,7 +1758,29 @@ export const Schedule = () => {
 
             {/* MOBILE VIEW - Brand new, completely independent */}
             {!loading && currentView === 'events' && (
-                <div className='mobile-layout'>
+                <div className='mobile-layout' style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    overflowX: 'auto',
+                    width: '100%',
+                    minHeight: '500px',
+                    background: '#1a1a2e',
+                    position: 'relative',
+                    padding: '20px',
+                    marginTop: '20px'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        background: 'red',
+                        color: 'white',
+                        padding: '10px',
+                        zIndex: 9999,
+                        fontSize: '20px'
+                    }}>
+                        MOBILE VIEW IS RENDERING - Columns: {scheduleColumns.length}, Events: {events.length}
+                    </div>
                     {scheduleColumns.length === 0 ? (
                         <div style={{color: 'white', padding: '20px', fontSize: '18px'}}>
                             No columns available. Total events: {events.length}
@@ -1770,12 +1792,28 @@ export const Schedule = () => {
                                 .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
                             
                             return (
-                                <div key={column.id} className='mobile-column-wrapper'>
-                                    <div className='mobile-column-header'>
-                                        <h3>{column.name}</h3>
-                                        <div style={{fontSize: '14px', opacity: 0.8}}>{columnEvents.length} events</div>
+                                <div key={column.id} style={{
+                                    minWidth: '90vw',
+                                    width: '90vw',
+                                    marginRight: '20px',
+                                    background: '#2a2a3e',
+                                    borderRadius: '10px',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{
+                                        padding: '20px',
+                                        background: '#ff7a18',
+                                        color: 'white',
+                                        textAlign: 'center'
+                                    }}>
+                                        <h3 style={{margin: 0, fontSize: '24px'}}>{column.name}</h3>
+                                        <div style={{fontSize: '14px', opacity: 0.9, marginTop: '5px'}}>{columnEvents.length} events</div>
                                     </div>
-                                    <div className='mobile-events-container'>
+                                    <div style={{
+                                        padding: '15px',
+                                        maxHeight: '70vh',
+                                        overflowY: 'auto'
+                                    }}>
                                         {columnEvents.length === 0 ? (
                                             <div style={{color: 'rgba(255,255,255,0.5)', padding: '20px', textAlign: 'center'}}>
                                                 No events in this column
@@ -1784,20 +1822,24 @@ export const Schedule = () => {
                                             columnEvents.map(event => (
                                                 <div
                                                     key={event.id}
-                                                    className='mobile-event-card'
                                                     style={{
                                                         backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                        borderColor: getProcessPointColor(event.process_point).borderColor
+                                                        border: `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
+                                                        borderRadius: '8px',
+                                                        padding: '15px',
+                                                        marginBottom: '12px',
+                                                        cursor: 'pointer',
+                                                        color: 'white'
                                                     }}
                                                     onClick={() => handleEventClick(event)}
                                                 >
                                                     <div style={{fontWeight: 'bold', fontSize: '16px', color: '#ff7a18', marginBottom: '8px'}}>
                                                         {event.name}
                                                     </div>
-                                                    <div style={{fontSize: '14px', marginBottom: '4px'}}>
+                                                    <div style={{fontSize: '14px', marginBottom: '4px', color: 'white'}}>
                                                         {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                     </div>
-                                                    <div style={{fontSize: '13px', opacity: 0.8}}>
+                                                    <div style={{fontSize: '13px', opacity: 0.8, color: 'white'}}>
                                                         {event.location}
                                                     </div>
                                                     {event.assigned_personnel && event.assigned_personnel.length > 0 && (
