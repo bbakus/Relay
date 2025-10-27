@@ -136,10 +136,10 @@ export const Nav = () => {
       
       if (user?.is_super_admin && selectedCompanyId) {
         url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${selectedCompanyId}`
-      } else if ((user?.access === 'Admin' || user?.access === 'Coordinator') && user?.company_id) {
+      } else if (((user?.access || '').toLowerCase() === 'admin' || (user?.access || '').toLowerCase() === 'coordinator') && user?.company_id) {
         // Company admin/coordinator: get ONLY their company's organizations
         url = `${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`
-      } else if (user?.id && !user?.is_super_admin && user?.access !== 'Admin' && user?.access !== 'Coordinator') {
+      } else if (user?.id && !user?.is_super_admin && (user?.access || '').toLowerCase() !== 'admin' && (user?.access || '').toLowerCase() !== 'coordinator') {
         // Regular users (photographers, etc.): get organizations from all companies they have personnel in
         const personnelResponse = await fetch(`${API_CONFIG.baseUrl}/api/personnel`)
         if (personnelResponse.ok) {
@@ -190,7 +190,7 @@ export const Nav = () => {
             url = `${API_CONFIG.baseUrl}/api/projects?organization_ids=${orgIds}`
           }
         }
-      } else if ((user?.access === 'Admin' || user?.access === 'Coordinator') && user?.company_id) {
+      } else if (((user?.access || '').toLowerCase() === 'admin' || (user?.access || '').toLowerCase() === 'coordinator') && user?.company_id) {
         // Company admin/coordinator: get ALL projects in their company
         const orgResponse = await fetch(`${API_CONFIG.baseUrl}/api/organizations?company_id=${user.company_id}`)
         if (orgResponse.ok) {
@@ -272,7 +272,7 @@ export const Nav = () => {
 
   // Refetch organizations and projects when selected company changes (for super admin) or when access changes
   useEffect(() => {
-    if ((user?.is_super_admin && selectedCompanyId) || user?.access === 'Client' || user?.access === 'Admin') {
+    if ((user?.is_super_admin && selectedCompanyId) || (user?.access || '').toLowerCase() === 'client' || (user?.access || '').toLowerCase() === 'admin') {
       fetchOrganizations()
       fetchProjects()
     }
@@ -608,7 +608,7 @@ export const Nav = () => {
           )}
           
           {/* Organization/Project Selection - For Admin, Editor, and Coordinator */}
-          {(user?.access === 'Admin' || user?.access === 'Editor' || user?.access === 'Coordinator') && (
+          {((user?.access || '').toLowerCase() === 'admin' || (user?.access || '').toLowerCase() === 'editor' || (user?.access || '').toLowerCase() === 'coordinator') && (
             <>
               <div className='mobile-filter-group'>
                 <label>Organization:</label>
@@ -639,7 +639,7 @@ export const Nav = () => {
           )}
           
           {/* Project Selection - For Client, Editor, Photographer, and Videographer */}
-          {(user?.access === 'Client' || user?.access === 'Editor' || user?.access === 'Photographer' || user?.access === 'Videographer') && (
+          {((user?.access || '').toLowerCase() === 'client' || (user?.access || '').toLowerCase() === 'editor' || (user?.access || '').toLowerCase() === 'photographer' || (user?.access || '').toLowerCase() === 'videographer') && (
             <div className='mobile-filter-group'>
               <label>Project:</label>
               <select 
@@ -701,7 +701,7 @@ export const Nav = () => {
             )}
             
             {/* Organization/Project Selection - For Admin, Editor, and Coordinator */}
-            {(user?.access === 'Admin' || user?.access === 'Editor' || user?.access === 'Coordinator') && (
+            {((user?.access || '').toLowerCase() === 'admin' || (user?.access || '').toLowerCase() === 'editor' || (user?.access || '').toLowerCase() === 'coordinator') && (
               <>
                 <div className='filter-group'>
                   <label>Organization:</label>
@@ -732,7 +732,7 @@ export const Nav = () => {
             )}
             
             {/* Project Selection - For Client, Editor, Photographer, and Videographer */}
-            {(user?.access === 'Client' || user?.access === 'Editor' || user?.access === 'Photographer' || user?.access === 'Videographer') && (
+            {((user?.access || '').toLowerCase() === 'client' || (user?.access || '').toLowerCase() === 'editor' || (user?.access || '').toLowerCase() === 'photographer' || (user?.access || '').toLowerCase() === 'videographer') && (
               <div className='filter-group'>
                 <label>Project:</label>
                 <select 
