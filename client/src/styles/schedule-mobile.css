@@ -1,23 +1,25 @@
-/* Mobile Schedule Styles - ALWAYS VISIBLE FOR TESTING */
-/* This file should be imported alongside the main schedule.css */
+/* Mobile Schedule Styles */
 
-/* REMOVE MEDIA QUERY - ALWAYS SHOW */
+/* ALWAYS SHOW FOR TESTING */
 .mobile-layout {
-  display: block !important;
-  background: red !important;
-  min-height: 500px !important;
-  width: 100% !important;
-  padding: 20px !important;
-  position: relative !important;
-  z-index: 9999 !important;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  width: 100vw;
+  height: calc(100vh - 200px);
+  position: fixed;
+  left: 0;
+  top: 200px;
+  background: #0a0a0f;
+  z-index: 100;
 }
 
-/* Mobile breakpoint - only apply these styles on mobile devices */
+/* Mobile breakpoint */
 @media (max-width: 768px) {
-  /* Show mobile layout, hide desktop */
   .mobile-layout {
-    display: block !important;
-    background: red !important;
+    display: flex;
   }
   
   .desktop-layout {
@@ -132,96 +134,104 @@
     color: rgba(255, 255, 255, 0.7);
   }
 
-  /* Mobile column wrapper - each column takes full screen width */
-  .mobile-column-wrapper {
-    display: block !important;
-    min-width: 100vw !important;
-    width: 100vw !important;
-    flex-shrink: 0 !important;
-    scroll-snap-align: start !important;
-    position: relative !important;
-    height: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: #1a1a2e !important;
-    border-right: 2px solid #ff7a18 !important;
-  }
+/* Mobile column wrapper - each column takes full screen width */
+.mobile-column-wrapper {
+  display: block;
+  min-width: 100vw;
+  width: 100vw;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  position: relative;
+  height: 100%;
+  background: #1a1a2e;
+  border-right: 2px solid #ff7a18;
+}
 
-  /* Mobile column header */
-  .mobile-column-header {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: 80px !important;
-    background: #ff7a18 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 10 !important;
-  }
+/* Mobile column header */
+.mobile-column-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: #ff7a18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
 
-  .mobile-column-header h3 {
-    font-size: 1.5rem !important;
-    margin: 0 !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
-  }
+.mobile-column-header h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #ffffff;
+  font-weight: 700;
+}
 
-  /* Mobile events container */
-  .mobile-events-container {
-    position: relative !important;
-    top: 80px !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: calc(100% - 80px) !important;
-    padding: 0 10px !important;
-    margin: 0 !important;
-    z-index: 1 !important;
-    min-height: 4000px !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
+/* Mobile events container */
+.mobile-events-container {
+  position: relative;
+  top: 80px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: calc(100% - 80px);
+  padding: 0 10px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 4000px;
+}
 
-  /* Mobile event cards */
-  .mobile-event-card {
-    position: absolute !important;
-    padding: 10px !important;
-    border-radius: 8px !important;
-    font-size: 0.9rem !important;
-    cursor: pointer !important;
-    overflow: visible !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
-    z-index: 5 !important;
-    border: 2px solid #ffffff !important;
-  }
+/* Mobile event cards */
+.mobile-event-card {
+  position: absolute;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+  border: 2px solid;
+  left: 8px;
+  right: 8px;
+  min-height: 60px;
+}
 
-  .mobile-event-card h3 {
-    font-size: 1rem !important;
-    margin-bottom: 6px !important;
-    font-weight: 600 !important;
-    color: #ff7a18 !important;
-  }
+.mobile-event-card .event-header h3 {
+  font-size: 1rem;
+  margin: 0 0 6px 0;
+  font-weight: 600;
+  color: #ff7a18;
+}
 
-  .mobile-event-card .event-time {
-    font-size: 0.8rem !important;
-    margin-bottom: 4px !important;
-    font-weight: 500 !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-  }
+.mobile-event-card .event-time {
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
 
-  .mobile-event-card .event-location {
-    font-size: 0.75rem !important;
-    margin-bottom: 4px !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-  }
+.mobile-event-card .event-location {
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.8);
+}
 
-  .mobile-event-card .event-notes {
-    font-size: 0.7rem !important;
-    margin-bottom: 4px !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-  }
+.mobile-event-card .event-photographers {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mobile-event-card .photographer-badge {
+  background: #ff7a18;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  display: inline-block;
+}
 
   /* Hide desktop elements */
   .events-area,
