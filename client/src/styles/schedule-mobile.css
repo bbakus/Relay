@@ -7,12 +7,16 @@
   .mobile-layout {
     display: flex !important;
     flex-direction: row !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    height: 100vh !important;
-    width: 100% !important;
-    position: relative !important;
+    overflow-x: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x mandatory !important;
+    width: 100vw !important;
+    height: calc(100vh - 200px) !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 200px !important;
+    background: rgba(0,0,0,0.5) !important;
+    z-index: 100 !important;
   }
   
   .desktop-layout {
@@ -133,11 +137,13 @@
     min-width: 100vw !important;
     width: 100vw !important;
     flex-shrink: 0 !important;
-    scroll-snap-align: start;
+    scroll-snap-align: start !important;
     position: relative !important;
     height: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    background: #1a1a2e !important;
+    border-right: 2px solid #ff7a18 !important;
   }
 
   /* Mobile column header */
@@ -146,49 +152,48 @@
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    height: 60px !important;
-    background: rgba(255, 122, 24, 0.1);
-    border: 1px solid rgba(255, 122, 24, 0.3);
-    border-bottom: 1px solid rgba(255, 122, 24, 0.3);
+    height: 80px !important;
+    background: #ff7a18 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 5 !important;
+    z-index: 10 !important;
   }
 
   .mobile-column-header h3 {
-    font-size: 1.2rem !important;
+    font-size: 1.5rem !important;
     margin: 0 !important;
-    color: #ff7a18 !important;
-    font-weight: 600 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
   }
 
   /* Mobile events container */
   .mobile-events-container {
     position: relative !important;
-    top: 60px !important;
+    top: 80px !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    height: calc(100% - 60px) !important;
-    padding: 0 !important;
+    height: calc(100% - 80px) !important;
+    padding: 0 10px !important;
     margin: 0 !important;
     z-index: 1 !important;
     min-height: 4000px !important;
     overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   /* Mobile event cards */
   .mobile-event-card {
     position: absolute !important;
-    padding: 8px !important;
+    padding: 10px !important;
     border-radius: 8px !important;
-    font-size: 0.85rem !important;
+    font-size: 0.9rem !important;
     cursor: pointer !important;
-    overflow: hidden !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-    z-index: 2 !important;
+    overflow: visible !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+    z-index: 5 !important;
+    border: 2px solid #ffffff !important;
   }
 
   .mobile-event-card h3 {
