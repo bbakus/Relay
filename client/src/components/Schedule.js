@@ -1615,54 +1615,62 @@ export const Schedule = () => {
                             </div>
 
                             {/* Mobile Layout */}
-                            <div className='mobile-layout'>
+                            <div className='mobile-layout' style={{display: 'block', background: 'red', minHeight: '500px', width: '100%', padding: '20px'}}>
+                                <div style={{color: 'white', fontSize: '24px', marginBottom: '20px'}}>
+                                    MOBILE SCHEDULE - {scheduleColumns.length} COLUMNS
+                                </div>
                                 {scheduleColumns.map((column) => (
-                                    <div key={column.id} className='mobile-column-wrapper'>
-                                        <div className='mobile-column-header'>
-                                            <h3>{column.name}</h3>
+                                    <div key={column.id} style={{marginBottom: '30px', background: '#1a1a2e', padding: '15px', borderRadius: '8px'}}>
+                                        <div style={{background: '#ff7a18', padding: '15px', marginBottom: '15px', borderRadius: '4px'}}>
+                                            <h3 style={{color: 'white', margin: 0, fontSize: '20px'}}>{column.name}</h3>
                                         </div>
-                                        <div className='mobile-events-container'>
+                                        <div style={{color: 'white', marginBottom: '10px'}}>
+                                            {eventsByColumn[column.id]?.length || 0} events in this column
+                                        </div>
+                                        <div>
                                             {console.log(`📱 Mobile rendering column ${column.id} (${column.name}):`, eventsByColumn[column.id]?.length || 0, 'events')}
                                             {eventsByColumn[column.id]?.length === 0 ? (
-                                                <div style={{padding: '60px 10px 10px 10px', textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>
+                                                <div style={{padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>
                                                     No events in this column
                                                 </div>
                                             ) : (
-                                                eventsByColumn[column.id]?.map(event => {
-                                                    console.log(`📱 Rendering event ${event.id}:`, event.name, 'position:', event.position);
-                                                    if (!event.position) {
-                                                        console.warn(`⚠️ Event ${event.id} has no position!`);
-                                                        return null;
-                                                    }
+                                                eventsByColumn[column.id]?.map((event, idx) => {
+                                                    console.log(`📱 Rendering event ${event.id}:`, event.name);
                                                     const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
                                                     return (
                                                         <div
                                                             key={event.id}
-                                                            className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
                                                             style={{
-                                                                position: 'absolute',
-                                                                top: `${event.position.top}px`,
-                                                                height: `${event.position.height}px`,
-                                                                left: '8px',
-                                                                right: '8px',
-                                                                minHeight: '60px',
-                                                                backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`
+                                                                background: getProcessPointColor(event.process_point).backgroundColor,
+                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
+                                                                padding: '12px',
+                                                                marginBottom: '10px',
+                                                                borderRadius: '6px',
+                                                                cursor: 'pointer'
                                                             }}
                                                             onClick={() => handleEventClick(event)}
                                                         >
-                                                            <div className='event-header'>
-                                                                <h3>{event.name}</h3>
-                                                                {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
+                                                            <div style={{fontWeight: 'bold', marginBottom: '5px', color: '#ff7a18'}}>
+                                                                {event.name}
                                                             </div>
-                                                            <div className='event-time'>
+                                                            <div style={{fontSize: '14px', marginBottom: '4px', color: 'rgba(255,255,255,0.9)'}}>
                                                                 {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
                                                             </div>
-                                                            <div className='event-location'>{event.location}</div>
+                                                            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)'}}>
+                                                                {event.location}
+                                                            </div>
                                                             {event.assigned_personnel && event.assigned_personnel.length > 0 && (
-                                                                <div className='event-photographers'>
+                                                                <div style={{marginTop: '8px'}}>
                                                                     {event.assigned_personnel.map((person, idx) => (
-                                                                        <span key={person.personnel_id} className='photographer-badge'>
+                                                                        <span key={person.personnel_id} style={{
+                                                                            background: '#ff7a18',
+                                                                            color: 'white',
+                                                                            padding: '4px 8px',
+                                                                            borderRadius: '4px',
+                                                                            fontSize: '12px',
+                                                                            marginRight: '5px',
+                                                                            display: 'inline-block'
+                                                                        }}>
                                                                             {person.name}
                                                                         </span>
                                                                     ))}
