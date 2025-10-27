@@ -1484,11 +1484,11 @@ export const Schedule = () => {
 
 
 
+                    {/* DESKTOP VIEW */}
                     {loading ? (
                         <div className='loading'>Loading {currentView}...</div>
                     ) : (
-                        <>
-                        <div className='schedule-grid'>
+                        <div className='schedule-grid desktop-layout'>
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
                             {currentView === 'events' ? (
                                 <>
@@ -1754,10 +1754,13 @@ export const Schedule = () => {
                 </>
             )}
             </div>
+            )}
 
-            {/* Mobile Layout - OUTSIDE schedule-grid */}
-            {currentView === 'events' && (
+            {/* MOBILE VIEW - Completely separate */}
+            {!loading && currentView === 'events' && (
                 <div className='mobile-layout'>
+                    {console.log('📱 MOBILE: Rendering', scheduleColumns.length, 'columns')}
+                    {scheduleColumns.length === 0 && <div style={{color: 'white', padding: '20px'}}>No columns found</div>}
                     {scheduleColumns.map((column) => (
                         <div key={column.id} className='mobile-column-wrapper'>
                             <div className='mobile-column-header'>
@@ -1806,8 +1809,6 @@ export const Schedule = () => {
                         </div>
                     ))}
                 </div>
-            )}
-            </>
             )}
             
             {/* Event Details Modal */}
