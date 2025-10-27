@@ -1465,7 +1465,14 @@ export const Schedule = () => {
                                     {personnel
                                         .filter(person => {
                                             const role = (person.role || '').toLowerCase()
-                                            return role.includes('photographer') || role.includes('videographer')
+                                            const isPhotographerOrVideographer = role.includes('photographer') || role.includes('videographer')
+                                            
+                                            // Filter by selected project if one is selected
+                                            if (selectedProjectId && person.project_ids) {
+                                                return isPhotographerOrVideographer && person.project_ids.includes(parseInt(selectedProjectId))
+                                            }
+                                            
+                                            return isPhotographerOrVideographer
                                         })
                                         .map(photographer => (
                                             <option key={photographer.id} value={photographer.id}>
@@ -1759,9 +1766,13 @@ export const Schedule = () => {
             {!loading && currentView === 'events' && (
                 <div className='mobile-layout'>
                     {scheduleColumns.map((column) => {
-                        // Use filtered events (respects photographer filter)
-                        const columnEvents = eventsWithPositions.filter(e => e.schedule_column_id === column.id)
+                        // Get all events for this column (no photographer filter on mobile)
+                        const columnEvents = events
+                            .filter(e => e.schedule_column_id === column.id)
                             .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+                        
+                        console.log(`📱 Column ${column.id} (${column.name}): ${columnEvents.length} events`, 
+                            columnEvents.map(e => ({ id: e.id, name: e.name })));
                         
                         return (
                             <div key={column.id} className='mobile-column-wrapper'>
