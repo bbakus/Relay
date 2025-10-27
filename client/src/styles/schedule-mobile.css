@@ -1,20 +1,8 @@
 /* Mobile Schedule Styles */
 
-/* ALWAYS SHOW FOR TESTING */
+/* Desktop - hide mobile by default */
 .mobile-layout {
-  display: flex;
-  flex-direction: row;
-  overflow-x: scroll;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  width: 100%;
-  min-height: calc(100vh - 250px);
-  position: relative;
-  background: #0a0a0f;
-  scrollbar-width: none;
-  margin-top: 20px;
-  padding: 0;
+  display: none;
 }
 
 .mobile-layout::-webkit-scrollbar {
@@ -25,6 +13,18 @@
 @media (max-width: 768px) {
   .mobile-layout {
     display: flex !important;
+    flex-direction: row !important;
+    overflow-x: scroll !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x mandatory !important;
+    width: 100% !important;
+    min-height: calc(100vh - 200px) !important;
+    position: relative !important;
+    background: #0a0a0f !important;
+    scrollbar-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   .desktop-layout {
@@ -33,6 +33,11 @@
 
   .schedule-grid {
     display: none !important;
+  }
+
+  .loading {
+    padding: 20px;
+    text-align: center;
   }
   /* Mobile schedule container */
   .schedule-container {
