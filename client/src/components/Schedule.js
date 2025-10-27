@@ -1487,6 +1487,8 @@ export const Schedule = () => {
                     {loading ? (
                         <div className='loading'>Loading {currentView}...</div>
                     ) : (
+                        <>
+                        {console.log('🖥️ DESKTOP: scheduleColumns:', scheduleColumns.length, 'events:', events.length, 'eventsByColumn:', Object.keys(eventsByColumn).length)}
                         <div className='schedule-grid'>
                             {/* TEST: Compare schedule-grid positioning vs events-container positioning */}
                             {currentView === 'events' ? (
@@ -1753,6 +1755,7 @@ export const Schedule = () => {
                 </>
             )}
             </div>
+            </>
             )}
             
             {/* Event Details Modal */}
