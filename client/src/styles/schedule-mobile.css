@@ -8,14 +8,13 @@
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
-  width: 100vw;
-  height: calc(100vh - 250px);
-  position: fixed;
-  left: 0;
-  top: 250px;
+  width: 100%;
+  height: calc(100vh - 200px);
+  position: relative;
   background: #0a0a0f;
-  z-index: 50;
   scrollbar-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .mobile-layout::-webkit-scrollbar {
@@ -25,10 +24,14 @@
 /* Mobile breakpoint */
 @media (max-width: 768px) {
   .mobile-layout {
-    display: flex;
+    display: flex !important;
   }
   
   .desktop-layout {
+    display: none !important;
+  }
+
+  .schedule-grid {
     display: none !important;
   }
   /* Mobile schedule container */
@@ -210,16 +213,17 @@
 
 /* Mobile events container */
 .mobile-events-container {
-  position: relative;
+  position: absolute;
   top: 80px;
   left: 0;
   right: 0;
+  bottom: 0;
   width: 100%;
   height: calc(100% - 80px);
   padding: 0 10px;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  min-height: 4000px;
 }
 
 /* Mobile event cards */

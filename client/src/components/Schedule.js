@@ -1764,6 +1764,7 @@ export const Schedule = () => {
                                 <h3>{column.name}</h3>
                             </div>
                             <div className='mobile-events-container'>
+                                <div style={{ position: 'relative', minHeight: '4000px', width: '100%' }}>
                                 {eventsByColumn[column.id]?.map(event => {
                                     if (!event.position) return null;
                                     const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
@@ -1799,6 +1800,7 @@ export const Schedule = () => {
                                         </div>
                                     );
                                 })}
+                                </div>
                             </div>
                         </div>
                     ))}
