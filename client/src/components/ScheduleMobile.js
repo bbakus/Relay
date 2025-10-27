@@ -240,7 +240,57 @@ export const ScheduleMobile = () => {
                     <div className="smv-no-data">
                         <p>No columns configured for this project.</p>
                     </div>
+                ) : selectedPhotographerId ? (
+                    // When photographer filter is active, show ALL their events in ONE column
+                    <div className="smv-column" style={{ minWidth: '100vw', width: '100vw' }}>
+                        <div className="smv-column-header">
+                            <h2>All Events</h2>
+                            <span className="smv-event-count">{events.length} events</span>
+                        </div>
+                        
+                        <div className="smv-events-list">
+                            {events.length === 0 ? (
+                                <div className="smv-no-events">No events for this photographer</div>
+                            ) : (
+                                events
+                                    .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
+                                    .map(event => {
+                                        const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
+                                        const colors = getProcessPointColor(event.process_point)
+                                        
+                                        return (
+                                            <div
+                                                key={event.id}
+                                                className={`smv-event-card ${isUnassigned ? 'smv-unassigned' : ''}`}
+                                                style={{
+                                                    backgroundColor: colors.backgroundColor,
+                                                    borderColor: isUnassigned ? '#dc3545' : colors.borderColor
+                                                }}
+                                                onClick={() => handleEventClick(event)}
+                                            >
+                                                <div className="smv-event-name">{event.name}</div>
+                                                <div className="smv-event-time">
+                                                    {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                </div>
+                                                <div className="smv-event-location">{event.location}</div>
+                                                
+                                                {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                    <div className="smv-event-personnel">
+                                                        {event.assigned_personnel.map((person) => (
+                                                            <span key={person.personnel_id} className="smv-personnel-badge">
+                                                                {person.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })
+                            )}
+                        </div>
+                    </div>
                 ) : (
+                    // No filter - show normal column layout
                     scheduleColumns.map((column) => {
                         const columnEvents = events
                             .filter(e => e.schedule_column_id === column.id)
