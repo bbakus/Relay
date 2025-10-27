@@ -1608,137 +1608,65 @@ export const Schedule = () => {
 
                             {/* Mobile Layout */}
                             <div className='mobile-layout'>
-                                <div className='mobile-scroll-container' style={{
-                                    display: 'flex',
-                                    overflowX: 'auto',
-                                    overflowY: 'hidden',
-                                    scrollSnapType: 'x mandatory',
-                                    WebkitOverflowScrolling: 'touch',
-                                    gap: '10px',
-                                    padding: '10px'
-                                }}>
-                                    {scheduleColumns.length === 0 ? (
-                                        <div style={{
-                                            minWidth: '90vw',
-                                            padding: '20px',
-                                            textAlign: 'center',
-                                            backgroundColor: 'rgba(255,255,255,0.05)',
-                                            borderRadius: '8px'
-                                        }}>
+                                {scheduleColumns.length === 0 ? (
+                                    <div className='mobile-column-wrapper'>
+                                        <div className='mobile-column-header'>
                                             <h3>No Columns</h3>
+                                        </div>
+                                        <div className='mobile-events-container'>
                                             <p>No columns configured. {isAdmin && selectedProjectId ? 'Add a column to get started.' : 'Please select a project.'}</p>
                                         </div>
-                                    ) : (
-                                        scheduleColumns.map((column) => (
-                                            <div key={column.id} style={{
-                                                minWidth: '85vw',
-                                                scrollSnapAlign: 'start',
-                                                backgroundColor: 'rgba(255,255,255,0.03)',
-                                                borderRadius: '12px',
-                                                padding: '15px',
-                                                border: '1px solid rgba(255,255,255,0.1)'
-                                            }}>
-                                                <h3 style={{
-                                                    color: '#ff7a18',
-                                                    marginBottom: '15px',
-                                                    fontSize: '1.2rem',
-                                                    textAlign: 'center',
-                                                    padding: '10px',
-                                                    backgroundColor: 'rgba(255, 122, 24, 0.1)',
-                                                    borderRadius: '8px'
-                                                }}>
-                                                    {column.name}
-                                                </h3>
-                                                <div style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '10px',
-                                                    maxHeight: '70vh',
-                                                    overflowY: 'auto'
-                                                }}>
-                                                    {eventsByColumn[column.id]?.length === 0 ? (
-                                                        <p style={{
-                                                            textAlign: 'center',
-                                                            color: 'rgba(255,255,255,0.5)',
-                                                            padding: '20px'
-                                                        }}>
-                                                            No events in this column
-                                                        </p>
-                                                    ) : (
-                                                        eventsByColumn[column.id]?.map(event => {
-                                                            const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0
-                                                            return (
-                                                                <div
-                                                                    key={event.id}
-                                                                    className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
-                                                                    style={{
-                                                                        backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
-                                                                        border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`,
-                                                                        borderRadius: '8px',
-                                                                        padding: '12px',
-                                                                        cursor: 'pointer',
-                                                                        minHeight: '80px'
-                                                                    }}
-                                                                    onClick={() => handleEventClick(event)}
-                                                                >
-                                                                    <div style={{
-                                                                        display: 'flex',
-                                                                        justifyContent: 'space-between',
-                                                                        alignItems: 'center',
-                                                                        marginBottom: '8px'
-                                                                    }}>
-                                                                        <h4 style={{
-                                                                            margin: 0,
-                                                                            fontSize: '1rem',
-                                                                            color: '#fff'
-                                                                        }}>
-                                                                            {event.name}
-                                                                        </h4>
-                                                                        {event.quick_turn && <span className="quick-turn-dot"></span>}
-                                                                    </div>
-                                                                    <div style={{
-                                                                        fontSize: '0.9rem',
-                                                                        color: 'rgba(255,255,255,0.9)',
-                                                                        marginBottom: '4px'
-                                                                    }}>
-                                                                        {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
-                                                                    </div>
-                                                                    <div style={{
-                                                                        fontSize: '0.85rem',
-                                                                        color: 'rgba(255,255,255,0.7)',
-                                                                        marginBottom: '8px'
-                                                                    }}>
-                                                                        {event.location}
-                                                                    </div>
-                                                                    {event.assigned_personnel && event.assigned_personnel.length > 0 && (
-                                                                        <div style={{
-                                                                            display: 'flex',
-                                                                            flexWrap: 'wrap',
-                                                                            gap: '4px',
-                                                                            marginTop: '8px'
-                                                                        }}>
-                                                                            {event.assigned_personnel.map((person, idx) => (
-                                                                                <span key={person.personnel_id} style={{
-                                                                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                                                                    padding: '4px 8px',
-                                                                                    borderRadius: '4px',
-                                                                                    fontSize: '0.75rem',
-                                                                                    color: '#fff'
-                                                                                }}>
-                                                                                    {person.name}
-                                                                                </span>
-                                                                            ))}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )
-                                                        })
-                                                    )}
-                                                </div>
+                                    </div>
+                                ) : (
+                                    scheduleColumns.map((column) => (
+                                        <div key={column.id} className='mobile-column-wrapper'>
+                                            <div className='mobile-column-header'>
+                                                <h3>{column.name}</h3>
                                             </div>
-                                        ))
-                                    )}
-                                </div>
+                                            <div className='mobile-events-container'>
+                                                {eventsByColumn[column.id]?.map(event => {
+                                                    if (!event.position) return null;
+                                                    const isUnassigned = !event.assigned_personnel || event.assigned_personnel.length === 0;
+                                                    return (
+                                                        <div
+                                                            key={event.id}
+                                                            className={`mobile-event-card ${isUnassigned ? 'unassigned-event' : ''}`}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: `${event.position.top}px`,
+                                                                height: `${event.position.height}px`,
+                                                                left: '8px',
+                                                                right: '8px',
+                                                                minHeight: '60px',
+                                                                backgroundColor: getProcessPointColor(event.process_point).backgroundColor,
+                                                                border: isUnassigned ? '3px solid #dc3545' : `2px solid ${getProcessPointColor(event.process_point).borderColor}`
+                                                            }}
+                                                            onClick={() => handleEventClick(event)}
+                                                        >
+                                                            <div className='event-header'>
+                                                                <h3>{event.name}</h3>
+                                                                {event.quick_turn && <span className='quick-turn'><span className="quick-turn-dot"></span></span>}
+                                                            </div>
+                                                            <div className='event-time'>
+                                                                {formatTimeTo12Hour(event.start_time)} - {formatTimeTo12Hour(event.end_time)}
+                                                            </div>
+                                                            <div className='event-location'>{event.location}</div>
+                                                            {event.assigned_personnel && event.assigned_personnel.length > 0 && (
+                                                                <div className='event-photographers'>
+                                                                    {event.assigned_personnel.map((person, idx) => (
+                                                                        <span key={person.personnel_id} className='photographer-badge'>
+                                                                            {person.name}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
 
