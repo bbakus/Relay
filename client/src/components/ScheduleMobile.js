@@ -68,12 +68,15 @@ export const ScheduleMobile = () => {
 
             // Filter by photographer if selected
             if (selectedPhotographerId) {
+                console.log('📱 Before photographer filter:', filtered.length, 'events')
                 filtered = filtered.filter(event => {
                     if (event.assigned_personnel && event.assigned_personnel.length > 0) {
                         return event.assigned_personnel.some(person => person.personnel_id === parseInt(selectedPhotographerId))
                     }
                     return false
                 })
+                console.log('📱 After photographer filter:', filtered.length, 'events for photographer', selectedPhotographerId)
+                console.log('📱 Filtered events:', filtered.map(e => ({ id: e.id, name: e.name, column: e.schedule_column_id })))
             }
             
             setEvents(filtered)
@@ -215,7 +218,14 @@ export const ScheduleMobile = () => {
                             {personnel
                                 .filter(person => {
                                     const role = (person.role || '').toLowerCase()
-                                    return role.includes('photographer') || role.includes('videographer')
+                                    const isPhotographerOrVideographer = role.includes('photographer') || role.includes('videographer')
+                                    
+                                    // Only show if assigned to selected project
+                                    if (selectedProjectId && person.project_ids) {
+                                        return isPhotographerOrVideographer && person.project_ids.includes(parseInt(selectedProjectId))
+                                    }
+                                    
+                                    return isPhotographerOrVideographer
                                 })
                                 .map(photographer => (
                                     <option key={photographer.id} value={photographer.id}>
@@ -235,6 +245,8 @@ export const ScheduleMobile = () => {
                         const columnEvents = events
                             .filter(e => e.schedule_column_id === column.id)
                             .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
+                        
+                        console.log(`📱 Column ${column.id} (${column.name}):`, columnEvents.length, 'events')
 
                         return (
                             <div key={column.id} className="smv-column">
