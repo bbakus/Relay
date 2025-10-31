@@ -318,7 +318,7 @@ export const Ingest = () => {
                 <div className='ingest-header'>
                     <h2>Ingest</h2>
                     <button className='ingest-btn' onClick={() => setShowIngestWizard(true)}>
-                        📥 Ingest
+                        Ingest
                     </button>
                 </div>
 
