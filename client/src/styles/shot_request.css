@@ -1606,6 +1606,48 @@
         flex-direction: column;
         gap: 0;
     }
+    
+    /* FIX: Prevent card text overflow */
+    .shot-request-card,
+    .sr-collapsible-card {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .shot-request-card h3,
+    .sr-card-header h3 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .shot-request-card p,
+    .sr-card-info p,
+    .sr-detail-row span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .sr-project-name,
+    .sr-request-text,
+    .sr-notes-text,
+    .sr-details-text {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+    
+    .sr-photographer-tag,
+    .sr-assigned-photographers {
+        flex-wrap: wrap;
+        word-break: break-word;
+    }
 }
 
 @media (max-width: 480px) {

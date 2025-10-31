@@ -1170,6 +1170,75 @@
     .settings-form-actions button {
         flex: 1;
     }
+    
+    /* FIX: Prevent card text overflow for all settings cards */
+    .settings-item-card,
+    .settings-user-card,
+    .personnel-card,
+    .project-card,
+    .organization-card,
+    .company-card,
+    .settings-card {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        box-sizing: border-box;
+    }
+    
+    .settings-item-card h3,
+    .settings-user-card h3,
+    .personnel-card h3,
+    .project-card h3,
+    .organization-card h3,
+    .company-card h3 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .settings-item-card p,
+    .settings-user-card p,
+    .personnel-card p,
+    .project-card p,
+    .organization-card p,
+    .company-card p,
+    .settings-item-info p,
+    .user-info p,
+    .personnel-info p {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .settings-item-info,
+    .user-info,
+    .personnel-info,
+    .project-info,
+    .organization-info,
+    .company-info {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    /* Force all text elements to wrap */
+    .settings-item-card *,
+    .settings-user-card *,
+    .personnel-card *,
+    .project-card *,
+    .organization-card *,
+    .company-card * {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
 }
 
 /* Empty state */

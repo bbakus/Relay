@@ -759,6 +759,48 @@
     .events-header h1 {
         font-size: 2rem;
     }
+    
+    /* FIX: Prevent card text overflow */
+    .events-card,
+    .events-collapsible-card {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .events-card h3,
+    .events-card-header h3,
+    .event-title-row h3 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .events-card p,
+    .events-card-basic-info p,
+    .events-detail-row span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+    }
+    
+    .events-card-project,
+    .events-card-basic-info,
+    .event-expanded-info {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+    
+    .photographer-tag,
+    .assigned-photographers {
+        flex-wrap: wrap;
+        word-break: break-word;
+    }
 }
 
 @media (max-width: 480px) {
