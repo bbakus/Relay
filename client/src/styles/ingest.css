@@ -2,7 +2,7 @@
 
 .ingest-container {
     padding: 20px;
-    padding-top: 120px;
+    padding-top: 200px;
     height: calc(100vh - 160px);
     overflow-y: auto;
 }
