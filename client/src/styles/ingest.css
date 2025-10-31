@@ -4,13 +4,16 @@
     padding: 20px;
     height: calc(100vh - 160px);
     overflow-y: auto;
+    margin-top: 20px;
 }
 
 .ingest-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 30px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .ingest-header h2 {
