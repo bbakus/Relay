@@ -2988,6 +2988,114 @@ def upload_images():
         session.close()
 
 
+@app.route('/api/images/bulk', methods=['POST'])
+def bulk_ingest_images():
+    """Bulk ingest image metadata without storing actual image files"""
+    session = Session()
+    try:
+        data = request.json
+        if not data or not isinstance(data, list):
+            return jsonify({'error': 'Expected array of image metadata'}), 400
+        
+        ingested_images = []
+        
+        for img_data in data:
+            # Parse capture timestamp if provided
+            capture_timestamp = None
+            if img_data.get('capture_timestamp'):
+                try:
+                    capture_timestamp = datetime.datetime.fromisoformat(img_data['capture_timestamp'].replace('Z', '+00:00'))
+                except:
+                    pass
+            
+            # Create image record with EXIF metadata
+            new_image = ImageModel(
+                filename=img_data.get('filename'),
+                folder_name=img_data.get('folder_name'),
+                ingest_date=img_data.get('ingest_date'),
+                photographer_id=img_data.get('photographer_id'),
+                project_id=img_data.get('project_id'),
+                event_id=img_data.get('event_id'),
+                upload_date=img_data.get('upload_date'),
+                file_size=img_data.get('file_size'),
+                # EXIF metadata
+                camera_make=img_data.get('camera_make'),
+                camera_model=img_data.get('camera_model'),
+                lens=img_data.get('lens'),
+                iso=img_data.get('iso'),
+                shutter_speed=img_data.get('shutter_speed'),
+                aperture=img_data.get('aperture'),
+                focal_length=img_data.get('focal_length'),
+                capture_timestamp=capture_timestamp,
+                width=img_data.get('width'),
+                height=img_data.get('height'),
+                orientation=img_data.get('orientation', 1),
+                # Default values
+                client_select=False,
+                favorite=False
+            )
+            
+            session.add(new_image)
+            session.flush()
+            
+            ingested_images.append({
+                'id': new_image.id,
+                'filename': new_image.filename,
+                'folder_name': new_image.folder_name,
+                'ingest_date': new_image.ingest_date,
+                'event_id': new_image.event_id
+            })
+        
+        session.commit()
+        return jsonify(ingested_images), 200
+        
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Error bulk ingesting images: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@app.route('/api/images/batch-assign', methods=['PUT'])
+def batch_assign_images():
+    """Batch assign multiple images to an event"""
+    session = Session()
+    try:
+        data = request.json
+        image_ids = data.get('image_ids', [])
+        event_id = data.get('event_id')
+        
+        if not image_ids or not event_id:
+            return jsonify({'error': 'image_ids and event_id are required'}), 400
+        
+        # Verify event exists
+        event = session.query(EventModel).filter_by(id=event_id).first()
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+        
+        # Update all images
+        updated_count = 0
+        for image_id in image_ids:
+            image = session.query(ImageModel).filter_by(id=image_id).first()
+            if image:
+                image.event_id = event_id
+                updated_count += 1
+        
+        session.commit()
+        return jsonify({
+            'message': f'Successfully assigned {updated_count} images to event',
+            'updated_count': updated_count
+        }), 200
+        
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Error batch assigning images: {e}")
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
 # Temporary setup endpoint for deployment
 @app.route('/api/setup', methods=['POST'])
 def setup_database():

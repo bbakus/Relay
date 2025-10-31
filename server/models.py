@@ -247,11 +247,34 @@ class Image(Base, SerializerMixin):
     favorite = Column(Boolean, default=False)  # User favorite flag
     upload_date = Column(String)  # When the image was uploaded
     file_size = Column(Integer)  # File size in bytes
+    
+    # EXIF metadata fields (without storing actual image data)
+    camera_make = Column(String)  # Camera manufacturer
+    camera_model = Column(String)  # Camera model
+    lens = Column(String)  # Lens model
+    iso = Column(Integer)  # ISO value
+    shutter_speed = Column(String)  # Shutter speed (e.g., "1/250")
+    aperture = Column(String)  # Aperture (e.g., "f/2.8")
+    focal_length = Column(String)  # Focal length (e.g., "24mm")
+    capture_timestamp = Column(DateTime)  # Date/time photo was taken
+    width = Column(Integer)  # Image width in pixels
+    height = Column(Integer)  # Image height in pixels
+    orientation = Column(Integer)  # EXIF orientation
+    
+    # Ingest folder organization
+    folder_name = Column(String)  # Custom folder name (e.g., "Marc_01")
+    ingest_date = Column(String)  # Date folder (e.g., "2025-10-31")
+    photographer_id = Column(Integer, ForeignKey('personnels.id', ondelete='SET NULL'))  # Photographer who took the images
+    
+    # Project relationship
+    project_id = Column(Integer, ForeignKey('projects.id', ondelete='CASCADE'))
 
     event_id = Column(Integer, ForeignKey('events.id', ondelete='CASCADE'))
     requests_id = Column(Integer, ForeignKey('shot_requests.id', ondelete='CASCADE'))
 
     # Relationships
+    project = relationship('Project')
+    photographer = relationship('Personnel', foreign_keys=[photographer_id])
     event = relationship('Events', back_populates='images')
     shot_request = relationship('ShotRequest', back_populates='images')
 

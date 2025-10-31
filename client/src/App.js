@@ -14,6 +14,7 @@ import { Events } from './components/Events';
 import { ShotRequest } from './components/ShotRequest';
 import { Deliver } from './components/Deliver';
 import { Map } from './components/Map';
+import { Ingest } from './components/Ingest';
 import { useEffect } from 'react';
 
 
@@ -53,6 +54,7 @@ function App() {
                 <Route path='/:userId/personnel' element={<Personnel/>}/>
                 <Route path='/:userId/events' element={<Events/>}/>
                 <Route path='/:userId/requests' element={<ShotRequest/>}/>
+                <Route path='/:userId/ingest' element={<Ingest/>}/>
                 <Route path='/:userId/deliver' element={<Deliver/>}/>
                 <Route path='/:userId/map' element={<Map/>}/>
               </Routes>

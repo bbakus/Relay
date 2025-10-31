@@ -439,7 +439,8 @@ export const Nav = () => {
     Deliver: '/images/icons/deliver.png',
     Schedule: '/images/icons/schedule.png',
     Settings: '/images/icons/settings.png',
-    Map: '/images/icons/map.png'
+    Map: '/images/icons/map.png',
+    Ingest: '/images/icons/ingest.png'
   }
 
   const items = useMemo(() => {
@@ -459,6 +460,7 @@ export const Nav = () => {
         { label: 'Schedule', to: `/${userId}/schedule`},
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
+        { label: 'Ingest', to: `/${userId}/ingest` },
         { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
         { label: 'Settings', to: `/${userId}/settings`},
@@ -479,6 +481,7 @@ export const Nav = () => {
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
         { label: 'Personnel', to: `/${userId}/personnel` },
+        { label: 'Ingest', to: `/${userId}/ingest` },
         { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
       ]
@@ -496,6 +499,7 @@ export const Nav = () => {
         { label: 'Schedule', to: `/${userId}/schedule`},
         { label: 'Events', to: `/${userId}/events` },
         { label: 'Requests', to: `/${userId}/requests` },
+        { label: 'Ingest', to: `/${userId}/ingest` },
         { label: 'Deliver', to: 'https://g9eventphotography.pixieset.com/2025oraclenetsuitesuiteworldonsitedeliverables/' },
         { label: 'Map', to: `/${userId}/map` },
       ]
@@ -562,7 +566,11 @@ export const Nav = () => {
                   className='mobile-nav-link'
                   onClick={closeMobileMenu}
                 >
-                  <img src={item.icon} alt={item.label} className='mobile-nav-link-icon' />
+                  {item.icon.startsWith('/') ? (
+                    <img src={item.icon} alt={item.label} className='mobile-nav-link-icon' />
+                  ) : (
+                    <span className='mobile-nav-link-icon' style={{ fontSize: '24px' }}>{item.icon}</span>
+                  )}
                   <span className='mobile-nav-link-label'>{item.label}</span>
                 </a>
               )
@@ -576,7 +584,11 @@ export const Nav = () => {
                 className='mobile-nav-link'
                 onClick={closeMobileMenu}
               >
-                <img src={item.icon} alt={item.label} className='mobile-nav-link-icon' />
+                {item.icon.startsWith('/') ? (
+                  <img src={item.icon} alt={item.label} className='mobile-nav-link-icon' />
+                ) : (
+                  <span className='mobile-nav-link-icon' style={{ fontSize: '24px' }}>{item.icon}</span>
+                )}
                 <span className='mobile-nav-link-label'>{item.label}</span>
               </Link>
             )
@@ -796,7 +808,11 @@ export const Nav = () => {
                     rel="noopener noreferrer" 
                     className='nav-link'
                   >
-                    <img src={item.icon} alt={item.label} className='nav-link-icon' />
+                    {item.icon.startsWith('/') ? (
+                      <img src={item.icon} alt={item.label} className='nav-link-icon' />
+                    ) : (
+                      <span className='nav-link-icon' style={{ fontSize: '24px' }}>{item.icon}</span>
+                    )}
                     <span className='nav-link-label'>{item.label}</span>
                   </a>
                 )
@@ -805,7 +821,11 @@ export const Nav = () => {
               // Regular internal navigation
               return (
                 <Link key={item.to} to={item.to} className='nav-link'>
-                  <img src={item.icon} alt={item.label} className='nav-link-icon' />
+                  {item.icon.startsWith('/') ? (
+                    <img src={item.icon} alt={item.label} className='nav-link-icon' />
+                  ) : (
+                    <span className='nav-link-icon' style={{ fontSize: '24px' }}>{item.icon}</span>
+                  )}
                   <span className='nav-link-label'>{item.label}</span>
                 </Link>
               )
