@@ -33,22 +33,32 @@
     gap: 15px !important;
     justify-content: center !important;
     flex: 1 !important;
+    /* Add margin to avoid overlapping with hamburger (left) and filter button (right) */
+    margin-left: 60px !important;
+    margin-right: 100px !important;
   }
 
   .app-header-right .user-info {
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
   }
 
-  .app-header-right .user-info .user-avatar {
-    width: 35px !important;
-    height: 35px !important;
-  }
-
-  .app-header-right .user-info .user-name {
+  .app-header-right .user-info h3 {
     font-size: 0.9rem !important;
     color: #ff7a18 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 150px !important;
+  }
+
+  .app-header-right .user-info .header-avatar {
+    width: 35px !important;
+    height: 35px !important;
+    flex-shrink: 0 !important;
   }
   /* Hide the regular nav on mobile */
   .nav {
@@ -412,16 +422,19 @@
   }
 
   .app-header-right {
-    gap: 8px;
+    gap: 8px !important;
+    margin-left: 50px !important;
+    margin-right: 90px !important;
   }
 
-  .user-info h3 {
-    font-size: 0.8rem;
+  .app-header-right .user-info h3 {
+    font-size: 0.8rem !important;
+    max-width: 120px !important;
   }
 
-  .header-avatar {
-    width: 35px;
-    height: 35px;
+  .app-header-right .user-info .header-avatar {
+    width: 30px !important;
+    height: 30px !important;
   }
 
   .logout-btn {
